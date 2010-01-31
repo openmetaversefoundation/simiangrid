@@ -1,0 +1,20 @@
+Options -Indexes -MultiViews +FollowSymLinks
+
+## make sure nobody gets the htaccess files
+<Files ~ "^[\._]ht">
+    Order allow,deny
+    Deny from all
+    Satisfy All
+</Files>
+
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME}     !-f
+RewriteCond %{REQUEST_FILENAME}     !-d
+RewriteRule ^assets/(.*)            AssetService.php?id=$1  [QSA,L]
+RewriteRule ^scenes/                GridService.php         [QSA,L]
+RewriteRule ^users/                 GridService.php         [QSA,L]
+RewriteRule ^inventory/             GridService.php         [QSA,L]
+RewriteRule ^services/              GridService.php         [QSA,L]
+RewriteRule ^login                  login/login.php         [QSA,L]
+RewriteRule ^login/                 login/login.php         [QSA,L]
+RewriteRule ^caps/(.*)              CapsProxy.php?id=$1     [QSA,L]
