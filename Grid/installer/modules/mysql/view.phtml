@@ -1,0 +1,26 @@
+<fieldset>
+    <ul>
+        <li>
+            <label for="mysql_hostname">Hostname</label>
+            <input type="text" id="mysql_hostname" name="hostname" value="<?php echo htmlspecialchars($this->mysqlHostname); ?>" />
+        </li>
+        <li>   
+            <label for="mysql_username">Username</label>
+            <input type="text" id="mysql_username" name="username" value="<?php echo htmlspecialchars($this->mysqlUsername); ?>" />
+        </li>
+        <li>
+            <label for="mysql_password">Password</label>
+            <input type="password" id="mysql_password" name="password" value="<?php echo htmlspecialchars($this->mysqlPassword); ?>" />
+        </li>
+        <li>
+            <label for="mysql_database">Database</label>
+            <input type="text" id="mysql_database" name="database" value="<?php echo htmlspecialchars($this->mysqlDatabase); ?>" />
+        </li>
+    </ul>
+</fieldset>
+
+<?php if (isset($this->mysqlError)): ?>
+    <p class="error">
+        <?php echo $this->escape($this->mysqlError); ?>
+    </p>
+<?php endif; ?>

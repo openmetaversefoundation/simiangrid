@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <!-- The URI to the tarball which contains the application -->
+    <download-uri></download-uri>
+    
+    <!-- Modules which should be used by the installer -->
+    <modules array-children="module">
+        <!-- System-Check module -->
+        <module name="systemcheck">
+            <!-- Minimal PHP version -->
+            <php-min-version></php-min-version>
+            
+            <!-- Wether safe_mode is required to be off -->
+            <require-safe-mode-off>true</require-safe-mode-off>
+            
+            <!-- Writable files and directories to check -->
+            <writable array-children="require">
+                <require>.</require>
+            </writable>
+            
+            <!-- PHP modules to check for -->
+            <php-modules array-children="require">
+                <!--<require>PDO</require>-->
+            </php-modules>
+            
+            <!-- Apache modules to theck -->
+            <apache-modules array-children="require">
+                <!--<require>mod_rewrite</require>-->
+            </apache-modules>
+        </module>
+        
+        <!-- MySQL module -->
+        <module name="mysql">
+            <!-- Config file in which the connection data should be stored -->
+            <config-file></config-file>
+
+            <!-- SQL Dump in the tarball to execute -->
+            <sql-dump-file></sql-dump-file>
+        </module>
+    </modules>
+</config>

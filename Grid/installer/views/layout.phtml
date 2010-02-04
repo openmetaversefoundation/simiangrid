@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Jijawi Web Installer</title>
+        <link rel="stylesheet" href="<?php echo $this->staticFile('screen.css'); ?>" type="text/css" media="screen" />
+        
+        <?php foreach ($this->_additionalFiles['css'] as $file): ?>
+            <link rel="stylesheet" href="<?php echo $this->staticFile($file); ?>" type="text/css" media="screen" />
+        <?php endforeach; ?>
+        
+        <?php foreach ($this->_additionalFiles['js'] as $file): ?>
+            <script type="text/javascript" src="<?php echo $this->staticFile($file); ?>"></script>
+        <?php endforeach; ?>
+        
+        <link rel="shortcut icon" type="image/x-icon" href="<?php echo $this->staticFile('favicon.ico'); ?>" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    </head>
+    <body>
+        <div id="container">
+            <h1>Jijawi Web Installer</h1>
+            
+            <div id="progress-background"></div>
+            <ul id="progress">
+                <?php foreach($this->progress as $item): ?>
+                    <?php
+                    if ($item['status'] === 'current') {
+                        $headline = $item['label'];
+                    }
+                    ?>
+                    <li<?php if ($item['status'] !== null): ?> class="<?php echo $item['status']; ?>"<?php endif; ?>><?php echo $this->escape($item['label']); ?></li>
+                <?php endforeach; ?>
+            </ul>
+            
+            <div id="content-background"></div>
+            
+            <form id="content" method="post" action="<?php echo $this->_front->getBasename(); ?>">
+                <h2><?php echo $this->escape($headline); ?></h2>
+                <?php echo $this->content; ?>
+                
+                <fieldset id="navigation">
+                    <input type="hidden" name="mode" value="" />
+                
+                    <?php if (isset($this->navigation)): ?>
+                        <input type="button" name="back" value="&lt; Back"<?php if (!$this->navigation['back']): ?> disabled="disabled"<?php endif; ?> onclick="this.form.mode.value = 'back'; this.form.submit();" />
+                        <input type="submit" name="next" value="<?php if (!$this->navigation['next']): ?>Install<?php else: ?>Next<?php endif; ?> &gt;" />
+                    <?php endif; ?>
+                    
+                    <input type="button" name="cancel" value="Cancel" onclick="this.form.mode.value = 'cancel'; this.form.submit();" />
+                </fieldset>
+            </form>
+        </div>
+    </body>
+</html>
