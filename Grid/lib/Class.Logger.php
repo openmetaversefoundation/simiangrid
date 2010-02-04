@@ -32,37 +32,39 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    require_once 'Log.php';
-    class Logger
+require_once 'Log.php';
+
+class Logger
+{
+    private $LogInstance;
+
+    function __construct($cfg_file, $service)
     {
-        private $LogInstance;
-        function __construct($cfg_file, $service)
+        $config = parse_ini_file($cfg_file, true);
+        $dir = dirname($cfg_file);
+        if (isset($config['Services']['log_file']) && $config['Services']['log_file'] != '')
         {
-            $config = parse_ini_file($cfg_file, true);
-            $dir = dirname($cfg_file);
-            if(isset($config['Services']['log_file']) && $config['Services']['log_file'] !='')
+            $this->LogInstance = &Log::singleton('file', realpath($dir . "/" . $config['Services']['log_file']), $service);
+            
+            if (isset($config['Services']['log_level']) && $config['Services']['log_level'] != "")
             {
-                $this->LogInstance = &Log::singleton('file', realpath($dir . "/" . $config['Services']['log_file']), $service);
-
-                if(isset($config['Services']['log_level']) && $config['Services']['log_level'] != "")
-                {
-                    $mask = Log::UPTO(constant(str_replace('SIMIAN_','PEAR_', $config['Services']['log_level'])));
-                }
-                else
-                {
-                    $mask = Log::UPTO(PEAR_LOG_NONE);
-                }
-
-                $this->LogInstance->setMask($mask);
+                $mask = Log::UPTO(constant(str_replace('SIMIAN_', 'PEAR_', $config['Services']['log_level'])));
             }
             else
             {
-                $this->LogInstance = &Log::singleton('null');
+                $mask = Log::UPTO(PEAR_LOG_NONE);
             }
+            
+            $this->LogInstance->setMask($mask);
         }
-    
-        public function getInstance()
+        else
         {
-            return $this->LogInstance;
+            $this->LogInstance = &Log::singleton('null');
         }
     }
+
+    public function getInstance()
+    {
+        return $this->LogInstance;
+    }
+}

@@ -37,52 +37,85 @@ class_exists('UUID') || require_once ('Class.UUID.php');
 class_exists('Scene') || require_once ('Class.Scene.php');
 class_exists('Vector3d') || require_once ('Class.Vector3d.php');
 
-class GetScene implements IGridService
+class GetScenes implements IGridService
 {
-    private $SceneID;
-    private $Position;
+    private $MinPosition;
+    private $MaxPosition;
 
     public function Execute($db, $params, $logger)
     {
-        $sql = "";
-        
-        if (isset($params["SceneID"]) && UUID::TryParse($params["SceneID"], $this->SceneID))
+        if (isset($params["NameQuery"]))
         {
             $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
                     CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                     CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
-                    FROM Scenes WHERE ID='" . $this->SceneID->UUID . "'";
+                    FROM Scenes WHERE Name LIKE :NameQuery";
+            $nameQuery = '%' . $params["NameQuery"] . '%';
             
             if (isset($params["Enabled"]) && $params["Enabled"])
                 $sql .= " AND Enabled=1";
+            if (isset($params["MaxNumber"]))
+                $sql .= " LIMIT " . intval($params["MaxNumber"]);
+            
+            $sth = $db->prepare($sql);
+            
+            if ($sth->execute(array(':NameQuery' => $nameQuery)))
+            {
+                $this->HandleQueryResponse($sth);
+            }
+            else
+            {
+                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                $logger->debug(sprintf("Query: %s", $sql));
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Database query error" }';
+                exit();
+            }
         }
-        else if (isset($params["Position"]) && Vector3d::TryParse($params["Position"], $this->Position))
+        else if (isset($params["MinPosition"]) && isset($params["MaxPosition"]) &&
+            Vector3d::TryParse($params["MinPosition"], $this->MinPosition) &&
+            Vector3d::TryParse($params["MaxPosition"], $this->MaxPosition))
         {
-            $sql = "SELECT ID, Name, Address, Enabled, ExtraData, 
-            		CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
-                    CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition,
-                    GLength(LineString(GeomFromText('POINT(" . $this->Position->X . " " . $this->Position->Y . ")'), Centroid(XYPlane)))
-                    AS dist FROM Scenes";
+            $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
+					CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,
+					CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
+					FROM Scenes WHERE MBRIntersects(GeomFromText(:XY), XYPlane)";
             
             if (isset($params["Enabled"]) && $params["Enabled"])
-                $sql .= " WHERE Enabled=1";
+                $sql .= " AND Enabled=1";
+            if (isset($params["MaxNumber"]))
+                $sql .= " LIMIT " . intval($params["MaxNumber"]);
             
-            $sql .= " ORDER BY dist LIMIT 1";
+            $sth = $db->prepare($sql);
+            
+            if ($sth->execute(array(':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))", $this->MinPosition->X, $this->MinPosition->Y, $this->MaxPosition->X, $this->MinPosition->Y, $this->MaxPosition->X, $this->MaxPosition->Y, $this->MinPosition->X, $this->MaxPosition->Y, $this->MinPosition->X, $this->MinPosition->Y))))
+            {
+                $this->HandleQueryResponse($sth);
+            }
+            else
+            {
+                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                $logger->debug(sprintf("Query: %s", $sql));
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Database query error" }';
+                exit();
+            }
         }
         else
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
-            exit();
         }
-        
-        $sth = $db->prepare($sql);
-        
-        if ($sth->execute())
+    }
+
+    private function HandleQueryResponse($sth)
+    {
+        if ($sth->rowCount() > 0)
         {
-            if ($sth->rowCount() > 0)
+            $found = array();
+            
+            while ($obj = $sth->fetchObject())
             {
-                $obj = $sth->fetchObject();
                 $scene = new Scene();
                 $scene->SceneID = $obj->ID;
                 $scene->Name = $obj->Name;
@@ -95,27 +128,17 @@ class GetScene implements IGridService
                 else
                     $scene->ExtraData = "{}";
                 
-                $out = $scene->toOSD();
-                $out = substr($out, 0, -1);
-                $out .= ',"Success":true}';
-                
-                header("Content-Type: application/json", true);
-                echo $out;
-                exit();
+                $found[] = $scene->toOSD();
             }
-            else
-            {
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "No matching scene found" }';
-                exit();
-            }
+            
+            header("Content-Type: application/json", true);
+            echo '{"Success":true,"Scenes":[' . implode(',', $found) . ']}';
+            exit();
         }
         else
         {
-            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-            $logger->debug(sprintf("Query: %s", $sql));
             header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
+            echo '{"Success:true,"Scenes":[]}';
             exit();
         }
     }

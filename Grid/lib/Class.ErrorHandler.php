@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,48 +33,48 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class ErrorHandler
-    {  
-        public static function printError(Exception $e)
-        {
-            $fp = fopen('exception.log', "a");
-            fwrite($fp, sprintf("[%s] class: %s code: %d message: %s\n%s\n========== END ==========", date('r'), get_class($e), $e->getCode(), $e->getMessage(), print_r($e, true)));
-            fclose($fp);
-        }
-  
-        public static function handleError($code, $message, $file, $line)
-        {
-            require_once('Log.php');
-            //self::printError($e);
-            global $logger;
-            $priority = PEAR_LOG_ERR;
-            if (0 == error_reporting())
-            {
-                return;
-            }
-
-            switch ($code)
-            {
-                case E_WARNING:
-                case E_USER_WARNING:
-                    $priority = PEAR_LOG_WARNING;
-                break;
-                case E_NOTICE:
-                case E_USER_NOTICE:
-                    $priority = PEAR_LOG_NOTICE;
-                break;
-                case E_ERROR:
-                case E_USER_ERROR:
-                    $priority = PEAR_LOG_ERR;
-                break;
-                default:
-                    $priotity = PEAR_LOG_INFO;
-        }
-
-        $logger->log($message . ' in ' . $file . ' at line ' . $line, $priority);
-        throw new ErrorException($message, 0, $code, $file, $line);
-
-        }
+class ErrorHandler
+{
+    public static function printError(Exception $e)
+    {
+        $fp = fopen('exception.log', "a");
+        fwrite($fp, sprintf("[%s] class: %s code: %d message: %s\n%s\n========== END ==========", date('r'), get_class($e), $e->getCode(), $e->getMessage(), print_r($e, true)));
+        fclose($fp);
     }
 
-    set_error_handler(array("ErrorHandler", "handleError"));
+    public static function handleError($code, $message, $file, $line)
+    {
+        require_once ('Log.php');
+        //self::printError($e);
+        global $logger;
+        $priority = PEAR_LOG_ERR;
+        if (0 == error_reporting())
+        {
+            return;
+        }
+        
+        switch ($code)
+        {
+            case E_WARNING:
+            case E_USER_WARNING:
+                $priority = PEAR_LOG_WARNING;
+                break;
+            case E_NOTICE:
+            case E_USER_NOTICE:
+                $priority = PEAR_LOG_NOTICE;
+                break;
+            case E_ERROR:
+            case E_USER_ERROR:
+                $priority = PEAR_LOG_ERR;
+                break;
+            default:
+                $priotity = PEAR_LOG_INFO;
+        }
+        
+        $logger->log($message . ' in ' . $file . ' at line ' . $line, $priority);
+        throw new ErrorException($message, 0, $code, $file, $line);
+    
+    }
+}
+
+set_error_handler(array("ErrorHandler" , "handleError"));

@@ -32,120 +32,117 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    interface_exists('IGridService') || require_once('Interface.GridService.php');
-    class_exists('UUID') || require_once('Class.UUID.php');
-    class_exists('Scene') || require_once('Class.Scene.php');
-    class_exists('Vector3d') || require_once('Class.Vector3d.php');
+interface_exists('IGridService') || require_once ('Interface.GridService.php');
+class_exists('UUID') || require_once ('Class.UUID.php');
+class_exists('Scene') || require_once ('Class.Scene.php');
+class_exists('Vector3d') || require_once ('Class.Vector3d.php');
 
-    class AddScene implements IGridService
+class AddScene implements IGridService
+{
+    private $Scene;
+
+    public function Execute($db, $params, $logger)
     {
-        private $Scene;
-        public function Execute($db, $params, $logger)
+        $this->Scene = new Scene();
+        
+        if (isset($params["SceneID"], $params["Enabled"]) && !$params["Enabled"] && UUID::TryParse($params["SceneID"], $this->Scene->ID))
         {
-            $this->Scene = new Scene();
+            // Scene disabling
+            $sql = "UPDATE Scenes SET Enabled=0 WHERE ID=:ID";
             
-            if (isset($params["SceneID"], $params["Enabled"]) && !$params["Enabled"] && UUID::TryParse($params["SceneID"], $this->Scene->ID))
+            $sth = $db->prepare($sql);
+            if ($sth->execute(array(':ID' => $this->Scene->ID->UUID)))
             {
-                // Scene disabling
-                $sql = "UPDATE Scenes SET Enabled=0 WHERE ID=:ID";
-                
-                $sth = $db->prepare($sql);
-                if($sth->execute(array(':ID'=>$this->Scene->ID->UUID)))
+                if ($sth->rowCount() > 0)
                 {
-                    if($sth->rowCount() > 0)
-                    {
-                        header("Content-Type: application/json", true);
-                        echo '{ "Success": true }';
-                        exit;
-                    }
-                    else
-                    {
-                        $logger->err("Failed updating the database");
-                        header("Content-Type: application/json", true);
-                        echo '{ "Message": "Database update failed" }';
-                        exit;
-                    }
+                    header("Content-Type: application/json", true);
+                    echo '{ "Success": true }';
+                    exit();
                 }
                 else
                 {
-                    $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(),true)));
+                    $logger->err("Failed updating the database");
                     header("Content-Type: application/json", true);
-                    echo '{ "Message": "Database query error" }';
-                    exit;
+                    echo '{ "Message": "Database update failed" }';
+                    exit();
                 }
             }
             else
             {
-                // Scene enabling
-                if(!isset($params["SceneID"], $params["Name"], $params["MinPosition"], $params["MaxPosition"], $params["Address"], $params["Enabled"])
-                    || !UUID::TryParse($params["SceneID"], $this->Scene->ID)
-                    || !Vector3d::TryParse($params["MinPosition"], $this->Scene->MinPosition) 
-                    || !Vector3d::TryParse($params["MaxPosition"], $this->Scene->MaxPosition))
-                {
-                    $logger->err(sprintf("AddScene: Unable to parse passed parameters or parameter missing: '%s'", print_r($params,true)));
-                    header("Content-Type: application/json", true);
-                    echo '{ "Message": "Invalid parameters" }';
-                    exit;
-                }
-
-                $this->Scene->Address = trim($params["Address"]);
-                $this->Scene->Name = trim($params["Name"]);
-                $this->Scene->Enabled = $params["Enabled"];
-                
-                if (isset($params["ExtraData"]))
-                    { $this->Scene->ExtraData = $params["ExtraData"]; }
-                else
-                    { $this->Scene->ExtraData = NULL; }
-
-                $sql = "REPLACE INTO Scenes (ID, Name, MinX, MinY, MinZ, MaxX, MaxY, MaxZ, Address, Enabled, ExtraData, XYPlane) 
+                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Database query error" }';
+                exit();
+            }
+        }
+        else
+        {
+            // Scene enabling
+            if (!isset($params["SceneID"], $params["Name"], $params["MinPosition"], $params["MaxPosition"], $params["Address"], $params["Enabled"]) || !UUID::TryParse($params["SceneID"], $this->Scene->ID) || !Vector3d::TryParse($params["MinPosition"], $this->Scene->MinPosition) || !Vector3d::TryParse($params["MaxPosition"], $this->Scene->MaxPosition))
+            {
+                $logger->err(sprintf("AddScene: Unable to parse passed parameters or parameter missing: '%s'", print_r($params, true)));
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Invalid parameters" }';
+                exit();
+            }
+            
+            $this->Scene->Address = trim($params["Address"]);
+            $this->Scene->Name = trim($params["Name"]);
+            $this->Scene->Enabled = $params["Enabled"];
+            
+            if (isset($params["ExtraData"]))
+            {
+                $this->Scene->ExtraData = $params["ExtraData"];
+            }
+            else
+            {
+                $this->Scene->ExtraData = NULL;
+            }
+            
+            $sql = "REPLACE INTO Scenes (ID, Name, MinX, MinY, MinZ, MaxX, MaxY, MaxZ, Address, Enabled, ExtraData, XYPlane) 
                         VALUES (:ID, :Name, :MinX, :MinY,  :MinZ, :MaxX, :MaxY, :MaxZ, :Address, :Enabled, :ExtraData, GeomFromText(:XY))";
-    
-                $sth = $db->prepare($sql);
-                if($sth->execute(array(':ID'=>$this->Scene->ID->UUID,
-                                       ':Name'=>$this->Scene->Name,
-                                       ':MinX'=>$this->Scene->MinPosition->X,
-                                       ':MinY'=>$this->Scene->MinPosition->Y,
-                                       ':MinZ'=>$this->Scene->MinPosition->Z,
-                                       ':MaxX'=>$this->Scene->MaxPosition->X,
-                                       ':MaxY'=>$this->Scene->MaxPosition->Y,
-                                       ':MaxZ'=>$this->Scene->MaxPosition->Z,
-                                       ':Address'=>$this->Scene->Address,
-                                       ':Enabled'=>$this->Scene->Enabled,
-                                       ':ExtraData'=>$this->Scene->ExtraData,
-                                       ':XY'=>sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))",
-                                           $this->Scene->MinPosition->X,
-                                           $this->Scene->MinPosition->Y,
-                                           $this->Scene->MaxPosition->X,
-                                           $this->Scene->MinPosition->Y,
-                                           $this->Scene->MaxPosition->X,
-                                           $this->Scene->MaxPosition->Y,
-                                           $this->Scene->MinPosition->X,
-                                           $this->Scene->MaxPosition->Y,
-                                           $this->Scene->MinPosition->X,
-                                           $this->Scene->MinPosition->Y)
-                                )))
+            
+            $sth = $db->prepare($sql);
+            if ($sth->execute(array(
+            	':ID' => $this->Scene->ID->UUID ,
+            	':Name' => $this->Scene->Name ,
+            	':MinX' => $this->Scene->MinPosition->X ,
+            	':MinY' => $this->Scene->MinPosition->Y ,
+            	':MinZ' => $this->Scene->MinPosition->Z ,
+            	':MaxX' => $this->Scene->MaxPosition->X ,
+            	':MaxY' => $this->Scene->MaxPosition->Y ,
+            	':MaxZ' => $this->Scene->MaxPosition->Z ,
+            	':Address' => $this->Scene->Address ,
+            	':Enabled' => $this->Scene->Enabled ,
+            	':ExtraData' => $this->Scene->ExtraData ,
+            	':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))",
+                    $this->Scene->MinPosition->X, $this->Scene->MinPosition->Y,
+                    $this->Scene->MaxPosition->X, $this->Scene->MinPosition->Y,
+                    $this->Scene->MaxPosition->X, $this->Scene->MaxPosition->Y,
+                    $this->Scene->MinPosition->X, $this->Scene->MaxPosition->Y,
+                    $this->Scene->MinPosition->X, $this->Scene->MinPosition->Y))))
+            {
+                if ($sth->rowCount() > 0)
                 {
-                    if($sth->rowCount() > 0)
-                    {
-                        header("Content-Type: application/json", true);
-                        echo '{ "Success": true }';
-                        exit;
-                    }
-                    else
-                    {
-                        $logger->err("Failed updating the database");
-                        header("Content-Type: application/json", true);
-                        echo '{ "Message": "Database update failed" }';
-                        exit;
-                    }
+                    header("Content-Type: application/json", true);
+                    echo '{ "Success": true }';
+                    exit();
                 }
                 else
                 {
-                    $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                    $logger->err("Failed updating the database");
                     header("Content-Type: application/json", true);
-                    echo '{ "Message": "Database query error" }';
-                    exit;
+                    echo '{ "Message": "Database update failed" }';
+                    exit();
                 }
+            }
+            else
+            {
+                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Database query error" }';
+                exit();
             }
         }
     }
+}

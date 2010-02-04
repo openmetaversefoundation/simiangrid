@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,15 +33,18 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class Factory
+class Factory
+{
+    // The parameterized factory method
+    public static function CreateInstanceOf($type)
     {
-        // The parameterized factory method
-        public static function CreateInstanceOf($type)
+        if (class_exists($type) || include_once 'Class.' . $type . '.php')
         {
-            if (class_exists($type) || include_once 'Class.' . $type . '.php') {
-                return new $type;
-            } else {
-                throw new Exception ('Class ' . $type . ' not found');
-            }
+            return new $type();
+        }
+        else
+        {
+            throw new Exception('Class ' . $type . ' not found');
         }
     }
+}

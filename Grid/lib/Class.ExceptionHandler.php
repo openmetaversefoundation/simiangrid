@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,19 +33,19 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class ExceptionHandler 
-    {  
-        public static function printException(Exception $e)
-        {
-            $fp = fopen('exception.log', "a");
-            fwrite($fp, sprintf("[%s] class: %s code: %d message: %s\n%s\n========== END ==========", date('r'), get_class($e), $e->getCode(), $e->getMessage(), print_r($e, true)));
-            fclose($fp);
-        }
-  
-        public static function handleException(Exception $e)
-        {
-            self::printException($e);
-        }
+class ExceptionHandler
+{
+    public static function printException(Exception $e)
+    {
+        $fp = fopen('exception.log', "a");
+        fwrite($fp, sprintf("[%s] class: %s code: %d message: %s\n%s\n========== END ==========", date('r'), get_class($e), $e->getCode(), $e->getMessage(), print_r($e, true)));
+        fclose($fp);
     }
 
-    set_exception_handler(array("ExceptionHandler", "handleException"));
+    public static function handleException(Exception $e)
+    {
+        self::printException($e);
+    }
+}
+
+set_exception_handler(array("ExceptionHandler" , "handleException"));
