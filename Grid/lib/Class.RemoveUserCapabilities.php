@@ -35,19 +35,19 @@
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
 class_exists('UUID') || require_once ('Class.UUID.php');
 
-class RemoveScene implements IGridService
+class RemoveUserCapabilities implements IGridService
 {
-    private $SceneID;
+    private $OwnerID;
 
     public function Execute($db, $params, $logger)
     {
-        if (isset($params["SceneID"]) && UUID::TryParse($params["SceneID"], $this->SceneID))
+        if (isset($params["OwnerID"]) && UUID::TryParse($params["OwnerID"], $this->OwnerID))
         {
-            $sql = "DELETE FROM Scenes WHERE ID=:SceneID";
+            $sql = "DELETE FROM Capabilities WHERE OwnerID=:OwnerID";
             
             $sth = $db->prepare($sql);
             
-            if ($sth->execute(array(':SceneID' => $this->SceneID)))
+            if ($sth->execute(array(':OwnerID' => $this->OwnerID)))
             {
                 header("Content-Type: application/json", true);
                 echo '{ "Success": true }';
