@@ -327,6 +327,7 @@ class DX_Auth
 		$user = array(
 			'DX_user_id'					=> $data->id,
 			'DX_username'					=> $data->username,
+		    'DX_simiangrid_id'				=> $data->user_id,
 			'DX_user_level'					=> $userlevel,					
 			'DX_logged_in'					=> TRUE
 		);
@@ -557,6 +558,17 @@ class DX_Auth
 	{
 		return $this->ci->session->userdata('DX_username');
 	}
+	
+	function get_name()
+	{
+	    return str_replace('_', ' ', $this->ci->session->userdata('DX_username'));
+	}
+	
+	// Get user SimianGrid UUID
+	function get_simiangrid_id()
+	{
+	    return $this->ci->session->userdata('DX_simiangrid_id');
+	}
 		
 	// Check is user is has admin privilege
 	function is_admin()
@@ -677,7 +689,7 @@ class DX_Auth
 					if (crypt($password, $stored_hash) === $stored_hash)
 					{
 						// Log in user 
-						$this->_set_session($row); 												
+						$this->_set_session($row);
 						
 						if ($row->newpass)
 						{
@@ -743,6 +755,48 @@ class DX_Auth
 		$this->ci->session->sess_destroy();		
 	}
 	
+    function _create_simiangrid_user($first_name, $last_name, $password, $email, $userid)
+	{
+	    $fullname = $first_name . ' ' . $last_name;
+	    
+	    $query = array(
+		    'RequestMethod' => 'AddUser',
+		    'UserID' => $userid,
+			'Name' => $fullname,
+		    'Email' => $email
+		);
+		
+		$response = rest_post($this->ci->config->item('user_service'), $query);
+		
+		if (element('Success', $response))
+		{
+		    $query = array(
+    		    'RequestMethod' => 'AddIdentity',
+		        'Identifier' => $fullname,
+		        'Credential' => '$1$' . md5($password),
+		        'Type' => 'md5hash',
+    		    'UserID' => $userid
+    		);
+    		
+    		$response = rest_post($this->ci->config->item('user_service'), $query);
+    		
+    		if (element('Success', $response))
+    		{
+    		    return TRUE;
+    		}
+    		else
+    		{
+    		    $this->_auth_error = 'Failed to create a user identity: ' . element('Message', $response, 'Unknown error');
+    		}
+		}
+		else
+		{
+		    $this->_auth_error = 'Failed to contact the user service: ' . element('Message', $response, 'Unknown error');
+		}
+		
+		return FALSE;
+	}
+	
 	function register($first_name, $last_name, $password, $email)
 	{
 	    $username = $first_name . '_' . $last_name;
@@ -751,23 +805,10 @@ class DX_Auth
 		// Load Models
 		$this->ci->load->model('dx_auth/users', 'users');
 		$this->ci->load->model('dx_auth/user_temp', 'user_temp');
-
-		$this->ci->load->helper('url');
 		
-		// Create a user in SimianGrid
-		$query = array(
-		    'RequestMethod' => 'AddUser',
-		    'UserID' => $userid,
-			'Name' => $first_name . ' ' . $last_name,
-		    'Email' => $email
-		);
-		$add_user_response = rest_post($this->ci->config->item('user_service'), $query);
-		
-		if (!element('Success', $add_user_response))
-		{
-		    $this->_auth_error = 'Failed to contact the user service: ' . element('Message', $add_user_response, 'Unknown error');
+		// Create a user and identity in SimianGrid
+		if (!$this->_create_simiangrid_user($first_name, $last_name, $password, $email, $userid))
 		    return FALSE;
-		}
 		
 		// Default return value
         $result = FALSE;
