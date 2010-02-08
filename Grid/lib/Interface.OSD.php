@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,8 +33,9 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    interface IOSD
-    {
-        public function toOSD();
-        public static function fromOSD($strOsd);
-    }
+
+interface IOSD
+{
+    public function toOSD();
+    public static function fromOSD($strOsd);
+}

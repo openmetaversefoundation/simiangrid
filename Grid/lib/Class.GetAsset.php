@@ -38,7 +38,12 @@
     {
         public function Execute($db, $asset, $logger)
         {
-            $sql = "SELECT SHA256, LastModified, CreatorID, ContentType, Data, Public FROM AssetData WHERE ID=:ID";
+            $headrequest = (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE);
+            
+            if ($headrequest)
+                $sql = "SELECT SHA256, LastModified, CreatorID, ContentType, Public FROM AssetData WHERE ID=:ID";
+            else
+                $sql = "SELECT SHA256, LastModified, CreatorID, ContentType, Public, Data, FROM AssetData WHERE ID=:ID";
 
             $sth = $db->prepare($sql);
 
@@ -55,12 +60,10 @@
                         header("Last-Modified: " . gmdate(DATE_RFC850, $obj->LastModified));
                         header("X-Asset-Creator-Id: " . $obj->CreatorID);
                         header("Content-Type: " . $obj->ContentType);
-    
-                        // if this was a HEAD request the headers we've sent end our obligation to the request
-                        if (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE)
-                            exit();
                         
-                        echo $obj->Data;
+                        if (!$headrequest)
+                            echo $obj->Data;
+                        
                         exit();
                     }
                     else
