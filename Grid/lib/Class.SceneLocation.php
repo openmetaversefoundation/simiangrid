@@ -32,39 +32,30 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
 
-class RemoveSession implements IGridService
+class_exists('Vector3d') || require_once ('Class.Vector3d.php');
+
+class SceneLocation
 {
-    private $ID;
-
-    public function Execute($db, $params, $logger)
+    public $SceneName;
+    public $Position;
+    public $LookAt;
+    
+    public function toOSD()
     {
-        $sql = "DELETE FROM Sessions WHERE SceneID=:ID";
+        return sprintf('{"SceneName": "%s", "Position": "%s", "LookAt": "%s"}',
+            $this->SceneName, $this->Position, $this->LookAt);
+    }
+    
+    public static function fromOSD($osdStr)
+    {
+        $osdObj = json_decode($osdStr, true);
         
-        if (!isset($params["SceneID"]) || !UUID::TryParse($params["SceneID"], $this->ID))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
-        }
+        $location = new SceneLocation();
+        $location->SceneName = $osdObj["SceneName"];
+        $location->Position = Vector3d::Parse('<' . implode(',', $osdObj["Position"]) . '>');
+        $location->LookAt = Vector3d::Parse('<' . implode(',', $osdObj["LookAt"]) . '>');
         
-        $sth = $db->prepare($sql);
-            
-        if ($sth->execute(array(':ID' => $this->ID)))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
-        }
-        else
-        {
-            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-            $logger->debug(sprintf("Query: %s", $sql));
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
-            exit();
-        }
+        return $location;
     }
 }

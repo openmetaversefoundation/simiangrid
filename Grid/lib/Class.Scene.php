@@ -32,8 +32,8 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    require_once('Interface.OSD.php');
-    require_once('Class.Vector3d.php');
+    interface_exists('OSD') || require_once ('Interface.OSD.php');
+    class_exists('Vector3d') || require_once ('Class.Vector3d.php');
     
     class Scene implements IOSD
     {

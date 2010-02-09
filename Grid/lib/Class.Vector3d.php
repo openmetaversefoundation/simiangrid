@@ -32,73 +32,78 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    require_once('Interface.OSD.php');
-    class Vector3d implements IOSD
+require_once ('Interface.OSD.php');
+
+class Vector3d implements IOSD
+{
+    public $X;
+    public $Y;
+    public $Z;
+    const strpat = '/^[\<\[]?(?<X>[+-]?r?((([0-9]+(\.)?)|([0-9]*\.[0-9]+))([eE][+-]?[0-9]+)?)),(?<Y>[+-]?r?((([0-9]+(\.)?)|([0-9]*\.[0-9]+))([eE][+-]?[0-9]+)?)),(?<Z>[+-]?r?((([0-9]+(\.)?)|([0-9]*\.[0-9]+))([eE][+-]?[0-9]+)?))[\>\]]?$/';
+
+    public function __construct($x = 0, $y = 0, $z = 0)
     {
-        public $X;
-        public $Y;
-        public $Z;
-        const strpat = '/^[\<\[]?(?<X>[+-]?r?((([0-9]+(\.)?)|([0-9]*\.[0-9]+))([eE][+-]?[0-9]+)?)),(?<Y>[+-]?r?((([0-9]+(\.)?)|([0-9]*\.[0-9]+))([eE][+-]?[0-9]+)?)),(?<Z>[+-]?r?((([0-9]+(\.)?)|([0-9]*\.[0-9]+))([eE][+-]?[0-9]+)?))[\>\]]?$/';
-        public function __construct($x = 0, $y = 0, $z = 0)
+        $this->X = $x;
+        $this->Y = $y;
+        $this->Z = $z;
+    }
+
+    public function __toString()
+    {
+        return sprintf("<%s, %s, %s>", $this->X, $this->Y, $this->Z);
+    }
+
+    public function toOSD()
+    {
+        return sprintf("[%s, %s, %s]", $this->X, $this->Y, $this->Z);
+    }
+
+    static function fromOSD($osdStr)
+    {
+        if (preg_match(self::strpat, preg_replace('/\s/', '', $osdStr), $matches))
         {
-            $this->X = $x;
-            $this->Y = $y;
-            $this->Z = $z;
+            return new Vector3d($matches["X"], $matches["Y"], $matches["Z"]);
         }
+        throw new Exception("The input string does not appear to be valid: " + $osdStr);
+    }
 
-        public function __toString() 
+    static function Parse($str)
+    {
+        if (is_array($str) && count($str) == 3)
         {
-            return sprintf("<%s, %s, %s>", $this->X, $this->Y, $this->Z);
+            $str = '<' . implode(',', $str) . '>';
         }
-
-        public function toOSD()
+        
+        if (preg_match(self::strpat, preg_replace('/\s/', '', $str), $matches))
         {
-            return sprintf("[%s, %s, %s]", $this->X, $this->Y, $this->Z);
+            return new Vector3d($matches["X"], $matches["Y"], $matches["Z"]);
         }
-
-        static function fromOSD($osdStr)
+        else
         {
-            if(preg_match(self::strpat, preg_replace('/\s/', '', $osdStr), $matches))
-            {
-                return new Vector3d($matches["X"], $matches["Y"], $matches["Z"]);
-            }
-            throw new Exception("The input string does not appear to be valid: " + $osdStr);
-        }
-   
-        static function Parse($str)
-        {
-            if(is_array($str) && count($str)==3)
-            {
-                $str = '<' . implode(',', $str) . '>';
-            }
-
-            if(preg_match(self::strpat, preg_replace('/\s/', '', $str), $matches))
-            {
-                return new Vector3d($matches["X"], $matches["Y"], $matches["Z"]);
-            } else {
-                return NULL;
-            }
-
-        }
-
-        static function TryParse($str, &$out)
-        {
-            if(is_array($str) && count($str)==3)
-            {
-                $str = '<' . implode(',', $str) . '>';
-            } else {
-                $str = trim($str);
-            }
-            if(preg_match(self::strpat, preg_replace('/\s/', '', $str), $matches))
-            {
-                $out = new Vector3d($matches["X"], $matches["Y"], $matches["Z"]);
-                return TRUE;
-            }
-            return FALSE;
-        }
-
-        static function Zero()
-        {
-            return new Vector3d(0, 0, 0);
+            return NULL;
         }
     }
+
+    static function TryParse($str, &$out)
+    {
+        if (is_array($str) && count($str) == 3)
+        {
+            $str = '<' . implode(',', $str) . '>';
+        }
+        else
+        {
+            $str = trim($str);
+        }
+        if (preg_match(self::strpat, preg_replace('/\s/', '', $str), $matches))
+        {
+            $out = new Vector3d($matches["X"], $matches["Y"], $matches["Z"]);
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    static function Zero()
+    {
+        return new Vector3d(0, 0, 0);
+    }
+}

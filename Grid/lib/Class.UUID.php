@@ -32,64 +32,66 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    require_once('Interface.OSD.php');
-    class UUID implements IOSD
+require_once ('Interface.OSD.php');
+
+class UUID implements IOSD
+{
+    const Zero = '00000000-0000-0000-0000-000000000000';
+    const strpat = '/^(?<UUID>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/';
+    
+    public $UUID;
+
+    public function __construct($uuid = self::Zero)
     {
-        public $UUID;
-        const Zero = '00000000-0000-0000-0000-000000000000';
-        const strpat = '/^(?<UUID>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/';
-        
-        public function __construct($uuid = self::Zero)
-        {
-            $this->UUID = $uuid;
-        }
-
-        public function __toString()
-        {
-            return $this->UUID;
-        }
-
-        public function toOSD()
-        {
-            return sprintf('"%s"', $this->UUID);
-        }
-
-        static function fromOSD($osdStr)
-        {
-            if(preg_match(self::strpat, preg_replace('/[\s\"]?/', '', $osdStr), $matches))
-            {
-                return new UUID($matches["UUID"]);
-            }
-            throw new Exception("The input string does not appear to be a valid UUID: " + $osdStr, 0);
-        }
-
-        static function Parse($str)
-        {
-            if(preg_match(self::strpat, preg_replace('/[\s\"]?/', '', trim($str)), $matches))
-            {
-                return new UUID($matches["UUID"]);
-            } else {
-                throw new Exception("The input string does not appear to be a valid UUID: " + $str, 0);
-            }
-        }
-
-        static function TryParse($str, &$uuid)
-        {
-            if(preg_match(self::strpat, preg_replace('/[\s\"]?/', '', trim($str)), $matches))
-            {
-                $uuid = new UUID($matches["UUID"]);
-                return TRUE;
-            } else {
-                return FALSE;
-            }
-        }
-
-        static function Random()
-        {
-            return new UUID(sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-                mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
-                mt_rand( 0, 0x0fff ) | 0x4000,
-                mt_rand( 0, 0x3fff ) | 0x8000,
-                mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ) ));
-        }    
+        $this->UUID = $uuid;
     }
+
+    public function __toString()
+    {
+        return $this->UUID;
+    }
+
+    public function toOSD()
+    {
+        return sprintf('"%s"', $this->UUID);
+    }
+
+    static function fromOSD($osdStr)
+    {
+        if (preg_match(self::strpat, preg_replace('/[\s\"]?/', '', $osdStr), $matches))
+        {
+            return new UUID($matches["UUID"]);
+        }
+        throw new Exception("The input string does not appear to be a valid UUID: " + $osdStr, 0);
+    }
+
+    static function Parse($str)
+    {
+        if (preg_match(self::strpat, preg_replace('/[\s\"]?/', '', trim($str)), $matches))
+        {
+            return new UUID($matches["UUID"]);
+        }
+        else
+        {
+            throw new Exception("The input string does not appear to be a valid UUID: " + $str, 0);
+        }
+    }
+
+    static function TryParse($str, &$uuid)
+    {
+        if (preg_match(self::strpat, preg_replace('/[\s\"]?/', '', trim($str)), $matches))
+        {
+            $uuid = new UUID($matches["UUID"]);
+            return TRUE;
+        }
+        else
+        {
+            return FALSE;
+        }
+    }
+
+    static function Random()
+    {
+        return new UUID(sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)));
+    }
+}

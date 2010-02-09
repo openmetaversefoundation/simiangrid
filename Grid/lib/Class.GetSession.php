@@ -38,55 +38,62 @@ class_exists('Vector3d') || require_once ('Class.Vector3d.php');
 
 class GetSession implements IGridService
 {
-    private $SessionID;
+    private $ID;
 
     public function Execute($db, $params, $logger)
     {
-        if (isset($params["SessionID"]) && UUID::TryParse($params["SessionID"], $this->SessionID))
+        $sql = "SELECT * FROM Sessions WHERE";
+        
+        if (isset($params["UserID"]) && UUID::TryParse($params["UserID"], $this->ID))
         {
-            $sql = "SELECT * FROM Sessions WHERE SessionID=:SessionID";
-            
-            $sth = $db->prepare($sql);
-            
-            if ($sth->execute())
-            {
-                if ($sth->rowCount() > 0)
-                {
-                    $obj = $sth->fetchObject();
-                    
-                    $ScenePosition = Vector3d::Parse($obj->ScenePosition);
-                    $SceneLookAt = Vector3d::Parse($obj->SceneLookAt);
-                    $ExtraData = "{}";
-                    if (strlen($obj->ExtraData) > 0)
-                        $ExtraData = $obj->ExtraData;
-                    
-                    $output = sprintf('{ "Success": true, "UserID": "%s", "SessionID": "%s", "SecureSessionID": "%s", "SceneID": "%s", "ScenePosition": %s, "SceneLookAt": %s, ExtraData: %s }',
-                        $obj->UserID, $obj->SessionID, $obj->SecureSessionID, $obj->SceneID, $ScenePosition, $SceneLookAt, $ExtraData);
-                    
-                    header("Content-Type: application/json", true);
-                    echo $output;
-                    exit();
-                }
-                else
-                {
-                    header("Content-Type: application/json", true);
-                    echo '{ "Message": "Session not found" }';
-                    exit();
-                }
-            }
-            else
-            {
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                $logger->debug(sprintf("Query: %s", $sql));
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Database query error" }';
-                exit();
-            }
+            $sql .= " UserID=:ID";
+        }
+        else if (isset($params["SessionID"]) && UUID::TryParse($params["SessionID"], $this->ID))
+        {
+            $sql .= " SessionID=:ID";
         }
         else
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
+            exit();
+        }
+        
+        $sth = $db->prepare($sql);
+        
+        if ($sth->execute(array(':ID' => $this->ID)))
+        {
+            if ($sth->rowCount() > 0)
+            {
+                $obj = $sth->fetchObject();
+                
+                $ScenePosition = Vector3d::Parse($obj->ScenePosition);
+                $SceneLookAt = Vector3d::Parse($obj->SceneLookAt);
+                $ExtraData = "{}";
+                if (strlen($obj->ExtraData) > 0)
+                    $ExtraData = $obj->ExtraData;
+                
+                $output = sprintf(
+                	'{ "Success": true, "UserID": "%s", "SessionID": "%s", "SecureSessionID": "%s", "SceneID": "%s", "ScenePosition": %s, "SceneLookAt": %s, ExtraData: %s }',
+                    $obj->UserID, $obj->SessionID, $obj->SecureSessionID, $obj->SceneID, $ScenePosition, $SceneLookAt, $ExtraData);
+                
+                header("Content-Type: application/json", true);
+                echo $output;
+                exit();
+            }
+            else
+            {
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Session not found" }';
+                exit();
+            }
+        }
+        else
+        {
+            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            $logger->debug(sprintf("Query: %s", $sql));
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Database query error" }';
             exit();
         }
     }
