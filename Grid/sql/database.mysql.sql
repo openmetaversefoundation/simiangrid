@@ -2,30 +2,37 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 
--- -----------------------------------------------------
--- Table `AssetData`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `AssetData` ;
+CREATE SCHEMA IF NOT EXISTS `Simian` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci ;
+USE `Simian`;
 
-CREATE  TABLE IF NOT EXISTS `AssetData` (
+-- -----------------------------------------------------
+-- Table `Simian`.`AssetData`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Simian`.`AssetData` ;
+
+CREATE  TABLE IF NOT EXISTS `Simian`.`AssetData` (
   `ID` CHAR(36) NOT NULL ,
   `Data` MEDIUMBLOB NOT NULL ,
   `ContentType` VARCHAR(50) NOT NULL DEFAULT 'application/octet-stream' ,
+  `CreatorID` CHAR(36) NOT NULL ,
+  `SHA256` CHAR(64) NOT NULL ,
   `CreationDate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
   `LastAccessed` TIMESTAMP NULL ,
-  `CreatorID` CHAR(36) NOT NULL ,
   `Public` TINYINT(1) NOT NULL DEFAULT TRUE ,
+  `Temporary` TINYINT(1) NOT NULL DEFAULT FALSE ,
   PRIMARY KEY (`ID`) ,
-  INDEX `last_accessed` (`LastAccessed` ASC) )
+  INDEX `last_accessed` (`LastAccessed` ASC) ,
+  INDEX `temporary` (`Temporary` ASC) ,
+  INDEX `sha256` (`SHA256` ASC) )
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Capabilities`
+-- Table `Simian`.`Capabilities`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Capabilities` ;
+DROP TABLE IF EXISTS `Simian`.`Capabilities` ;
 
-CREATE  TABLE IF NOT EXISTS `Capabilities` (
+CREATE  TABLE IF NOT EXISTS `Simian`.`Capabilities` (
   `ID` CHAR(36) NOT NULL ,
   `OwnerID` CHAR(36) NOT NULL ,
   `Resource` VARCHAR(255) NOT NULL ,
@@ -38,33 +45,55 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Identities`
+-- Table `Simian`.`Users`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Identities` ;
+DROP TABLE IF EXISTS `Simian`.`Users` ;
 
-CREATE  TABLE IF NOT EXISTS `Identities` (
+CREATE  TABLE IF NOT EXISTS `Simian`.`Users` (
+  `ID` CHAR(36) NOT NULL ,
+  `Name` VARCHAR(60) NOT NULL ,
+  `Email` VARCHAR(60) NOT NULL ,
+  PRIMARY KEY (`ID`) ,
+  UNIQUE INDEX `name` (`Name` ASC) ,
+  UNIQUE INDEX `email` (`Email` ASC) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `Simian`.`Identities`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Simian`.`Identities` ;
+
+CREATE  TABLE IF NOT EXISTS `Simian`.`Identities` (
   `Identifier` VARCHAR(255) NOT NULL ,
   `Type` VARCHAR(50) NOT NULL ,
   `Credential` VARCHAR(255) NULL ,
   `UserID` CHAR(36) NOT NULL ,
   `Enabled` TINYINT(1) NOT NULL DEFAULT TRUE ,
-  UNIQUE INDEX `identifier_type` (`Identifier` ASC, `Type` ASC) )
+  UNIQUE INDEX `identifier_type` (`Identifier` ASC, `Type` ASC) ,
+  INDEX `fk_id` (`UserID` ASC) ,
+  CONSTRAINT `fk_id`
+    FOREIGN KEY (`UserID` )
+    REFERENCES `Simian`.`Users` (`ID` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Inventory`
+-- Table `Simian`.`Inventory`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Inventory` ;
+DROP TABLE IF EXISTS `Simian`.`Inventory` ;
 
-CREATE  TABLE IF NOT EXISTS `Inventory` (
+CREATE  TABLE IF NOT EXISTS `Simian`.`Inventory` (
   `ID` CHAR(36) NOT NULL ,
   `Name` VARCHAR(255) NOT NULL ,
   `ParentID` CHAR(36) NOT NULL ,
   `OwnerID` CHAR(36) NOT NULL ,
+  `CreatorID` CHAR(36) NOT NULL ,
   `AssetID` CHAR(36) NULL ,
   `Description` VARCHAR(255) NULL ,
-  `PreferredContentType` VARCHAR(50) NULL ,
+  `ContentType` VARCHAR(50) NULL ,
   `Version` INT UNSIGNED NOT NULL DEFAULT 1 ,
   `CreationDate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
   `Type` ENUM('Folder','Item') NOT NULL ,
@@ -77,11 +106,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Scenes`
+-- Table `Simian`.`Scenes`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Scenes` ;
+DROP TABLE IF EXISTS `Simian`.`Scenes` ;
 
-CREATE  TABLE IF NOT EXISTS `Scenes` (
+CREATE  TABLE IF NOT EXISTS `Simian`.`Scenes` (
   `ID` CHAR(36) NOT NULL ,
   `Name` VARCHAR(50) NOT NULL ,
   `MinX` DOUBLE NOT NULL ,
@@ -101,15 +130,46 @@ ENGINE = MyISAM;
 
 
 -- -----------------------------------------------------
--- Table `Users`
+-- Table `Simian`.`Sessions`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Users` ;
+DROP TABLE IF EXISTS `Simian`.`Sessions` ;
 
-CREATE  TABLE IF NOT EXISTS `Users` (
+CREATE  TABLE IF NOT EXISTS `Simian`.`Sessions` (
+  `SessionID` CHAR(36) NOT NULL ,
+  `UserID` CHAR(36) NOT NULL ,
+  `SecureSessionID` CHAR(36) NOT NULL ,
+  `SceneID` CHAR(36) NOT NULL ,
+  `ScenePosition` VARCHAR(45) NULL ,
+  `SceneLookAt` VARCHAR(45) NULL ,
+  `ExtraData` TEXT NULL ,
+  INDEX `scene` (`SceneID` ASC) ,
+  INDEX `fk_user` (`UserID` ASC) ,
+  PRIMARY KEY (`SessionID`) ,
+  UNIQUE INDEX `user` (`UserID` ASC) ,
+  CONSTRAINT `fk_user`
+    FOREIGN KEY (`UserID` )
+    REFERENCES `Simian`.`Users` (`ID` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `Simian`.`UserData`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Simian`.`UserData` ;
+
+CREATE  TABLE IF NOT EXISTS `Simian`.`UserData` (
   `ID` CHAR(36) NOT NULL ,
   `Key` VARCHAR(50) NOT NULL ,
   `Value` MEDIUMTEXT NOT NULL ,
-  UNIQUE INDEX `id_key` (`ID` ASC, `Key` ASC) )
+  UNIQUE INDEX `id_key` (`ID` ASC, `Key` ASC) ,
+  INDEX `id` (`ID` ASC) ,
+  CONSTRAINT `id`
+    FOREIGN KEY (`ID` )
+    REFERENCES `Simian`.`Users` (`ID` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
