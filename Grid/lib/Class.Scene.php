@@ -89,17 +89,21 @@
                 return $out;
         }
 
-        public static function fromOSD($osdStr)
+        public static function fromOSD($osd)
         {
-            $osdObj = json_decode($osdStr, true);
+            if (!isset($osd)) return NULL;
+            if (!is_array($osd)) $osd = json_decode($osd, true);
+            if (!isset($osd)) return NULL;
+            
             $scene = new Scene();
-            $scene->ID = $osdObj["SceneID"];
-            $scene->Name = $osdObj["Name"];
-            $scene->MinPosition = Vector3d::Parse('<' . implode(',', $osdObj["MinPosition"]) . '>');
-            $scene->MaxPosition = Vector3d::Parse('<' . implode(',', $osdObj["MaxPosition"]) . '>');
-            $scene->Address = $osdObj["Address"];
-            $scene->Enabled = $osdObj["Enabled"];
-            $scene->ExtraData = $osdObj["ExtraData"];
+            $scene->ID = $osd["SceneID"];
+            $scene->Name = $osd["Name"];
+            $scene->MinPosition = Vector3d::Parse('<' . implode(',', $osd["MinPosition"]) . '>');
+            $scene->MaxPosition = Vector3d::Parse('<' . implode(',', $osd["MaxPosition"]) . '>');
+            $scene->Address = $osd["Address"];
+            $scene->Enabled = $osd["Enabled"];
+            $scene->ExtraData = $osd["ExtraData"];
+            
             return $scene;
         }
     }

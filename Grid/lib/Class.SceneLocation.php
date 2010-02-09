@@ -47,14 +47,16 @@ class SceneLocation
             $this->SceneName, $this->Position, $this->LookAt);
     }
     
-    public static function fromOSD($osdStr)
+    public static function fromOSD($osd)
     {
-        $osdObj = json_decode($osdStr, true);
+        if (!isset($osd)) return NULL;
+        if (!is_array($osd)) $osd = json_decode($osd, true);
+        if (!isset($osd)) return NULL;
         
         $location = new SceneLocation();
-        $location->SceneName = $osdObj["SceneName"];
-        $location->Position = Vector3d::Parse('<' . implode(',', $osdObj["Position"]) . '>');
-        $location->LookAt = Vector3d::Parse('<' . implode(',', $osdObj["LookAt"]) . '>');
+        $location->SceneName = $osd["SceneName"];
+        $location->Position = Vector3d::Parse('<' . implode(',', $osd["Position"]) . '>');
+        $location->LookAt = Vector3d::Parse('<' . implode(',', $osd["LookAt"]) . '>');
         
         return $location;
     }
