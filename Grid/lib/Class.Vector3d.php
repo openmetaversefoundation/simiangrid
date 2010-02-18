@@ -43,9 +43,9 @@ class Vector3d implements IOSD
 
     public function __construct($x = 0, $y = 0, $z = 0)
     {
-        $this->X = $x;
-        $this->Y = $y;
-        $this->Z = $z;
+        $this->X = (double)$x;
+        $this->Y = (double)$y;
+        $this->Z = (double)$z;
     }
 
     public function __toString()

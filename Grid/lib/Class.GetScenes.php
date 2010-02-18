@@ -88,7 +88,12 @@ class GetScenes implements IGridService
             
             $sth = $db->prepare($sql);
             
-            if ($sth->execute(array(':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))", $this->MinPosition->X, $this->MinPosition->Y, $this->MaxPosition->X, $this->MinPosition->Y, $this->MaxPosition->X, $this->MaxPosition->Y, $this->MinPosition->X, $this->MaxPosition->Y, $this->MinPosition->X, $this->MinPosition->Y))))
+            if ($sth->execute(array(':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))",
+                $this->MinPosition->X, $this->MinPosition->Y,
+                $this->MaxPosition->X, $this->MinPosition->Y,
+                $this->MaxPosition->X, $this->MaxPosition->Y,
+                $this->MinPosition->X, $this->MaxPosition->Y,
+                $this->MinPosition->X, $this->MinPosition->Y))))
             {
                 $this->HandleQueryResponse($sth);
             }
@@ -132,13 +137,13 @@ class GetScenes implements IGridService
             }
             
             header("Content-Type: application/json", true);
-            echo '{"Success":true,"Scenes":[' . implode(',', $found) . ']}';
+            echo '{ "Success": true, "Scenes": [' . implode(',', $found) . '] }';
             exit();
         }
         else
         {
             header("Content-Type: application/json", true);
-            echo '{"Success:true,"Scenes":[]}';
+            echo '{ "Success: true, "Scenes": [] }';
             exit();
         }
     }

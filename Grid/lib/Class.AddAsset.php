@@ -43,8 +43,7 @@ class AddAsset implements IGridService
         
         $sql = "INSERT INTO AssetData (ID, Data, ContentType, CreatorID, SHA256, Public, Temporary)
         		VALUES (:ID, :Data, :ContentType, :CreatorID, :SHA256, " . $p . ", " . $t . ")
-        		ON DUPLICATE KEY UPDATE Data=VALUES(Data), ContentType=VALUES(ContentType), CreatorID=VALUES(CreatorID),
-        		SHA256=VALUES(SHA256), Public=VALUES(Public), Temporary=VALUES(Temporary)";
+        		ON DUPLICATE KEY UPDATE Data=VALUES(Data), SHA256=VALUES(SHA256)";
         
         $sth = $db->prepare($sql);
         

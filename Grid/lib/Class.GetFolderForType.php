@@ -33,49 +33,60 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
+class_exists('MPTT') || require_once ('Class.MPTT.php');
+class_exists('Inventory') || require_once ('Class.Inventory.php');
 
-class AddUser implements IGridService
+class GetFolderForType implements IGridService
 {
-    private $UserID;
-
     public function Execute($db, $params, $logger)
     {
-        if (isset($params["UserID"], $params["Name"], $params["Email"]) && UUID::TryParse($params["UserID"], $this->UserID))
+        $ownerID = NULL;
+        
+        if (!isset($params['OwnerID'], $params['ContentType']) || !UUID::TryParse($params['OwnerID'], $ownerID))
         {
-            $sql = "REPLACE INTO Users (ID, Name, Email) VALUES (:ID, :Name, :Email)";
-            
-            $sth = $db->prepare($sql);
-            
-            if ($sth->execute(array('ID' => $this->UserID, 'Name' => $params["Name"], 'Email' => $params["Email"])))
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Invalid parameters" }';
+            exit();
+        }
+
+        $contentType = $params['ContentType'];
+        
+        $sql = "SELECT * FROM Inventory WHERE OwnerID=:OwnerID AND Type='Folder' AND ContentType=:ContentType LIMIT 1";
+        
+        $sth = $db->prepare($sql);
+        
+        if ($sth->execute(array('OwnerID' => $ownerID, 'ContentType' => $contentType)))
+        {
+            if ($sth->rowCount() > 0)
             {
-                if ($sth->rowCount() > 0)
-                {
-                    header("Content-Type: application/json", true);
-                    echo '{ "Success": true }';
-                    exit();
-                }
-                else
-                {
-                    $logger->err("Failed updating the database");
-                    header("Content-Type: application/json", true);
-                    echo '{ "Message": "Database update failed" }';
-                    exit();
-                }
+                $item = $sth->fetchObject();
+                
+                $folder = new InventoryFolder(UUID::Parse($item->ID));
+                $folder->ParentID = UUID::Parse($item->ParentID);
+                $folder->OwnerID = UUID::Parse($item->OwnerID);
+                $folder->Name = $item->Name;
+                $folder->ContentType = $item->ContentType;
+                $folder->Version = $item->Version;
+                $folder->ExtraData = $item->ExtraData;
+                $folder->ChildCount = ((int)$item->RightNode - (int)$item->LeftNode - 1) / 2;
+                
+                header("Content-Type: application/json", true);
+                echo sprintf('{ "Success": true, "Folder": %s }', $folder->toOSD());
+                exit();
             }
             else
             {
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
                 header("Content-Type: application/json", true);
-                echo '{ "Message": "Database query error" }';
+                echo '{ "Message": "Folder not found" }';
                 exit();
             }
         }
         else
         {
-            $logger->err(sprintf("Missing or invalid parameters: %s", print_r($params, true)));
+            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            $logger->debug(sprintf("Query: %s", $sql));
             header("Content-Type: application/json", true);
-            echo '{ "Message": "Missing or invalid parameters" }';
+            echo '{ "Message": "Database query error" }';
             exit();
         }
     }

@@ -37,35 +37,41 @@ class_exists('UUID') || require_once ('Class.UUID.php');
 
 class RemoveSession implements IGridService
 {
-    private $SessionID;
+    private $ID;
 
     public function Execute($db, $params, $logger)
     {
-        if (isset($params["SessionID"]) && UUID::TryParse($params["SessionID"], $this->SessionID))
+        $sql = "DELETE FROM Sessions";
+        
+        if (isset($params['SessionID']) && UUID::TryParse($params['SessionID'], $this->ID))
         {
-            $sql = "DELETE FROM Sessions WHERE SessionID=:SessionID";
-            
-            $sth = $db->prepare($sql);
-            
-            if ($sth->execute(array(':SessionID' => $this->SessionID)))
-            {
-                header("Content-Type: application/json", true);
-                echo '{ "Success": true }';
-                exit();
-            }
-            else
-            {
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                $logger->debug(sprintf("Query: %s", $sql));
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Database query error" }';
-                exit();
-            }
+            $sql .= " WHERE SessionID=:ID";
+        }
+        else if (isset($params['UserID']) && UUID::TryParse($params['UserID'], $this->ID))
+        {
+            $sql .= " WHERE UserID=:ID";
         }
         else
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
+            exit();
+        }
+        
+        $sth = $db->prepare($sql);
+        
+        if ($sth->execute(array(':ID' => $this->ID)))
+        {
+            header("Content-Type: application/json", true);
+            echo '{ "Success": true }';
+            exit();
+        }
+        else
+        {
+            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            $logger->debug(sprintf("Query: %s", $sql));
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Database query error" }';
             exit();
         }
     }

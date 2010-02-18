@@ -58,16 +58,31 @@ class GetScene implements IGridService
         }
         else if (isset($params["Position"]) && Vector3d::TryParse($params["Position"], $this->Position))
         {
-            $sql = "SELECT ID, Name, Address, Enabled, ExtraData, 
-            		CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
-                    CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition,
-                    GLength(LineString(GeomFromText('POINT(" . $this->Position->X . " " . $this->Position->Y . ")'), Centroid(XYPlane)))
-                    AS dist FROM Scenes";
-            
-            if (isset($params["Enabled"]) && $params["Enabled"])
-                $sql .= " WHERE Enabled=1";
-            
-            $sql .= " ORDER BY dist LIMIT 1";
+            if (isset($params["FindClosest"]) && $params["FindClosest"])
+            {
+                $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
+                		CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
+                        CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition,
+                        GLength(LineString(GeomFromText('POINT(" . $this->Position->X . " " . $this->Position->Y . ")'), Centroid(XYPlane)))
+                        AS dist FROM Scenes";
+                
+                if (isset($params["Enabled"]) && $params["Enabled"])
+                    $sql .= " WHERE Enabled=1";
+                
+                $sql .= " ORDER BY dist LIMIT 1";
+            }
+            else
+            {
+                $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
+                		CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
+                        CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
+                        FROM Scenes WHERE MBRContains(XYPlane, GeomFromText('POINT(" . $this->Position->X . " " . $this->Position->Y . ")'))";
+                
+                if (isset($params["Enabled"]) && $params["Enabled"])
+                    $sql .= " AND Enabled=1";
+                
+                $sql .= " LIMIT 1";
+            }
         }
         else
         {

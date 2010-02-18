@@ -182,7 +182,7 @@ class MPTT
         if ($sth->execute(array(':Parent' => $folderID->UUID)))
         {
             $obj = $sth->fetchObject();
-            $logger->debug("MPTT::FetchDescendants obj: " . print_r($obj, true));
+            //$logger->debug("MPTT::FetchDescendants obj: " . print_r($obj, true));
             if ($fetchFolders && $fetchItems)
             {
                 $fetchTypes = "'Folder','Item'";

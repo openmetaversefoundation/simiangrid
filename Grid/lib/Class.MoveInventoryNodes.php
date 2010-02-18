@@ -32,43 +32,70 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once ('Interface.GridService.php');
-require_once ('Class.UUID.php');
+interface_exists('IGridService') || require_once ('Interface.GridService.php');
+class_exists('MPTT') || require_once ('Class.MPTT.php');
+class_exists('Inventory') || require_once ('Class.Inventory.php');
 
-class GetInventory implements IGridService
+class MoveInventoryNodes implements IGridService
 {
-    private $OwnerID;
-
     public function Execute($db, $params, $logger)
     {
-        if (!isset($params["OwnerID"]) || !UUID::TryParse($params["OwnerID"], $this->OwnerID))
+        $ownerID = NULL;
+        $folderID = NULL;
+        $itemIDs = NULL;
+        $dbValues = array();
+        
+        if (!isset($params['OwnerID'], $params['FolderID'], $params['Items']) ||
+            !UUID::TryParse($params['OwnerID'], $ownerID) ||
+            !UUID::TryParse($params['FolderID'], $folderID))
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
             exit();
         }
         
-        $sql = "SELECT ID FROM Inventory WHERE OwnerID=:OwnerID AND ParentID=:NullParent AND Type='Folder' LIMIT 1";
-        
-        $sth = $db->prepare($sql);
-        
-        if ($sth->execute(array(':OwnerID' => (string)$this->UserID , ':NullParent' => UUID::Zero)))
+        $itemIDs = explode(',', $params['Items']);
+        if (!isset($itemIDs) || count($itemIDs) < 1)
         {
-            if ($sth->rowCount() > 0)
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Invalid parameters" }';
+            exit();
+        }
+        
+        $sql = "UPDATE Inventory SET ParentID=:FolderID WHERE OwnerID=:OwnerID AND (ID=:ID0";
+        $i = 0;
+        
+        $dbValues[':OwnerID'] = $ownerID;
+        
+        foreach ($itemIDs as $itemID)
+        {
+            $parsedItemID = NULL;
+            
+            if (UUID::TryParse($itemID, $parsedItemID))
             {
-                $obj = $sth->fetchObject();
-                $rootFolder = UUID::Parse($obj->ID);
+                $dbValues[':ID' . $i] = $parsedItemID;
                 
-                header("Content-Type: application/json", true);
-                echo sprintf('{ "Success": true, "FolderID": "%s" }', $rootFolder);
-                exit();
+                if ($i > 0)
+                    $sql .= " OR ID=:ID" . $i;
             }
             else
             {
                 header("Content-Type: application/json", true);
-                echo '{ "Message": "Inventory not found" }';
+                echo '{ "Message": "Invalid parameters" }';
                 exit();
             }
+            
+            ++$i;
+        }
+        
+        $sql .= ')';
+        $sth = $db->prepare($sql);
+        
+        if ($sth->execute($dbValues))
+        {
+            header("Content-Type: application/json", true);
+            echo '{ "Success": true }';
+            exit();
         }
         else
         {

@@ -45,40 +45,101 @@ class AddSession implements IGridService
     {
         if (isset($params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
         {
-            if (!isset($params["SessionID"]) || !UUID::TryParse($params["SessionID"], $this->SessionID))
-                $this->SessionID = UUID::Random();
-            if (!isset($params["SecureSessionID"]) || !UUID::TryParse($params["SecureSessionID"], $this->SecureSessionID))
-                $this->SecureSessionID = UUID::Random();
-            
-            $sql = "INSERT INTO Sessions (UserID, SessionID, SecureSessionID, SceneID, ScenePosition, SceneLookAt)
-            		VALUES (:UserID, :SessionID, :SecureSessionID, '00000000-0000-0000-0000-000000000000', '<0, 0, 0>', '<0, 0, 0>')
-            		ON DUPLICATE KEY UPDATE SessionID=VALUES(SessionID), SecureSessionID=VALUES(SecureSessionID)";
-            
-            $sth = $db->prepare($sql);
-            
-            if ($sth->execute(array(':UserID' => $this->UserID, ':SessionID' => $this->SessionID, ':SecureSessionID' => $this->SecureSessionID)))
+            if (isset($params["SessionID"], $params["SecureSessionID"]) &&
+                UUID::TryParse($params['SessionID'], $this->SessionID) && UUID::TryParse($params['SecureSessionID'], $this->SecureSessionID))
             {
-                if ($sth->rowCount() > 0)
+                // Creating or updating a user session
+                $sql = "INSERT INTO Sessions (UserID, SessionID, SecureSessionID, SceneID, ScenePosition, SceneLookAt)
+            			VALUES (:UserID, :SessionID, :SecureSessionID, '00000000-0000-0000-0000-000000000000', '<0, 0, 0>', '<0, 0, 0>')
+            			ON DUPLICATE KEY UPDATE SessionID=VALUES(SessionID), SecureSessionID=VALUES(SecureSessionID)";
+                
+                $sth = $db->prepare($sql);
+                
+                if ($sth->execute(array(':UserID' => $this->UserID, ':SessionID' => $this->SessionID, ':SecureSessionID' => $this->SecureSessionID)))
                 {
-                    header("Content-Type: application/json", true);
-                    echo sprintf('{ "Success": true, "SessionID": "%s", "SecureSessionID": "%s" }', $this->SessionID, $this->SecureSessionID);
-                    exit();
+                    if ($sth->rowCount() > 0)
+                    {
+                        header("Content-Type: application/json", true);
+                        echo sprintf('{ "Success": true, "SessionID": "%s", "SecureSessionID": "%s" }', $this->SessionID, $this->SecureSessionID);
+                        exit();
+                    }
+                    else
+                    {
+                        $logger->err("Failed updating the database");
+                        header("Content-Type: application/json", true);
+                        echo '{ "Message": "Database update failed" }';
+                        exit();
+                    }
                 }
                 else
                 {
-                    $logger->err("Failed updating the database");
+                    $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                    $logger->debug(sprintf("Query: %s", $sql));
                     header("Content-Type: application/json", true);
-                    echo '{ "Message": "Database update failed" }';
+                    echo '{ "Message": "Database query error" }';
                     exit();
                 }
             }
             else
             {
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                $logger->debug(sprintf("Query: %s", $sql));
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Database query error" }';
-                exit();
+                // Creating or fetching a user session
+                $this->SessionID = UUID::Random();
+                $this->SecureSessionID = UUID::Random();
+                
+                $sql = "INSERT INTO Sessions (UserID, SessionID, SecureSessionID, SceneID, ScenePosition, SceneLookAt)
+            			VALUES (:UserID, :SessionID, :SecureSessionID, '00000000-0000-0000-0000-000000000000', '<0, 0, 0>', '<0, 0, 0>')";
+                
+                $sth = $db->prepare($sql);
+                
+                if ($sth->execute(array(':UserID' => $this->UserID, ':SessionID' => $this->SessionID, ':SecureSessionID' => $this->SecureSessionID)))
+                {
+                    if ($sth->rowCount() > 0)
+                    {
+                        header("Content-Type: application/json", true);
+                        echo sprintf('{ "Success": true, "SessionID": "%s", "SecureSessionID": "%s" }', $this->SessionID, $this->SecureSessionID);
+                        exit();
+                    }
+                    else
+                    {
+                        $logger->err("Failed updating the database");
+                        header("Content-Type: application/json", true);
+                        echo '{ "Message": "Database update failed" }';
+                        exit();
+                    }
+                }
+                else
+                {
+                    $sql = "SELECT SessionID, SecureSessionID FROM Sessions WHERE UserID=:UserID";
+                    
+                    $sth = $db->prepare($sql);
+                    
+                    if ($sth->execute(array(':UserID' => $this->UserID)))
+                    {
+                        if ($sth->rowCount() > 0)
+                        {
+                            $obj = $sth->fetchObject();
+                            
+                            header("Content-Type: application/json", true);
+                            echo sprintf('{ "Success": true, "SessionID": "%s", "SecureSessionID": "%s" }', $obj->SessionID, $obj->SecureSessionID);
+                            exit();
+                        }
+                        else
+                        {
+                            $logger->err("Failed retrieving user session from the database");
+                            header("Content-Type: application/json", true);
+                            echo '{ "Message": "No user session found" }';
+                            exit();
+                        }
+                    }
+                    else
+                    {
+                        $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                        $logger->debug(sprintf("Query: %s", $sql));
+                        header("Content-Type: application/json", true);
+                        echo '{ "Message": "Database query error" }';
+                        exit();
+                    }
+                }
             }
         }
         else

@@ -96,7 +96,7 @@
             if (!isset($osd)) return NULL;
             
             $scene = new Scene();
-            $scene->ID = $osd["SceneID"];
+            $scene->ID = $osd["ID"];
             $scene->Name = $osd["Name"];
             $scene->MinPosition = Vector3d::Parse('<' . implode(',', $osd["MinPosition"]) . '>');
             $scene->MaxPosition = Vector3d::Parse('<' . implode(',', $osd["MaxPosition"]) . '>');

@@ -32,58 +32,63 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    interface_exists('IGridService') || require_once('Interface.GridService.php');
+interface_exists('IGridService') || require_once ('Interface.GridService.php');
+class_exists('UUID') || require_once ('Class.UUID.php');
 
-    class GetAsset implements IGridService
+class GetIdentities implements IGridService
+{
+    private $UserID;
+    
+    public function Execute($db, $params, $logger)
     {
-        public function Execute($db, $asset, $logger)
+        if (isset($params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
         {
-            $headrequest = (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE);
+            $sql = "SELECT Identifier, Type, Credential, Enabled FROM Identities WHERE UserID=:UserID";
             
-            if ($headrequest)
-                $sql = "SELECT SHA256, CreationDate, CreatorID, ContentType, Public FROM AssetData WHERE ID=:ID";
-            else
-                $sql = "SELECT SHA256, CreationDate, CreatorID, ContentType, Public, Data FROM AssetData WHERE ID=:ID";
-
             $sth = $db->prepare($sql);
-
-            if($sth->execute(array(':ID' => $asset->ID)))
+            
+            if ($sth->execute(array(':UserID' => $this->UserID)))
             {
-                if($sth->rowCount() == 1)
-                {
-                    $obj = $sth->fetchObject();
-                    
-                    // TODO: Check authentication once we support one or more auth methods
-                    if ($obj->Public)
-                    {
-                        header("ETag: " . $obj->SHA256);
-                        header("Last-Modified: " . gmdate(DATE_RFC850, $obj->CreationDate));
-                        header("X-Asset-Creator-Id: " . $obj->CreatorID);
-                        header("Content-Type: " . $obj->ContentType);
-                        
-                        if (!$headrequest)
-                            echo $obj->Data;
-                        
-                        exit();
-                    }
-                    else
-                    {
-                        header("HTTP/1.1 403 Forbidden");
-                        exit();
-                    }
-                }
-                else
-                {
-                    header("HTTP/1.1 404 Not Found");
-                    exit();
-                }
+                $this->HandleQueryResponse($sth);
             }
             else
             {
-                header("HTTP/1.1 500 Internal Server Error");
                 $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
                 $logger->debug(sprintf("Query: %s", $sql));
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Database query error" }';
                 exit();
             }
         }
+        else
+        {
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Invalid parameters" }';
+            exit();
+        }
     }
+
+    private function HandleQueryResponse($sth)
+    {
+        if ($sth->rowCount() > 0)
+        {
+            $found = array();
+            
+            while ($obj = $sth->fetchObject())
+            {
+                $found[] = sprintf('{"Identifier":"%s","Credential":"%s","Type":"%s","Enabled":%s}',
+                    $obj->Identifier, $obj->Credential, $obj->Type, ($obj->Enabled) ? 'true' : 'false');
+            }
+            
+            header("Content-Type: application/json", true);
+            echo '{"Success":true,"Identities":[' . implode(',', $found) . ']}';
+            exit();
+        }
+        else
+        {
+            header("Content-Type: application/json", true);
+            echo '{"Success:true,"Identities":[]}';
+            exit();
+        }
+    }
+}

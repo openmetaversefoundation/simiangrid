@@ -35,6 +35,7 @@
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
 class_exists('UUID') || require_once ('Class.UUID.php');
 class_exists('Vector3d') || require_once ('Class.Vector3d.php');
+class_exists('Session') || require_once ('Class.Session.php');
 
 class GetSession implements IGridService
 {
@@ -67,15 +68,21 @@ class GetSession implements IGridService
             {
                 $obj = $sth->fetchObject();
                 
-                $ScenePosition = Vector3d::Parse($obj->ScenePosition);
-                $SceneLookAt = Vector3d::Parse($obj->SceneLookAt);
-                $ExtraData = "{}";
-                if (strlen($obj->ExtraData) > 0)
-                    $ExtraData = $obj->ExtraData;
+                $session = new Session();
+                $session->UserID = $obj->UserID;
+                $session->SessionID = $obj->SessionID;
+                $session->SecureSessionID = $obj->SecureSessionID;
+                $session->SceneID = $obj->SceneID;
+                $session->ScenePosition = Vector3d::Parse($obj->ScenePosition);
+                $session->SceneLookAt = Vector3d::Parse($obj->SceneLookAt);
+                $session->ExtraData = $obj->ExtraData;
+                if (empty($session->ExtraData))
+                    $session->ExtraData = "{}";
                 
                 $output = sprintf(
-                	'{ "Success": true, "UserID": "%s", "SessionID": "%s", "SecureSessionID": "%s", "SceneID": "%s", "ScenePosition": %s, "SceneLookAt": %s, ExtraData: %s }',
-                    $obj->UserID, $obj->SessionID, $obj->SecureSessionID, $obj->SceneID, $ScenePosition, $SceneLookAt, $ExtraData);
+                	'{ "Success": true, "UserID": "%s", "SessionID": "%s", "SecureSessionID": "%s", "SceneID": "%s", "ScenePosition": %s, "SceneLookAt": %s, "ExtraData": %s }',
+                    $session->UserID, $session->SessionID, $session->SecureSessionID, $session->SceneID,
+                    $session->ScenePosition->toOSD(), $session->SceneLookAt->toOSD(), $session->ExtraData);
                 
                 header("Content-Type: application/json", true);
                 echo $output;

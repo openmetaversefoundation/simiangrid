@@ -54,39 +54,24 @@ class AddInventory implements IGridService
         }
         
         $this->Name = 'My Inventory';
-        $RootID = UUID::Random();
+        $RootID = $this->UserID;
         
         $UserSkel = array(
             array('ID' => $RootID, 'ParentID' => UUID::Parse(UUID::Zero), 'Name' => $this->Name, 'PreferredContentType' => 'application/vnd.ll.rootfolder'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Animations', 'PreferredContentType' => 'application/x-metaverse-animation'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Body Parts', 'PreferredContentType' => 'application/x-metaverse-bodypart'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Calling Cards', 'PreferredContentType' => 'application/x-metaverse-callingcard'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Clothing', 'PreferredContentType' => 'application/x-metaverse-clothing'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Gestures', 'PreferredContentType' => 'application/x-metaverse-gesture'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Landmarks', 'PreferredContentType' => 'application/x-metaverse-landmark'),
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Animations', 'PreferredContentType' => 'application/vnd.ll.animation'),
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Body Parts', 'PreferredContentType' => 'application/vnd.ll.bodypart'),
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Calling Cards', 'PreferredContentType' => 'application/vnd.ll.callingcard'),
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Clothing', 'PreferredContentType' => 'application/vnd.ll.clothing'),
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Gestures', 'PreferredContentType' => 'application/vnd.ll.gesture'),
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Landmarks', 'PreferredContentType' => 'application/vnd.ll.landmark'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Lost and Found', 'PreferredContentType' => 'application/vnd.ll.lostandfoundfolder'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Notecards', 'PreferredContentType' => 'application/x-metaverse-notecard'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Objects', 'PreferredContentType' => 'application/x-metaverse-primitive'),
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Notecards', 'PreferredContentType' => 'application/vnd.ll.notecard'),
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Objects', 'PreferredContentType' => 'application/vnd.ll.primitive'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Photo Album', 'PreferredContentType' => 'application/vnd.ll.snapshotfolder'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Scripts', 'PreferredContentType' => 'application/x-metaverse-lsl'),
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Scripts', 'PreferredContentType' => 'application/vnd.ll.lsltext'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Sounds', 'PreferredContentType' => 'application/ogg'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Textures', 'PreferredContentType' => 'image/jp2'),
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Textures', 'PreferredContentType' => 'image/x-j2c'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Trash', 'PreferredContentType' => 'application/vnd.ll.trashfolder'));
-        
-        /*$LibSkel = array(
-            array('ID' => $RootID, 'ParentID' => UUID::Parse(UUID::Zero), 'Name' => $this->Name, 'PreferredContentType' => 'application/vnd.ll.rootfolder'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Animations', 'PreferredContentType' => 'application/x-metaverse-animation'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Body Parts', 'PreferredContentType' => 'application/x-metaverse-bodypart'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Calling Cards', 'PreferredContentType' => 'application/x-metaverse-callingcard'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Clothing', 'PreferredContentType' => 'application/x-metaverse-clothing'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Gestures', 'PreferredContentType' => 'application/x-metaverse-gesture'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Landmarks', 'PreferredContentType' => 'application/x-metaverse-landmark'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Notecards', 'PreferredContentType' => 'application/x-metaverse-notecard'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Objects', 'PreferredContentType' => 'application/x-metaverse-primitive'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Photo Album', 'PreferredContentType' => 'application/vnd.ll.snapshotfolder'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Scripts', 'PreferredContentType' => 'application/x-metaverse-lsl'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Sounds', 'PreferredContentType' => 'application/ogg'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Textures', 'PreferredContentType' => 'image/jp2'));*/
         
         $Skel = $UserSkel;
         

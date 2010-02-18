@@ -101,7 +101,9 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Inventory` (
   `RightNode` INT NOT NULL ,
   `ExtraData` TEXT NULL ,
   PRIMARY KEY (`ID`) ,
-  INDEX `parent_owner` (`ParentID` ASC, `OwnerID` ASC) )
+  INDEX `parent` (`ParentID` ASC) ,
+  INDEX `owner` (`OwnerID` ASC) ,
+  INDEX `asset` (`AssetID` ASC) )
 ENGINE = InnoDB;
 
 
