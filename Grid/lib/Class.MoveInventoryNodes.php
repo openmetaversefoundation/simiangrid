@@ -65,6 +65,7 @@ class MoveInventoryNodes implements IGridService
         $sql = "UPDATE Inventory SET ParentID=:FolderID WHERE OwnerID=:OwnerID AND (ID=:ID0";
         $i = 0;
         
+        $dbValues[':FolderID'] = $folderID;
         $dbValues[':OwnerID'] = $ownerID;
         
         foreach ($itemIDs as $itemID)

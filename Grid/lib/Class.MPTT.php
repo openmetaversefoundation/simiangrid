@@ -102,10 +102,12 @@ class MPTT
         
         if (is_a($inventory, "InventoryFolder"))
         {
-            $sql = "INSERT INTO Inventory (ID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, 
-                    Version, ExtraData, CreationDate, Type, LeftNode, RightNode)
-                    VALUES (:ID, :ParentID, :OwnerID, :OwnerID, :Name, '', :ContentType, '0',
-                    '', CURRENT_TIMESTAMP, 'Folder', :ParentLevel, :ParentLevel + 1)";
+            $sql = "INSERT INTO Inventory (ID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, ExtraData, CreationDate, Type, LeftNode, RightNode)
+                    VALUES (:ID, :ParentID, :OwnerID, :OwnerID, :Name, '', :ContentType, '0', '', CURRENT_TIMESTAMP, 'Folder', :ParentLevel, :ParentLevel + 1)
+                    ON DUPLICATE KEY UPDATE ParentID=VALUES(ParentID), CreatorID=VALUES(CreatorID), Name=VALUES(Name), Description=VALUES(Description), ContentType=VALUES(ContentType), Version=Version+1";
+            if (!empty($inventory->ExtraData))
+                $sql .= ", ExtraData=VALUES(ExtraData)";
+            
             $sth = $this->conn->prepare($sql);
             if ($sth->execute(array(
             	':ID' => $inventory->ID->UUID,
@@ -134,10 +136,12 @@ class MPTT
         }
         else if (is_a($inventory, "InventoryItem"))
         {
-            $sql = "INSERT INTO Inventory (ID, AssetID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, 
-                    Version, ExtraData, CreationDate, Type, LeftNode, RightNode)
-                    VALUES (:ID, :AssetID, :ParentID, :OwnerID, :CreatorID, :Name, :Description, :ContentType, 
-                    '0', '', CURRENT_TIMESTAMP , 'Item', :ParentLevel, :ParentLevel + 1)";
+            $sql = "INSERT INTO Inventory (ID, AssetID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, ExtraData, CreationDate, Type, LeftNode, RightNode)
+                    VALUES (:ID, :AssetID, :ParentID, :OwnerID, :CreatorID, :Name, :Description, :ContentType, '0', '', CURRENT_TIMESTAMP , 'Item', :ParentLevel, :ParentLevel + 1)
+                    ON DUPLICATE KEY UPDATE AssetID=VALUES(AssetID), ParentID=VALUES(ParentID), CreatorID=VALUES(CreatorID), Name=VALUES(Name), Description=VALUES(Description), ContentType=VALUES(ContentType), Version=Version+1";
+            if (!empty($inventory->ExtraData))
+                $sql .= ", ExtraData=VALUES(ExtraData)";
+            
             $sth = $this->conn->prepare($sql);
             if ($sth->execute(array(
             	':ID' => $inventory->ID->UUID,
@@ -151,8 +155,8 @@ class MPTT
             	':ParentLevel' => $parent_level)))
             {
                 /*
-                     * Increment the parent folder version
-                     */
+                 * Increment the parent folder version
+                 */
                 $sql = "UPDATE Inventory SET Version=Version+1 WHERE ID=:Parent";
                 $sth = $this->conn->prepare($sql);
                 $sth->execute(array(':Parent' => $inventory->ParentID->UUID));
@@ -172,104 +176,98 @@ class MPTT
             return FALSE;
         }
     }
+    
+    private function GetDescendant($item)
+    {
+        $descendant = NULL;
+        
+        if ($item->Type == 'Folder')
+        {
+            $descendant = new InventoryFolder(UUID::Parse($item->ID));
+            $descendant->ParentID = UUID::Parse($item->ParentID);
+            $descendant->OwnerID = UUID::Parse($item->OwnerID);
+            $descendant->Name = $item->Name;
+            $descendant->ContentType = $item->ContentType;
+            $descendant->Version = $item->Version;
+            $descendant->ExtraData = $item->ExtraData;
+            $descendant->ChildCount = ((int)$item->RightNode - (int)$item->LeftNode - 1) / 2;
+        }
+        else
+        {
+            $descendant = new InventoryItem(UUID::Parse($item->ID));
+            $descendant->AssetID = UUID::Parse($item->AssetID);
+            $descendant->ParentID = UUID::Parse($item->ParentID);
+            $descendant->OwnerID = UUID::Parse($item->OwnerID);
+            $descendant->CreatorID = UUID::Parse($item->CreatorID);
+            $descendant->Name = $item->Name;
+            $descendant->Description = $item->Description;
+            $descendant->ContentType = $item->ContentType;
+            $descendant->Version = $item->Version;
+            $descendant->ExtraData = $item->ExtraData;
+            $descendant->CreationDate = gmdate('U', (int)$item->CreationDate);
+        }
+        
+        return $descendant;
+    }
 
-    public function FetchDescendants(UUID $folderID, $fetchFolders = TRUE, $fetchItems = TRUE, $childrenOnly = FALSE)
+    public function FetchDescendants($folderID, $fetchFolders = TRUE, $fetchItems = TRUE, $childrenOnly = FALSE)
     {
         global $logger;
         //            $logger->debug("MPTT::FetchDescendants FolderID: $folderID->UUID");
-        $sql = "SELECT ID, LeftNode, RightNode, OwnerID FROM Inventory WHERE ID=:Parent";
+        $sql = "SELECT * FROM Inventory WHERE ID=:Parent";
         $sth = $this->conn->prepare($sql);
-        if ($sth->execute(array(':Parent' => $folderID->UUID)))
+        
+        $Results = array();
+        
+        if ($sth->execute(array(':Parent' => $folderID)))
         {
-            $obj = $sth->fetchObject();
-            //$logger->debug("MPTT::FetchDescendants obj: " . print_r($obj, true));
-            if ($fetchFolders && $fetchItems)
+            if ($obj = $sth->fetchObject())
             {
-                $fetchTypes = "'Folder','Item'";
-            }
-            else if ($fetchFolders && !$fetchItems)
-            {
-                $fetchTypes = "'Folder'";
-            }
-            else if (!$fetchFolders && $fetchItems)
-            {
-                $fetchTypes = "'Item'";
-            }
-            else
-            {
-                $this->LastError = '[MPTT::Fetch] Must Fetch Items, Folders or Both';
-                return FALSE;
-            }
-            
-            $psq = "";
-            if ($childrenOnly)
-            {
-                //                    $psq = "(ParentID='" . $obj->ID . "' OR ID='". $obj->ID ."') AND ";
-            }
-            
-            $sql = "SELECT ID, AssetID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, 
-                    Version, ExtraData, Type, UNIX_TIMESTAMP(CreationDate) AS CreationDate, RightNode, LeftNode
-                    FROM Inventory WHERE (" . $psq . " OwnerID=:OwnerID AND Type IN (" . $fetchTypes . ")
-                    AND (LeftNode BETWEEN :Left AND :Right)) ORDER BY LeftNode ASC";
-            
-            $sth = $this->conn->prepare($sql);
-            $fetchTypes;
-            
-            $Results = array();
-            if ($sth->execute(array(':OwnerID' => $obj->OwnerID , ':Left' => (int)$obj->LeftNode , ':Right' => (int)$obj->RightNode)))
-            {
-                //                  $logger->debug("MPTT::FetchDescendants count: " . $sth->rowCount());
-                //                  $logger->debug("MPTT::FetchDescendants sql: " . $sql);
-                //                  $logger->debug("MPTT::FetchDescendants types: " . $fetchTypes);
-                while ($item = $sth->fetchObject())
+                $Results[] = $this->GetDescendant($obj);
+                //$logger->debug("MPTT::FetchDescendants obj: " . print_r($obj, true));
+                
+                if ($fetchFolders && $fetchItems)
+                    $fetchTypes = "'Folder','Item'";
+                else if ($fetchFolders)
+                    $fetchTypes = "'Folder'";
+                else
+                    $fetchTypes = "'Item'";
+                
+                $psq = "";
+                if ($childrenOnly)
                 {
-                    //                    $logger->debug("MPTT::FetchDescendants item: " . print_r($item,true));
-                    $descendant = NULL;
-                    
-                    if ($item->Type == 'Folder')
-                    {
-                        $descendant = new InventoryFolder(UUID::Parse($item->ID));
-                        $descendant->ParentID = UUID::Parse($item->ParentID);
-                        $descendant->OwnerID = UUID::Parse($item->OwnerID);
-                        $descendant->Name = $item->Name;
-                        $descendant->ContentType = $item->ContentType;
-                        $descendant->Version = $item->Version;
-                        $descendant->ExtraData = $item->ExtraData;
-                        $descendant->ChildCount = ((int)$item->RightNode - (int)$item->LeftNode - 1) / 2;
-                        
-                        $Results[] = $descendant;
-                        // ID, ParentID, OwnerID, Name, ContentType, Version, ExtraData
-                    }
-                    else
-                    {
-                        $descendant = new InventoryItem(UUID::Parse($item->ID));
-                        $descendant->AssetID = UUID::Parse($item->AssetID);
-                        $descendant->ParentID = UUID::Parse($item->ParentID);
-                        $descendant->OwnerID = UUID::Parse($item->OwnerID);
-                        $descendant->CreatorID = UUID::Parse($item->CreatorID);
-                        $descendant->Name = $item->Name;
-                        $descendant->Description = $item->Description;
-                        $descendant->ContentType = $item->ContentType;
-                        $descendant->Version = $item->Version;
-                        $descendant->ExtraData = $item->ExtraData;
-                        $descendant->CreationDate = gmdate('U', (int)$item->CreationDate);
-                        
-                        $Results[] = $descendant;
-                        // ID, AssetID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, ExtraData, CreationDate, Type
-                    }
+                    //                    $psq = "(ParentID='" . $obj->ID . "' OR ID='". $obj->ID ."') AND ";
                 }
                 
-                return $Results;
-            }
-            else
-            {
-                header("HTTP/1.1 500 Internal Server Error");
-                header("X-Powered-By: Simian Grid Services", true);
-                $logger->err(sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
-                $this->LastError = '[MPTT::Fetch] SQL Query Error ' . sprintf("Error occurred during query: %d %s %s", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql);
-                return FALSE;
+                $sql = "SELECT * FROM Inventory WHERE (" . $psq . " OwnerID=:OwnerID AND Type IN (" . $fetchTypes . ")
+                        AND (LeftNode BETWEEN :Left AND :Right)) ORDER BY LeftNode ASC";
+                
+                $sth = $this->conn->prepare($sql);
+                
+                if ($sth->execute(array(':OwnerID' => $obj->OwnerID , ':Left' => (int)$obj->LeftNode , ':Right' => (int)$obj->RightNode)))
+                {
+                    //                  $logger->debug("MPTT::FetchDescendants count: " . $sth->rowCount());
+                    //                  $logger->debug("MPTT::FetchDescendants sql: " . $sql);
+                    //                  $logger->debug("MPTT::FetchDescendants types: " . $fetchTypes);
+                    while ($item = $sth->fetchObject())
+                    {
+                        $Results[] = $this->GetDescendant($item);
+                    }
+                }
+                else
+                {
+                    $logger->err(sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
+                    $this->LastError = '[MPTT::Fetch] SQL Query Error ' . sprintf("Error occurred during query: %d %s %s", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql);
+                }
             }
         }
+        else
+        {
+            $logger->err(sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
+            $this->LastError = '[MPTT::Fetch] SQL Query Error ' . sprintf("Error occurred during query: %d %s %s", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql);
+        }
+        
+        return $Results;
     }
 
     public function MoveNode(UUID $sourceID, UUID $newParentID)

@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,20 +33,18 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class global_textures
+
+class global_textures
+{
+    function __construct($user, $config)
+    {}
+
+    public function GetResults()
     {
-        function __construct($user, $config)
-        {
-        }
-        public function GetResults()
-        {  
-            $sun = (isset($this->Config["sun_texture_id"]) && $this->Config["sun_texture_id"]) !='' ? $this->Config["sun_texture_id"] : '00000000-0000-0000-0000-000000000000';
-            $moon = (isset($this->Config["moon_texture_id"]) && $this->Config["moon_texture_id"]) !='' ? $this->Config["moon_texture_id"] : '00000000-0000-0000-0000-000000000000';
-            $cloud = (isset($this->Config["cloud_texture_id"]) && $this->Config["cloud_texture_id"]) !='' ? $this->Config["cloud_texture_id"] : '00000000-0000-0000-0000-000000000000';
-            $result[] = array('sun_texture_id'=>$sun,
-                        'moon_texture_id'=>$moon,
-                        'cloud_texture_id'=>$cloud);
-            return $result;
-        }
+        $sun = (isset($this->Config["sun_texture_id"]) && $this->Config["sun_texture_id"]) != '' ? $this->Config["sun_texture_id"] : '00000000-0000-0000-0000-000000000000';
+        $moon = (isset($this->Config["moon_texture_id"]) && $this->Config["moon_texture_id"]) != '' ? $this->Config["moon_texture_id"] : '00000000-0000-0000-0000-000000000000';
+        $cloud = (isset($this->Config["cloud_texture_id"]) && $this->Config["cloud_texture_id"]) != '' ? $this->Config["cloud_texture_id"] : '00000000-0000-0000-0000-000000000000';
+        $result[] = array('sun_texture_id' => $sun , 'moon_texture_id' => $moon , 'cloud_texture_id' => $cloud);
+        return $result;
     }
-?>
+}

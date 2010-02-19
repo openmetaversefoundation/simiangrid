@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,49 +33,48 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class inventory_skeleton
-    {
-        private $User;
-        private $Config;
-        function __construct($user, $config)
-        {
-            $this->User = $user;
-            $this->Config = $config;
-        }
-        public function GetResults()
-        {
-            global $logger;
-            require_once("InventoryMimeMap.php");
-            $jsonStr = NULL; 
-            $folders = array();
 
-            if(try_make_service_request(array('RequestMethod'=>'GetInventory',
-                    'OwnerID'=>$this->User->ID,
-                    'ItemID'=>$this->Config["user_inventory_root_id"],
-                    'IncludeFolders'=>TRUE,
-                    'IncludeItems'=>FALSE,
-                    'ChildrenOnly'=>TRUE
-                    ), $jsonStr))
-            {
-                $jsonObj = json_decode($jsonStr, true);
-                if(json_last_error() == JSON_ERROR_NONE)
-                {
-                    for($i = 0; $i < count($jsonObj); $i++)
-                    {   
-                    $type = isset($InventoryMimeMap[$jsonObj[$i]["ContentType"]]) ? $InventoryMimeMap[$jsonObj[$i]["ContentType"]] : -1;
-                    $folders[] = array('folder_id'=>$jsonObj[$i]["ID"],
-                                       'name'=>$jsonObj[$i]["Name"],
-                                       'parent_id'=>$jsonObj[$i]["ParentID"],
-                                       'version'=>$jsonObj[$i]["Version"],
-                                       'type_default'=>$type);
-                    }
-                } 
-                else 
-                {
-                    $logger->err(sprintf("JSON Decode Error: %s. string: '%s'", json_last_error(), $map));
-                }
-            }
-            return $folders;
-        }
+class inventory_skeleton
+{
+    private $User;
+    private $Config;
+
+    function __construct($user, $config)
+    {
+        $this->User = $user;
+        $this->Config = $config;
     }
-?>
+
+    public function GetResults()
+    {
+        global $logger;
+        require_once("InventoryMimeMap.php");
+        
+        $rootFolderID = NULL;
+        $items = NULL;
+        
+        $folders = array();
+        
+        if (get_inventory($this->User['UserID'], &$rootFolderID, &$items))
+        {
+            foreach ($items as $item)
+            {
+                $type = isset($InventoryMimeMap, $InventoryMimeMap[$item['ContentType']]) ? $InventoryMimeMap[$item['ContentType']] : -1;
+                $folders[] = array(
+                    'folder_id' => (string)$item['ID'],
+                    'name' => $item['Name'],
+                    'parent_id' => (string)$item['ParentID'],
+                    'version' => (int)$item['Version'],
+                    'type_default' => (int)$type
+                );
+            }
+        }
+        else
+        {
+            $logger->err('Failed to fetch inventory skeleton for ' . $this->User['UserID']);
+        }
+        
+        $logger->debug('Returning ' . count($folders) . ' inventory folders in the skeleton');
+        return $folders;
+    }
+}

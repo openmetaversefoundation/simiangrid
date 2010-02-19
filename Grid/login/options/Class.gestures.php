@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,14 +33,14 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class gestures
+
+class gestures
+{
+    function __construct($userID)
+    {}
+
+    public function GetResults()
     {
-        function __construct($userID)
-        {
-        }
-        public function GetResults()
-        {
-            return array();
-        }
+        return array();
     }
-?>
+}

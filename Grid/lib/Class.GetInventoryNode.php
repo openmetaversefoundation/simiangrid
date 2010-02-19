@@ -65,16 +65,23 @@ class GetInventoryNode implements IGridService
         
         $this->mptt = new MPTT($db, $logger);
         
-        $library = $this->mptt->FetchDescendants($this->ItemID, $this->FetchFolders, $this->FetchItems, $this->ChildrenOnly);
-        
-        $Results = array();
-        foreach ($library as $item)
+        if ($library = $this->mptt->FetchDescendants($this->ItemID, $this->FetchFolders, $this->FetchItems, $this->ChildrenOnly))
         {
-            $Results[] = $item->toOSD();
+            $Results = array();
+            
+            foreach ($library as $item)
+            {
+                $Results[] = $item->toOSD();
+            }
+            
+            header("Content-Type: application/json", true);
+            echo '{ "Success": true, "Items": [' . implode(',', $Results) . '] }';
+            exit();
         }
-        
-        header("Content-Type: application/json", true);
-        echo '{ "Success": true, "Items": [' . implode(',', $Results) . '] }';
-        exit();
+        else
+        {
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Item or folder not found" }';
+        }
     }
 }

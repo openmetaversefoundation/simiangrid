@@ -505,18 +505,6 @@ function process_login($method_name, $params, $user_data)
     
     $logger->debug(sprintf("Presence creation success for %s (%s) in %s", $fullname, $userID, $scene->Name));
     
-    // Get the inventory skeleton for this user
-    $rootFolderID = NULL;
-    $items = NULL;
-    
-    if (!get_inventory($userID, $rootFolderID, $items))
-    {
-        return array('reason' => 'key', 'login' => 'false',
-        	'message' => "Error fetching inventory data. Please try again later.");
-    }
-    
-    $logger->debug(sprintf("Inventory fetch success for %s (%s)", $fullname, $userID));
-    
     // Build the response
     $response = array();
     $response["seconds_since_epoch"] = time();
@@ -540,7 +528,6 @@ function process_login($method_name, $params, $user_data)
     $response["session_id"] = (string)$sessionID;
     $response["secure_session_id"] = (string)$secureSessionID;
     
-    $req["options"] = array();
     $req["options"][] = "initial-outfit";
     for ($i = 0; $i < count($req["options"]); $i++)
     {

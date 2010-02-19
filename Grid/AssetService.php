@@ -34,97 +34,109 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-    require_once('lib/Class.Logger.php');
-    $L = new Logger('services.ini', "ASSETSERVICE");
-    $logger = $L->getInstance();
+/*
+ * This section is used for debugging purposes, for production use it should be disabled
+ */
+ob_start();
+$fh = fopen("debug.log", 'w');
+echo '--- $_SERVER';
+print_r($_SERVER);
+echo '--- $_GET';
+print_r($_GET);
+echo '--- $_POST';
+print_r($_POST);
+echo '--- $_FILES';
+print_r($_FILES);
+fwrite($fh, ob_get_contents());
+ob_end_clean();
+fclose($fh);
+/* End of developer debugging */
 
-    $config = parse_ini_file('services.ini', true);
+require_once ('lib/Class.Logger.php');
+$L = new Logger('services.ini', "ASSETSERVICE");
+$logger = $L->getInstance();
 
-    require_once('lib/Class.ExceptionHandler.php');
-    require_once('lib/Class.ErrorHandler.php');
-    require_once('lib/Class.MySQL.php');
-    require_once('lib/Class.Asset.php');
-    require_once('lib/Class.Factory.php');
-    require_once('lib/Class.UUID.php');
+$config = parse_ini_file('services.ini', true);
 
-    // Create an instance of the Asset class
-    $Asset = new Asset();
-    
-    if (stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE 
-        || (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE))
+require_once ('lib/Class.ExceptionHandler.php');
+require_once ('lib/Class.ErrorHandler.php');
+require_once ('lib/Class.MySQL.php');
+require_once ('lib/Class.Asset.php');
+require_once ('lib/Class.Factory.php');
+require_once ('lib/Class.UUID.php');
+
+// Create an instance of the Asset class
+$asset = new Asset();
+
+if (stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE || (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE))
+{
+    $action = Factory::CreateInstanceOf('GetAsset');
+    $asset->ID = $_GET['id'];
+}
+else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
+{
+    if (isset($_FILES['Asset']) && count($_FILES) == 1)
     {
-        $Action = Factory::CreateInstanceOf('AssetDownload');
-        $Asset->ID = $_GET['id'];
-    }
-    else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE) 
-    {
-        if(count($_FILES)==1)
-        {
-            $Action = Factory::CreateInstanceOf('AssetUpload');
-
-            $headers = apache_request_headers();
-
-            if(!isset($headers["X-Asset-Id"]) 
-                  || $headers["X-Asset-Id"] == ''
-                  || $headers["X-Asset-Id"] == UUID::Zero)
-            {
-                $Asset->ID = UUID::Random();
-            } else {
-                $Asset->ID = $headers["X-Asset-Id"];
-            }
-
-            $key = key($_FILES);
-            $tmpName = $_FILES[$key]['tmp_name'];
-            $fp      = fopen($tmpName, 'r');
-            $Asset->Data = fread($fp, filesize($tmpName));
-            fclose($fp);
-
-            $Asset->MimeType = $_FILES[$key]['type'];
-            $Asset->CreatorID = $headers['X-Asset-Creator-Id'];
-        } else {
-            $logger->err('Asset Upload Failed, POST requested but no file or filedata included in request');
-            exit;
-        }
-    }
-
-    else if (stripos($_SERVER['REQUEST_METHOD'], 'DELETE') !== FALSE) 
-    {
-        $Action = Factory::CreateInstanceOf('AssetDelete');
-        $Asset->ID = $_GET['id'];
-    }
-    else
-    {
-        $logger->warning('An Unsupported request method: '. $_SERVER['REQUEST_METHOD'] .' was requested by client');
-        header("HTTP/1.0 405 Method Not Allowed");
-        exit();
-    }
-
-    // Connect to the database
-    try 
-    {
-        $db = new MySQL($config['Database']['host'], 
-                        $config['Database']['username'], 
-                        $config['Database']['password'], 
-                        $config['Database']['database']);
-    } 
-    catch (Exception $ex)
-    {
-        header("HTTP/1.1 500 Internal Server Error");
-        header("X-Powered-By: Simian Grid Services", true);
-        $logger->crit(sprintf("Database Exception: %d %s", mysqli_connect_errno(), mysqli_connect_error()));
-        $logger->debug(sprintf("Database Exception: %s", print_r($ex,true)));
-        exit();
-    }
-   
-    // Execute!
-    if($Action != NULL)
-    {
-        $Action->Execute($db, $Asset, $logger);
+        $action = Factory::CreateInstanceOf('AddAsset');
+        
+        if (!isset($_POST['AssetID']) || !UUID::TryParse($_POST['AssetID'], $asset->ID))
+            $asset->ID = UUID::Random();
+        
+        if (!isset($_POST['CreatorID']) || !UUID::TryParse($_POST['CreatorID'], $asset->CreatorID))
+            $asset->CreatorID = UUID::Zero;
+        
+        $tmpName = $_FILES['Asset']['tmp_name'];
+        $fp = fopen($tmpName, 'r');
+        $asset->Data = fread($fp, filesize($tmpName));
+        fclose($fp);
+        
+        $asset->SHA256 = hash_file('sha256', $tmpName);
+        $asset->ContentType = $_FILES['Asset']['type'];
+        $asset->Temporary = !empty($_POST['Temporary']);
+        $asset->Public = !empty($_POST['Public']);
     }
     else
     {
-        header("HTTP/1.1 405 Method Not Allowed");
-        header("X-Powered-By: Simian Grid Services", true);
-        exit;
+        $logger->err('Asset Upload Failed, POST requested but no file or filedata included in request');
+        header("Content-Type: application/json", true);
+        echo '{ "Message": "Invalid parameters" }';
+        exit();
     }
-    $db->close();
+}
+else if (stripos($_SERVER['REQUEST_METHOD'], 'DELETE') !== FALSE)
+{
+    $action = Factory::CreateInstanceOf('RemoveAsset');
+    $asset->ID = $_GET['id'];
+}
+else
+{
+    $logger->warning('An Unsupported request method: ' . $_SERVER['REQUEST_METHOD'] . ' was requested');
+    header("HTTP/1.0 405 Method Not Allowed");
+    exit();
+}
+
+// Connect to the database
+try
+{
+    $db = new MySQL($config['Database']['host'], $config['Database']['username'], $config['Database']['password'], $config['Database']['database']);
+}
+catch (Exception $ex)
+{
+    header("HTTP/1.1 500 Internal Server Error");
+    $logger->crit(sprintf("Database Exception: %d %s", mysqli_connect_errno(), mysqli_connect_error()));
+    $logger->debug(sprintf("Database Exception: %s", print_r($ex, true)));
+    exit();
+}
+
+// Execute!
+if ($action != NULL)
+{
+    $action->Execute($db, $asset, $logger);
+}
+else
+{
+    header("HTTP/1.1 405 Method Not Allowed");
+    exit();
+}
+
+$db->close();

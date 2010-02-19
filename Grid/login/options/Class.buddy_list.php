@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,36 +33,44 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class buddy_list
+
+class buddy_list
+{
+    private $User;
+
+    function __construct($user, $config)
     {
-        private $User;
-        function __construct($user, $config)
-        {
-            $this->User = $user;
-        }
-        public function GetResults()
-        {
-            global $logger;
-            $map = NULL;
-            $buddies[] = array();
-            if(try_make_service_request(array('RequestMethod'=>'GetFriendList','ID'=>$this->User->ID), $map))
-            {
-                $jsonObj = json_decode($map, true);
-                if(json_last_error() == JSON_ERROR_NONE)
-                { 
-                    for($i = 0; $i < count($jsonObj); $i++)
-                    {
-                        $buddies[] = array('buddy_rights_has'=>(int)$jsonObj[$i]["Has"],
-                                           'buddy_rights_given'=>(int)$jsonObj[$i]["Given"],
-                                           'buddy_id'=>$jsonObj[$i]["FriendID"]);
-                    }
-                }
-                else
-                {
-                    $logger->err(sprintf("JSON Decode Error: %s. string: '%s'", json_last_error(), $map));
-                }
-            }
-            return $buddies;
-        }
+        $this->User = $user;
     }
-?>
+
+    public function GetResults()
+    {
+        global $logger;
+        $map = NULL;
+        $buddies[] = array();
+        
+        // FIXME:
+        return $buddies;
+        
+//        if (try_make_service_request(array('RequestMethod' => 'GetFriendList' , 'ID' => $this->User->ID), $map))
+//        {
+//            $jsonObj = json_decode($map, true);
+//            if (json_last_error() == JSON_ERROR_NONE)
+//            {
+//                for ($i = 0; $i < count($jsonObj); $i++)
+//                {
+//                    $buddies[] = array(
+//                    	'buddy_rights_has' => (int)$jsonObj[$i]["Has"],
+//                    	'buddy_rights_given' => (int)$jsonObj[$i]["Given"],
+//                    	'buddy_id' => $jsonObj[$i]["FriendID"]
+//                    );
+//                }
+//            }
+//            else
+//            {
+//                $logger->err(sprintf("JSON Decode Error: %s. string: '%s'", json_last_error(), $map));
+//            }
+//        }
+//        return $buddies;
+    }
+}

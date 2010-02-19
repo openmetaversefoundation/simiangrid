@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,26 +33,26 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class event_categories
-    {
-        function __construct($userID)
-        {
-        }
-        public function GetResults()
-        {
-            $cats[] = array('category_name'=>'Discussion', 'category_id'=>18);
-            $cats[] = array('category_name'=>'Sports', 'category_id'=>19);
-            $cats[] = array('category_name'=>'Live Music', 'category_id'=>20);
-            $cats[] = array('category_name'=>'Commercial', 'category_id'=>22);
-            $cats[] = array('category_name'=>'Nightlife/Entertainment', 'category_id'=>23);
-            $cats[] = array('category_name'=>'Games/Contests', 'category_id'=>24);
-            $cats[] = array('category_name'=>'Pageants', 'category_id'=>25);
-            $cats[] = array('category_name'=>'Education', 'category_id'=>26);
-            $cats[] = array('category_name'=>'Arts and Culture', 'category_id'=>27);
-            $cats[] = array('category_name'=>'Charity/Support Groups', 'category_id'=>28);
-            $cats[] = array('category_name'=>'Miscellaneous', 'category_id'=>29);
 
-            return $cats;
-        }
+class event_categories
+{
+    function __construct($userID)
+    {}
+
+    public function GetResults()
+    {
+        $cats[] = array('category_name' => 'Discussion' , 'category_id' => 18);
+        $cats[] = array('category_name' => 'Sports' , 'category_id' => 19);
+        $cats[] = array('category_name' => 'Live Music' , 'category_id' => 20);
+        $cats[] = array('category_name' => 'Commercial' , 'category_id' => 22);
+        $cats[] = array('category_name' => 'Nightlife/Entertainment' , 'category_id' => 23);
+        $cats[] = array('category_name' => 'Games/Contests' , 'category_id' => 24);
+        $cats[] = array('category_name' => 'Pageants' , 'category_id' => 25);
+        $cats[] = array('category_name' => 'Education' , 'category_id' => 26);
+        $cats[] = array('category_name' => 'Arts and Culture' , 'category_id' => 27);
+        $cats[] = array('category_name' => 'Charity/Support Groups' , 'category_id' => 28);
+        $cats[] = array('category_name' => 'Miscellaneous' , 'category_id' => 29);
+        
+        return $cats;
     }
-?>
+}

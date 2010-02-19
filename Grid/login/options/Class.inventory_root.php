@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,18 +33,21 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class inventory_root
-    {
-        private $Config;
-        function __construct($user, $config)
-        {
-            $this->Config = $config;
-        }
 
-        public function GetResults()
-        {
-            $folder[] = array('folder_id'=>$this->Config["user_inventory_root_id"]);
-            return $folder;
-        }
+class inventory_root
+{
+    private $Config;
+    private $User;
+
+    function __construct($user, $config)
+    {
+        $this->User = $user;
+        $this->Config = $config;
     }
-?>
+
+    public function GetResults()
+    {
+        $folder[] = array('folder_id' => (string)$this->User['UserID']);
+        return $folder;
+    }
+}

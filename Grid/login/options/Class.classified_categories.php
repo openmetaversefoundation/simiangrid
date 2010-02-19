@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,24 +33,25 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class classified_categories
-    {
-        function __construct($userID)
-        {
-        }
-        public function GetResults()
-        {
-            $cats[] = array('category_name'=>'Shopping', 'category_id'=>1);
-            $cats[] = array('category_name'=>'Land Rental', 'category_id'=>2);
-            $cats[] = array('category_name'=>'Property Rental', 'category_id'=>3);
-            $cats[] = array('category_name'=>'Special Attraction', 'category_id'=>4);
-            $cats[] = array('category_name'=>'New Products', 'category_id'=>5);
-            $cats[] = array('category_name'=>'Employment', 'category_id'=>6);
-            $cats[] = array('category_name'=>'Wanted', 'category_id'=>7);
-            $cats[] = array('category_name'=>'Service', 'category_id'=>8);
-            $cats[] = array('category_name'=>'Personal', 'category_id'=>9);
 
-            return $cats;
-        }
+class classified_categories
+{
+
+    function __construct($userID)
+    {}
+
+    public function GetResults()
+    {
+        $cats[] = array('category_name' => 'Shopping' , 'category_id' => 1);
+        $cats[] = array('category_name' => 'Land Rental' , 'category_id' => 2);
+        $cats[] = array('category_name' => 'Property Rental' , 'category_id' => 3);
+        $cats[] = array('category_name' => 'Special Attraction' , 'category_id' => 4);
+        $cats[] = array('category_name' => 'New Products' , 'category_id' => 5);
+        $cats[] = array('category_name' => 'Employment' , 'category_id' => 6);
+        $cats[] = array('category_name' => 'Wanted' , 'category_id' => 7);
+        $cats[] = array('category_name' => 'Service' , 'category_id' => 8);
+        $cats[] = array('category_name' => 'Personal' , 'category_id' => 9);
+        
+        return $cats;
     }
-?>
+}

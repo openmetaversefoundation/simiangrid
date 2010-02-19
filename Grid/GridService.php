@@ -33,131 +33,129 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-    /*
-     * This section is used for debugging purposes, for production use it should be disabled
-     */
-    ob_start();
-    $fh = fopen("debug.log", 'w');
-    echo '--- $_SERVER';
-    print_r($_SERVER);
-    echo '--- $_GET';
-    print_r($_GET);
-    echo '--- $_POST';
-    print_r($_POST);
-    fwrite($fh, ob_get_contents());
-    ob_end_clean();
-    fclose($fh);
-    /* End of developer debugging */
+/*
+ * This section is used for debugging purposes, for production use it should be disabled
+ */
+ob_start();
+$fh = fopen("debug.log", 'w');
+echo '--- $_SERVER';
+print_r($_SERVER);
+echo '--- $_GET';
+print_r($_GET);
+echo '--- $_POST';
+print_r($_POST);
+fwrite($fh, ob_get_contents());
+ob_end_clean();
+fclose($fh);
+/* End of developer debugging */
 
-    require_once('lib/Class.Logger.php');
-    $L = new Logger('services.ini', "GRIDSERVICE");
-    $logger = $L->getInstance();
+require_once ('lib/Class.Logger.php');
+$L = new Logger('services.ini', "GRIDSERVICE");
+$logger = $L->getInstance();
 
-    $config = parse_ini_file('services.ini', true);
+$config = parse_ini_file('services.ini', true);
 
-    require_once('lib/Class.ExceptionHandler.php');
-    require_once('lib/Class.ErrorHandler.php');
-    require_once('lib/Class.MySQL.php');
-    require_once('lib/Class.Factory.php');
+require_once ('lib/Class.ExceptionHandler.php');
+require_once ('lib/Class.ErrorHandler.php');
+require_once ('lib/Class.MySQL.php');
+require_once ('lib/Class.Factory.php');
 
-    if($_SERVER['CONTENT_TYPE']=='application/x-www-form-urlencoded')
+if ($_SERVER['CONTENT_TYPE'] == 'application/x-www-form-urlencoded')
+{
+    $REQUEST_DATA = $_POST;
+}
+else if ($_SERVER['CONTENT_TYPE'] == 'application/json')
+{
+    $json = json_decode($HTTP_RAW_POST_DATA, true);
+    if (json_last_error() == JSON_ERROR_NONE)
     {
-        $REQUEST_DATA = $_POST;
-    }
-    else if($_SERVER['CONTENT_TYPE']=='application/json')
-    {
-        $json = json_decode($HTTP_RAW_POST_DATA,true);
-        if(json_last_error()==JSON_ERROR_NONE)
-        {
-            $REQUEST_DATA = $json;
-        } else {
-            $logger->debug("error decoding json data: " . json_last_error());
-            header("X-Powered-By: Simian Grid Services", true);
-            header("Content-Type: application/json", true);
-            echo '{"Success":false, "Message":"Error while decoding json data"}';
-            exit;
-        }
+        $REQUEST_DATA = $json;
     }
     else
     {
-        $logger->debug("Invalid Content-Type sent: " . $_SERVER['CONTENT_TYPE']);
+        $logger->debug("error decoding json data: " . json_last_error());
         header("X-Powered-By: Simian Grid Services", true);
         header("Content-Type: application/json", true);
-        echo '{"Success":false, "Message":"Content-type not set or invalid"}';
-        exit;
+        echo '{"Message":"Error while decoding json data"}';
+        exit();
     }
+}
+else
+{
+    $logger->debug("Invalid Content-Type sent: " . $_SERVER['CONTENT_TYPE']);
+    header("X-Powered-By: Simian Grid Services", true);
+    header("Content-Type: application/json", true);
+    echo '{"Message":"Content-type not set or invalid"}';
+    exit();
+}
 
-    $command = trim($REQUEST_DATA['RequestMethod']);
+$command = trim($REQUEST_DATA['RequestMethod']);
 
-    if(empty($command))
-    {
-        $logger->warning('An Unsupported command, or empty command or parameter was requested by client');
-        $logger->debug(print_r($REQUEST_DATA, true));
-        header("X-Powered-By: Simian Grid Services", true);
-        header("Content-Type: application/json", true);
-        echo '{"Success":false, "Message":"Unsupported or missing RequestMethod"}';
-        exit;
-    }
+if (empty($command))
+{
+    $logger->warning('An Unsupported command, or empty command or parameter was requested by client');
+    $logger->debug(print_r($REQUEST_DATA, true));
+    header("X-Powered-By: Simian Grid Services", true);
+    header("Content-Type: application/json", true);
+    echo '{"Message":"Unsupported or missing RequestMethod"}';
+    exit();
+}
 
-    if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
-    {
-        try
-        {
-            $Action = Factory::CreateInstanceOf($command);
-        }
-        catch(Exception $ex)
-        {
-            header("X-Powered-By: Simian Grid Services", true);
-            header("Content-Type: application/json", true);
-            echo '{"Success":false, "Message":"Exception while trying to create instance of '.$command.'"}';
-            $logger->debug("Exception in Factory: " . print_r($ex,true));
-            exit;
-        }
-    }
-    else
-    {
-        $logger->warning('An Unsupported request method: '. $_SERVER['REQUEST_METHOD'] .' was requested by client');
-        header("X-Powered-By: Simian Grid Services", true);
-        echo '{"Success":false, "Message":"Unsupported http request method '.$_SERVER['REQUEST_METHOD'].'"}';
-        exit;
-    }
-
-    // Connect to the database
+if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
+{
     try
     {
-        $db = new MySQL($config['Database']['host'],
-                        $config['Database']['username'],
-                        $config['Database']['password'],
-                        $config['Database']['database']);
+        $Action = Factory::CreateInstanceOf($command);
     }
     catch (Exception $ex)
     {
-        $logger->crit(sprintf("Database Exception: %d %s", mysqli_connect_errno(), mysqli_connect_error()));
-        $logger->debug(sprintf("Database Exception: %s", print_r($ex,true)));
         header("X-Powered-By: Simian Grid Services", true);
-        echo '{"Success":false, "Message":"An error ocurred while attempting to connect or communicate with the database"}';
+        header("Content-Type: application/json", true);
+        echo '{"Message":"Exception while trying to create instance of ' . $command . '"}';
+        $logger->debug("Exception in Factory: " . print_r($ex, true));
         exit();
     }
+}
+else
+{
+    $logger->warning('An Unsupported request method: ' . $_SERVER['REQUEST_METHOD'] . ' was requested by client');
+    header("X-Powered-By: Simian Grid Services", true);
+    echo '{"Message":"Unsupported http request method ' . $_SERVER['REQUEST_METHOD'] . '"}';
+    exit();
+}
 
-    // Execute!
-    if($Action != NULL)
+// Connect to the database
+try
+{
+    $db = new MySQL($config['Database']['host'], $config['Database']['username'], $config['Database']['password'], $config['Database']['database']);
+}
+catch (Exception $ex)
+{
+    $logger->crit(sprintf("Database Exception: %d %s", mysqli_connect_errno(), mysqli_connect_error()));
+    $logger->debug(sprintf("Database Exception: %s", print_r($ex, true)));
+    header("X-Powered-By: Simian Grid Services", true);
+    echo '{"Message":"An error ocurred while attempting to connect or communicate with the database"}';
+    exit();
+}
+
+// Execute!
+if ($Action != NULL)
+{
+    try
     {
-        try 
-        {
-            $Action->Execute($db, $REQUEST_DATA, $logger);
-        }
-        catch (Exception $ex)
-        {
-            header("X-Powered-By: Simian Grid Services", true);
-            $logger->debug(sprintf("Call Execute Exception: %s", print_r($ex,true)));
-            echo '{"Success":false, "Message":"An exception ocurred trying to Execute class"}';
-            exit();
-        }
+        $Action->Execute($db, $REQUEST_DATA, $logger);
     }
-    else
+    catch (Exception $ex)
     {
         header("X-Powered-By: Simian Grid Services", true);
-        echo '{"Success":false, "Message":"Unable to load requested action"}';
-        exit;
+        $logger->debug(sprintf("Call Execute Exception: %s", print_r($ex, true)));
+        echo '{"Message":"An exception ocurred trying to Execute class"}';
+        exit();
     }
-?>
+}
+else
+{
+    header("X-Powered-By: Simian Grid Services", true);
+    echo '{"Message":"Unable to load requested action"}';
+    exit();
+}

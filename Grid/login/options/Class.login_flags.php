@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,20 +33,24 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class login_flags
+
+class login_flags
+{
+    private $User;
+
+    function __construct($user, $config)
     {
-        private $User;
-        function __construct($user, $config)
-        {
-            $this->User = $user;
-        }
-        public function GetResults()
-        {
-            $result[] =  array('stipend_since_login'=>'N', 
-                        'gendered'=>(isset($this->User->LastLocation) && $this->User->LastLocation != '') ? 'Y' : 'N',
-                        'daylight_savings'=>(date('I')) ? 'Y' : 'N',
-                        'ever_logged_in'=>(isset($this->User->LastLocation) && $this->User->LastLocation != '') ? 'Y' : 'N');
-            return $result;
-        }
+        $this->User = $user;
     }
-?>
+
+    public function GetResults()
+    {
+        $result[] = array(
+        	'stipend_since_login' => 'N',
+        	'gendered' => (isset($this->User->LastLocation) && $this->User->LastLocation != '') ? 'Y' : 'N',
+        	'daylight_savings' => (date('I')) ? 'Y' : 'N',
+        	'ever_logged_in' => (isset($this->User->LastLocation) && $this->User->LastLocation != '') ? 'Y' : 'N'
+        );
+        return $result;
+    }
+}

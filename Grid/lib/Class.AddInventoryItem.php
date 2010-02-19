@@ -41,6 +41,7 @@ class AddInventoryItem implements IGridService
     private $Item;
     private $mptt;
     
+    // TODO: This isn't necessary. We could do this fetch as part of the insert query in MPTT
     private function GetAssetMetadata($db)
     {
         // Fetch metadata for the asset this item points to
@@ -71,14 +72,16 @@ class AddInventoryItem implements IGridService
     {
         $this->mptt = new MPTT($db, $logger);
         
-        $itemid = '';
+        $itemid = NULL;
         if (!isset($params["ItemID"]) || !UUID::TryParse($params["ItemID"], $itemid))
             $itemid = UUID::Random();
         
         $this->Item = new InventoryItem($itemid);
         
-        if (!isset($params, $params["AssetID"], $params["Name"], $params["Description"], $params["ParentID"], $params["OwnerID"]) ||
-            !UUID::TryParse($params["ParentID"], $this->Item->ParentID) || !UUID::TryParse($params["AssetID"], $this->Item->AssetID) || !UUID::TryParse($params["OwnerID"], $this->Item->OwnerID))
+        if (!isset($params, $params["AssetID"], $params["Name"], $params["ParentID"], $params["OwnerID"]) ||
+            !UUID::TryParse($params["ParentID"], $this->Item->ParentID) ||
+            !UUID::TryParse($params["AssetID"], $this->Item->AssetID) ||
+            !UUID::TryParse($params["OwnerID"], $this->Item->OwnerID))
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
@@ -86,7 +89,7 @@ class AddInventoryItem implements IGridService
         }
         
         $this->Item->Name = trim($params["Name"]);
-        $this->Item->Description = trim($params["Description"]);
+        $this->Item->Description = (isset($params["Description"])) ? trim($params["Description"]) : '';
         $this->Item->ExtraData = (isset($params["ExtraData"])) ? trim($params["ExtraData"]) : '';
         
         $response = $this->GetAssetMetadata($db);
@@ -97,14 +100,13 @@ class AddInventoryItem implements IGridService
             exit();
         }
         
-        $dbg = '';
         try
         {
             $result = $this->mptt->InsertNode($this->Item);
             if ($result != FALSE)
             {
                 header("Content-Type: application/json", true);
-                echo sprintf('{ "Success": true, "FolderID": "%s" }', $result->UUID);
+                echo sprintf('{ "Success": true, "ItemID": "%s" }', $result->UUID);
                 exit();
             }
             else

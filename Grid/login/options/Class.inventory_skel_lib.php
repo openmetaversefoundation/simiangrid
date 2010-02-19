@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,52 +33,46 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class inventory_skel_lib
+
+class inventory_skel_lib
+{
+    private $User;
+    private $Config;
+
+    function __construct($user, $config)
     {
-        private $User;
-        private $Config;
-
-        function __construct($user, $config)
-        {
-            $this->User = $user;
-            $this->Config = $config;
-        }
-
-        public function GetResults()
-        {
-            global $logger;
-            require_once("InventoryMimeMap.php"); 
-            $InventoryMimeMap = $GLOBALS["InventoryMimeMap"];
-            $folders = array();
-            $jsonStr = NULL;
-            if(try_make_service_request(array('RequestMethod'=>'GetInventory',
-                    'OwnerID'=>$this->Config["shared_folder_owner_id"], 
-                    'ItemID'=>$this->Config["shared_folder_id"], 
-                    'IncludeFolders'=>TRUE,
-                    'IncludeItems'=>FALSE,
-                    'ChildrenOnly'=>TRUE
-                    ), $jsonStr))
-            {
-                $jsonObj = json_decode($jsonStr, true);
-                if(json_last_error() == JSON_ERROR_NONE)
-                {
-                    for($i = 0; $i < count($jsonObj); $i++)
-                    {
-                        $type = isset($InventoryMimeMap[$jsonObj[$i]["ContentType"]]) ? $InventoryMimeMap[$jsonObj[$i]["ContentType"]] : -1;
-                        $folders[] = array('folder_id'=>$jsonObj[$i]["ID"],
-                                           'name'=>$jsonObj[$i]["Name"],
-                                           'parent_id'=>$jsonObj[$i]["ParentID"],
-                                           'version'=>$jsonObj[$i]["Version"],
-                                           'type_default'=>$type);
-                    }
-                }
-                else
-                {
-                    $logger->err(sprintf("JSON Decode Error: %s. string: '%s'", json_last_error(), $jsonStr));
-                }
-            }
-
-            return $folders;
-        }
+        $this->User = $user;
+        $this->Config = $config;
     }
-?>
+
+    public function GetResults()
+    {
+        global $logger;
+        require_once ("InventoryMimeMap.php");
+        $InventoryMimeMap = $GLOBALS["InventoryMimeMap"];
+        $folders = array();
+        
+        // FIXME:
+        return $folders;
+        
+//        $jsonStr = NULL;
+//        if (try_make_service_request(array('RequestMethod' => 'GetInventory' , 'OwnerID' => $this->Config["shared_folder_owner_id"] , 'ItemID' => $this->Config["shared_folder_id"] , 'IncludeFolders' => TRUE , 'IncludeItems' => FALSE , 'ChildrenOnly' => TRUE), $jsonStr))
+//        {
+//            $jsonObj = json_decode($jsonStr, true);
+//            if (json_last_error() == JSON_ERROR_NONE)
+//            {
+//                for ($i = 0; $i < count($jsonObj); $i++)
+//                {
+//                    $type = isset($InventoryMimeMap[$jsonObj[$i]["ContentType"]]) ? $InventoryMimeMap[$jsonObj[$i]["ContentType"]] : -1;
+//                    $folders[] = array('folder_id' => $jsonObj[$i]["ID"] , 'name' => $jsonObj[$i]["Name"] , 'parent_id' => $jsonObj[$i]["ParentID"] , 'version' => $jsonObj[$i]["Version"] , 'type_default' => $type);
+//                }
+//            }
+//            else
+//            {
+//                $logger->err(sprintf("JSON Decode Error: %s. string: '%s'", json_last_error(), $jsonStr));
+//            }
+//        }
+//        
+//        return $folders;
+    }
+}

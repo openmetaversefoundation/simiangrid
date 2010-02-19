@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,15 +33,14 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class initial_outfit
+class initial_outfit
+{
+    function __construct($userID)
+    {}
+
+    public function GetResults()
     {
-        function __construct($userID)
-        {
-        }
-        public function GetResults()
-        {
-            $result[] = array('folder_name'=>"Default Appearance", 'gender'=>'male');
-            return $result;
-        }
+        $result[] = array('folder_name' => "Default Appearance" , 'gender' => 'male');
+        return $result;
     }
-?>
+}

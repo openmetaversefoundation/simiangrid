@@ -32,101 +32,94 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
- ob_start();
+ob_start();
 
-      $fh = fopen("debug.log", 'w');
-         echo '--- $_SERVER';
-         print_r($_SERVER);
-         echo '--- $_GET';
-         print_r($_GET);
-         echo '--- $_POST';
-         print_r($_POST);
+$fh = fopen("debug.log", 'w');
+echo '--- $_SERVER';
+print_r($_SERVER);
+echo '--- $_GET';
+print_r($_GET);
+echo '--- $_POST';
+print_r($_POST);
 
-         fwrite($fh, ob_get_contents());
-         ob_end_clean();
-      fclose($fh);
+fwrite($fh, ob_get_contents());
+ob_end_clean();
+fclose($fh);
 
-    require_once('lib/Class.Logger.php');
-    $L = new Logger('services.ini', "PROXYSERVICE");
-    $logger = $L->getInstance();
+require_once ('lib/Class.Logger.php');
+$L = new Logger('services.ini', "PROXYSERVICE");
+$logger = $L->getInstance();
 
-    $config = parse_ini_file('services.ini', true);
+$config = parse_ini_file('services.ini', true);
 
-    require_once('lib/Class.ExceptionHandler.php');
-    require_once('lib/Class.ErrorHandler.php');
-    require_once('lib/Class.MySQL.php');
+require_once ('lib/Class.ExceptionHandler.php');
+require_once ('lib/Class.ErrorHandler.php');
+require_once ('lib/Class.MySQL.php');
 
-
-    if(!empty($_GET['id']) && (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE || stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE))
+if (!empty($_GET['id']) && (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE || stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE))
+{
+    // Connect to the database
+    try
     {
-        // Connect to the database
-        try
+        $db = new MySQL($config['Database']['host'], $config['Database']['username'], $config['Database']['password'], $config['Database']['database']);
+    }
+    catch (Exception $ex)
+    {
+        $logger->crit(sprintf("Database Exception: %d %s", mysqli_connect_errno(), mysqli_connect_error()));
+        $logger->debug(sprintf("Database Exception: %s", print_r($ex, true)));
+        header("HTTP/1.1 500 Internal Server Error");
+        exit();
+    }
+    
+    $resourceURL = '';
+    
+    $sql = "SELECT Resource FROM Capabilities WHERE ID=:ID AND ExpirationTime > NOW() LIMIT 1";
+    
+    $sth = $db->prepare($sql);
+    
+    if ($sth->execute(array(':ID' => $_GET['id'])))
+    {
+        if ($sth->rowCount() > 0)
         {
-            $db = new MySQL($config['Database']['host'],
-                            $config['Database']['username'],
-                            $config['Database']['password'],
-                            $config['Database']['database']);
-        }
-        catch (Exception $ex)
-        {
-            header("HTTP/1.1 500 Internal Server Error");
-            header("X-Powered-By: Simian Grid Services", true);
-            $logger->crit(sprintf("Database Exception: %d %s", mysqli_connect_errno(), mysqli_connect_error()));
-            $logger->debug(sprintf("Database Exception: %s", print_r($ex,true)));
-            exit();
-        }
-
-        $sql = "SELECT Resource FROM Capabilities WHERE ID=:ID AND ExpirationTime > NOW() LIMIT 1";
-        $sth = $db->prepare($sql);
-        $ResourceURL = '';
-        if($sth->execute(array(':ID'=>$_GET['id'])))
-        {
-            if($sth->rowCount() > 0)
-            {
-                $obj = $sth->fetchObject();
-                $ResourceURL = $obj->Resource;
-            }
-            else
-            {
-                header("HTTP/1.1 404 Not Found");
-                header("X-Powered-By: Simian Grid Services", true);
-                exit;
-            }
+            $obj = $sth->fetchObject();
+            $resourceURL = $obj->Resource;
         }
         else
         {
-            header("HTTP/1.1 500 Internal Server Error");
-            header("X-Powered-By: Simian Grid Services", true);
-            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), $sth->errorInfo()));
-            $logger->debug(sprintf("Query: %s", $sql));
-            exit;
-        }
-
-
-        if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
-        {
-            $logger->warning("Proxy POST at ".$ResourceURL);
-            $r = new HttpRequest($this->server_url, HttpRequest::METH_POST);
-            if(!empty($HTTP_RAW_POST_DATA))
-                $r->addRawPostData($HTTP_RAW_POST_DATA);
-            $r->send();
-            echo $r->getResponseBody();
-            exit;
-        // proxy post
-        } 
-        else if(stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE)
-        {
-            $logger->warning("Proxy GET at ".$ResourceURL);
-            $r = new HttpRequest($ResourceURL, HttpRequest::METH_GET);
-            $r->send();
-            echo $r->getResponseBody();
-            exit;
+            header("HTTP/1.1 404 Not Found");
+            exit();
         }
     }
     else
     {
-        $logger->warning('An Unsupported request method: '. $_SERVER['REQUEST_METHOD'] .' was requested by client for capability: '.$_GET['id']);
-        header("HTTP/1.0 405 Method Not Allowed");
+        $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+        $logger->debug(sprintf("Query: %s", $sql));
         header("X-Powered-By: Simian Grid Services", true);
-        exit;
+        exit();
     }
+    
+    if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
+    {
+        $logger->warning("Proxy POST at " . $resourceURL);
+        $r = new HttpRequest($this->server_url, HttpRequest::METH_POST);
+        if (!empty($HTTP_RAW_POST_DATA))
+            $r->addRawPostData($HTTP_RAW_POST_DATA);
+        $r->send();
+        echo $r->getResponseBody();
+        exit();
+    }
+    else if (stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE)
+    {
+        $logger->warning("Proxy GET at " . $resourceURL);
+        $r = new HttpRequest($resourceURL, HttpRequest::METH_GET);
+        $r->send();
+        echo $r->getResponseBody();
+        exit();
+    }
+}
+else
+{
+    $logger->warning('An Unsupported request method: ' . $_SERVER['REQUEST_METHOD'] . ' was requested by client for capability: ' . $_GET['id']);
+    header("HTTP/1.0 405 Method Not Allowed");
+    exit();
+}
