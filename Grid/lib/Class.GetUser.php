@@ -41,27 +41,21 @@ class GetUser implements IGridService
 
     public function Execute($db, $params, $logger)
     {
-        // This query pre-assembles some of the data into JSON form for speed.
-        // If we wanted to return data in a different transport format, a
-        // different query would be needed
-        $sql = "SELECT Users.ID AS ID, Users.Name, Users.Email,
-        		GROUP_CONCAT(CONCAT('\"', UserData.`Key`, '\":'), CONCAT('\"', UserData.`Value`, '\"'))
-        		AS ExtraData FROM Users LEFT OUTER JOIN UserData ON Users.ID = UserData.ID";
-        $values = array();
+        $sql = "SELECT * FROM Users";
         
         if (isset($params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
         {
-            $sql .= " WHERE Users.ID=:UserID GROUP BY ID";
+            $sql .= " WHERE Users.ID=:UserID";
             $values["UserID"] = $this->UserID;
         }
         else if (isset($params["Name"]))
         {
-            $sql .= " WHERE Name=:Name GROUP BY ID";
+            $sql .= " WHERE Name=:Name";
             $values["Name"] = $params["Name"];
         }
         else if (isset($params["Email"]))
         {
-            $sql .= " WHERE Email=:Email GROUP BY ID";
+            $sql .= " WHERE Email=:Email";
             $values["Email"] = $params["Email"];
         }
         else
@@ -81,13 +75,30 @@ class GetUser implements IGridService
                 
                 $output = sprintf('{ "Success": true, "User": { "UserID":"%s","Name":"%s","Email":"%s"',
                     $obj->ID, $obj->Name, $obj->Email);
-                if (strlen($obj->ExtraData) > 0)
-                    $output .= ',' . $obj->ExtraData;
-                $output .= '} }';
                 
-                header("Content-Type: application/json", true);
-                echo $output;
-                exit();
+                // Fetch ExtraData from the UserData table
+                $sql = "SELECT `Key`, `Value` FROM UserData WHERE ID=:ID";
+                
+                $sth = $db->prepare($sql);
+                
+                if ($sth->execute(array(':ID' => $obj->ID)))
+                {
+                    while ($obj = $sth->fetchObject())
+                        $output .= ',"' . $obj->Key . '":"' . $obj->Value . '"';
+                    
+                    $output .= '} }';
+                    
+                    header("Content-Type: application/json", true);
+                    echo $output;
+                    exit();
+                }
+                else
+                {
+                    $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                    header("Content-Type: application/json", true);
+                    echo '{ "Message": "Database query error" }';
+                    exit();
+                }
             }
             else
             {

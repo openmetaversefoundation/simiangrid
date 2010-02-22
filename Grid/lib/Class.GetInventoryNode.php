@@ -33,21 +33,22 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('MPTT') || require_once ('Class.MPTT.php');
+class_exists('ALT') || require_once ('Class.ALT.php');
 class_exists('Inventory') || require_once ('Class.Inventory.php');
 
 class GetInventoryNode implements IGridService
 {
-    private $ItemID;
-    private $OwnerID;
-    private $FetchFolders = TRUE;
-    private $FetchItems = TRUE;
-    private $ChildrenOnly = TRUE;
-    private $mptt;
+    private $inventory;
 
     public function Execute($db, $params, $logger)
     {
-        if (!isset($params["ItemID"], $params["OwnerID"]) || !UUID::TryParse($params["ItemID"], $this->ItemID) || !UUID::TryParse($params["OwnerID"], $this->OwnerID))
+        $itemID = NULL;
+        $ownerID = NULL;
+        $fetchFolders = TRUE;
+        $fetchItems = TRUE;
+        $childrenOnly = TRUE;
+        
+        if (!isset($params["ItemID"], $params["OwnerID"]) || !UUID::TryParse($params["ItemID"], $itemID) || !UUID::TryParse($params["OwnerID"], $ownerID))
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
@@ -55,33 +56,50 @@ class GetInventoryNode implements IGridService
         }
         
         if (isset($params["IncludeFolders"]))
-            $this->FetchFolders = (bool)$params["IncludeFolders"];
-        
+            $fetchFolders = (bool)$params["IncludeFolders"];
         if (isset($params["IncludeItems"]))
-            $this->FetchItems = (bool)$params["IncludeItems"];
-        
+            $fetchItems = (bool)$params["IncludeItems"];
         if (isset($params["ChildrenOnly"]))
-            $this->ChildrenOnly = (bool)$params["ChildrenOnly"];
+            $childrenOnly = (bool)$params["ChildrenOnly"];
         
-        $this->mptt = new MPTT($db, $logger);
+        $this->inventory = new ALT($db, $logger);
         
-        if ($library = $this->mptt->FetchDescendants($this->ItemID, $this->FetchFolders, $this->FetchItems, $this->ChildrenOnly))
+        $results = array();
+        
+        // Optimization for inventory skeleton fetching
+        if ($itemID == $ownerID && $fetchFolders && !$fetchItems && !$childrenOnly)
         {
-            $Results = array();
+            $logger->debug('Doing a FetchSkeleton for ' . $ownerID);
             
-            foreach ($library as $item)
+            if ($library = $this->inventory->FetchSkeleton($ownerID))
             {
-                $Results[] = $item->toOSD();
+                foreach ($library as $item)
+                    $results[] = $item->toOSD();
             }
-            
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true, "Items": [' . implode(',', $Results) . '] }';
-            exit();
+            else
+            {
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Inventory not found" }';
+                exit();
+            }
         }
         else
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Item or folder not found" }';
+            if ($library = $this->inventory->FetchDescendants($itemID, $fetchFolders, $fetchItems, $childrenOnly))
+            {
+                foreach ($library as $item)
+                    $results[] = $item->toOSD();
+            }
+            else
+            {
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Item or folder not found" }';
+                exit();
+            }
         }
+        
+        header("Content-Type: application/json", true);
+        echo '{ "Success": true, "Items": [' . implode(',', $results) . '] }';
+        exit();
     }
 }

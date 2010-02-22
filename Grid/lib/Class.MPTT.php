@@ -353,7 +353,7 @@ class MPTT
                                 ELSE
                                     RightNode
                                 END
-                        WHERE 1=1";
+                        WHERE 1";
             $sth = $this->conn->prepare($sql);
             $sth->execute(array(':Left' => $deleted_left , ':Right' => $deleted_right));
         }

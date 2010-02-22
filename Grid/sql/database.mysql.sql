@@ -88,7 +88,7 @@ DROP TABLE IF EXISTS `Simian`.`Inventory` ;
 CREATE  TABLE IF NOT EXISTS `Simian`.`Inventory` (
   `ID` CHAR(36) NOT NULL ,
   `Name` VARCHAR(255) NOT NULL ,
-  `ParentID` CHAR(36) NOT NULL ,
+  `ParentID` CHAR(36) NULL ,
   `OwnerID` CHAR(36) NOT NULL ,
   `CreatorID` CHAR(36) NOT NULL ,
   `AssetID` CHAR(36) NULL ,
@@ -103,7 +103,13 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Inventory` (
   PRIMARY KEY (`ID`) ,
   INDEX `parent` (`ParentID` ASC) ,
   INDEX `owner` (`OwnerID` ASC) ,
-  INDEX `asset` (`AssetID` ASC) )
+  INDEX `asset` (`AssetID` ASC) ,
+  INDEX `fk_parent` (`ParentID` ASC) ,
+  CONSTRAINT `fk_parent`
+    FOREIGN KEY (`ParentID` )
+    REFERENCES `Simian`.`Inventory` (`ID` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 

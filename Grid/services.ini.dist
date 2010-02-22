@@ -13,27 +13,26 @@ database=Simian
 ; SIMIAN_LOG_NOTICE  Normal but significant
 ; SIMIAN_LOG_INFO    Informational
 ; SIMIAN_LOG_DEBUG   Debug-level messages
-; The debug log level, if blank or unset defaults to no logging (exceptions will always be logged)
+; the debug log level, if blank or unset defaults to no logging (exceptions will always be logged)
 log_level=SIMIAN_LOG_WARNING
 log_file=services.log
 
 [AssetService]
 data_storage_engine=database
-;server_url=
+server_url=http://localhost/assets/
 ;data_storage_path=./assetstore
 
 [SceneService]
-;server_url=
+server_url=http://localhost/grid/
 
 [UserService]
-;server_url=
-
-; A list of UDP Packets that a viewer should never accept from any simulator
+server_url=http://localhost/users/
+; a list of UDP Packets that a viewer should never accept from any simulator
 udp_blacklist="EnableSimulator,TeleportFinish,CrossedRegion"
-motd="Welcome to SimianGrid!"
+motd="Welcome to Simian!"
 
 [InventoryService]
-;server_url=
+server_url=http://localhost/inventory/
 
 [LindenView]
 shared_folder_id=00000000-0000-0000-0000-000000000000

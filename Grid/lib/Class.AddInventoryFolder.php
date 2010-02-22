@@ -33,17 +33,17 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('MPTT') || require_once ('Class.MPTT.php');
+class_exists('ALT') || require_once ('Class.ALT.php');
 class_exists('Inventory') || require_once ('Class.Inventory.php');
 
 class AddInventoryFolder implements IGridService
 {
     private $Folder;
-    private $mptt;
+    private $inventory;
 
     public function Execute($db, $params, $logger)
     {
-        $this->mptt = new MPTT($db, $logger);
+        $this->inventory = new ALT($db, $logger);
         
         $folderid = '';
         if (!isset($params["FolderID"]) || !UUID::TryParse($params["FolderID"], $folderid))
@@ -65,7 +65,7 @@ class AddInventoryFolder implements IGridService
         
         try
         {
-            $result = $this->mptt->InsertNode($this->Folder);
+            $result = $this->inventory->InsertNode($this->Folder);
             
             if ($result != FALSE)
             {

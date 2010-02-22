@@ -33,55 +33,28 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
+class_exists('UUID') || require_once ('Class.UUID.php');
 class_exists('ALT') || require_once ('Class.ALT.php');
-class_exists('Inventory') || require_once ('Class.Inventory.php');
 
-class MoveInventoryNodes implements IGridService
+class RemoveInventoryNode implements IGridService
 {
     private $inventory;
     
     public function Execute($db, $params, $logger)
     {
         $ownerID = NULL;
-        $folderID = NULL;
+        $itemID = NULL;
         
-        if (!isset($params['OwnerID'], $params['FolderID'], $params['Items']) ||
-            !UUID::TryParse($params['OwnerID'], $ownerID) ||
-            !UUID::TryParse($params['FolderID'], $folderID))
+        if (!isset($params["OwnerID"], $params["ItemID"]) || !UUID::TryParse($params["OwnerID"], $ownerID) || !UUID::TryParse($params["ItemID"], $itemID))
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
             exit();
-        }
-        
-        $itemIDs = explode(',', $params['Items']);
-        if (!isset($itemIDs) || count($itemIDs) < 1)
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
-        }
-        
-        $uuidItemIDs = array();
-        foreach ($itemIDs as $itemID)
-        {
-            $parsedItemID = NULL;
-            
-            if (UUID::TryParse($itemID, $parsedItemID))
-            {
-                $uuidItemIDs[] = $parsedItemID;
-            }
-            else
-            {
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Invalid parameters" }';
-                exit();
-            }
         }
         
         $this->inventory = new ALT($db, $logger);
         
-        if ($this->inventory->MoveNodes($uuidItemIDs, $folderID))
+        if ($this->inventory->RemoveNode($itemID, FALSE))
         {
             header("Content-Type: application/json", true);
             echo '{ "Success": true }';
@@ -89,7 +62,6 @@ class MoveInventoryNodes implements IGridService
         }
         else
         {
-            $logger->err($this->inventory->GetLastError());
             header("Content-Type: application/json", true);
             echo '{ "Message": "Database query error" }';
             exit();

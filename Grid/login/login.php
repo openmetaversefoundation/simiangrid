@@ -361,7 +361,27 @@ function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$st
     return false;
 }
 
-function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $sessionID, $secureSessionID, $startPosition, &$seedCapability)
+function add_wearable(&$wearables, $appearance, $wearableName)
+{
+    global $logger;
+    
+    $uuid = NULL;
+    
+    // ItemID
+    if (UUID::TryParse($appearance[$wearableName . 'Item'], $uuid))
+        $wearables[] = (string)$uuid;
+    else
+        $wearables[] = UUID::Zero;
+    
+    // AssetID
+    if (UUID::TryParse($appearance[$wearableName . 'Asset'], $uuid))
+        $wearables[] = (string)$uuid;
+    else
+        $wearables[] = UUID::Zero;
+}
+
+function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appearance, 
+    $sessionID, $secureSessionID, $startPosition, &$seedCapability)
 {
     global $logger;
     
@@ -372,6 +392,25 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $sess
     
     list($firstName, $lastName) = explode(' ', $fullName);
     $capsPath = UUID::Random();
+    
+    $wearables = array();
+    
+    if (isset($appearance))
+    {
+        add_wearable($wearables, $appearance, 'Shape');
+        add_wearable($wearables, $appearance, 'Skin');
+        add_wearable($wearables, $appearance, 'Hair');
+        add_wearable($wearables, $appearance, 'Eyes');
+        add_wearable($wearables, $appearance, 'Shirt');
+        add_wearable($wearables, $appearance, 'Pants');
+        add_wearable($wearables, $appearance, 'Shoes');
+        add_wearable($wearables, $appearance, 'Socks');
+        add_wearable($wearables, $appearance, 'Jacket');
+        add_wearable($wearables, $appearance, 'Gloves');
+        add_wearable($wearables, $appearance, 'Undershirt');
+        add_wearable($wearables, $appearance, 'Underpants');
+        add_wearable($wearables, $appearance, 'Skirt');
+    }
     
     $response = webservice_post($regionUrl, array(
     	'agent_id' => (string)$userID,
@@ -387,7 +426,8 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $sess
         'destination_x' => $scene->MinPosition->X,
         'destination_y' => $scene->MinPosition->Y,
         'destination_name' => $scene->Name,
-        'destination_uuid' => (string)$scene->SceneID),
+        'destination_uuid' => (string)$scene->SceneID,
+        'wearables' => $wearables),
         TRUE
     );
     
@@ -430,6 +470,8 @@ function process_login($method_name, $params, $user_data)
         return array('reason' => 'key' , 'login' => 'false' , 'message' =>
         	"Sorry! We couldn't log you in.\nPlease check to make sure you entered the right\n    * Account name\n    * Password\nAlso, please make sure your Caps Lock key is off.");
     }
+    
+    $logger->debug(sprintf("Authorization success for %s", $userID));
     
     // Get information about the user account
     $user = get_user($userID);
@@ -497,7 +539,8 @@ function process_login($method_name, $params, $user_data)
     
     // Prepare a login to the destination scene
     $seedCapability = NULL;
-    if (!create_opensim_presence($scene, $userID, $circuitCode, $fullname, $sessionID, $secureSessionID, $startPosition, $seedCapability))
+    if (!create_opensim_presence($scene, $userID, $circuitCode, $fullname, json_decode($user['LLAppearance'], TRUE),
+        $sessionID, $secureSessionID, $startPosition, $seedCapability))
     {
         return array('reason' => 'presence', 'login' => 'false',
         	'message' => "Failed to establish a presence in the destination region. Please try again later.");

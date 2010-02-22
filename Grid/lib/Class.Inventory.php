@@ -137,6 +137,7 @@ class InventoryItem extends Inventory implements IOSD
         $this->Type = 'Item';
         $this->ExtraData = '';
         $this->CreationDate = gmdate('U');
+        $this->Description = '';
     }
 
     public function toOSD()

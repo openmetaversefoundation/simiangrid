@@ -93,7 +93,10 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
         $asset->SHA256 = hash_file('sha256', $tmpName);
         $asset->ContentType = $_FILES['Asset']['type'];
         $asset->Temporary = !empty($_POST['Temporary']);
-        $asset->Public = !empty($_POST['Public']);
+        if (isset($_POST['Public']))
+            $asset->Public = ($_POST['Public']) ? TRUE : FALSE;
+        else
+            $asset->Public = TRUE;
     }
     else
     {

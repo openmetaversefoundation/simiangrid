@@ -33,7 +33,6 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('MPTT') || require_once ('Class.MPTT.php');
 class_exists('Inventory') || require_once ('Class.Inventory.php');
 
 class GetFolderForType implements IGridService

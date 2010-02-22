@@ -40,7 +40,7 @@ class initial_outfit
 
     public function GetResults()
     {
-        $result[] = array('folder_name' => "Default Appearance" , 'gender' => 'male');
+        $result[] = array('folder_name' => "Default Outfit" , 'gender' => 'female');
         return $result;
     }
 }

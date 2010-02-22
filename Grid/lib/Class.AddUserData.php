@@ -35,6 +35,17 @@
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
 class_exists('UUID') || require_once ('Class.UUID.php');
 
+function escape_json($json)
+{
+    $json = str_replace('\n', '\\n', $json);
+    $json = str_replace('\t', '\\t', $json);
+    $json = str_replace('\\', '\\\\', $json);
+    $json = str_replace('"', '\"', $json);
+    $json = str_replace("'", "\\'", $json);
+    
+    return $json;
+}
+
 class AddUserData implements IGridService
 {
     private $UserID;
@@ -66,7 +77,7 @@ class AddUserData implements IGridService
                     $sql .= '(:ID, :Key' . $i . ', :Value' . $i . ')';
                     
                     $values[':Key' . $i] = preg_replace('/[^a-zA-Z0-9\s]/', '', $key);
-                    $values[':Value' . $i] = str_replace('"', '\"', str_replace('\n', '\\n', $value));
+                    $values[':Value' . $i] = escape_json($value);
                     
                     ++$i;
                 }

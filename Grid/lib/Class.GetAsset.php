@@ -41,9 +41,9 @@
             $headrequest = (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE);
             
             if ($headrequest)
-                $sql = "SELECT SHA256, CreationDate, CreatorID, ContentType, Public FROM AssetData WHERE ID=:ID";
+                $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public FROM AssetData WHERE ID=:ID";
             else
-                $sql = "SELECT SHA256, CreationDate, CreatorID, ContentType, Public, Data FROM AssetData WHERE ID=:ID";
+                $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public, Data FROM AssetData WHERE ID=:ID";
 
             $sth = $db->prepare($sql);
 

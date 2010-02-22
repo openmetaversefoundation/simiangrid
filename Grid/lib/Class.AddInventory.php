@@ -33,19 +33,41 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('MPTT') || require_once ('Class.MPTT.php');
+class_exists('ALT') || require_once ('Class.ALT.php');
+class_exists('Curl') || require_once ('Class.Curl.php');
 class_exists('Inventory') || require_once ('Class.Inventory.php');
+
+function update_appearance($url, $userID, $appearance, $logger)
+{
+    if (empty($url))
+        return array('Message' => 'Missing user service URL');
+    
+    $params = array(
+        'RequestMethod' => 'AddUserData',
+        'UserID' => (string)$userID,
+        'LLAppearance' => json_encode($appearance)
+    );
+    
+    $curl = new Curl();
+    $response = json_decode($curl->simple_post($url, $params), TRUE);
+    
+    if (!isset($response))
+    {
+        $logger->err('Update appearance call to ' . $url . ' failed');
+	    $response = array('Message' => 'Invalid or missing response');
+    }
+	
+	return $response;
+}
 
 class AddInventory implements IGridService
 {
     private $UserID;
     private $Name;
-    private $mptt;
+    private $inventory;
 
     public function Execute($db, $params, $logger)
     {
-        $this->mptt = new MPTT($db, $logger);
-        
         if (!isset($params["OwnerID"]) || !UUID::TryParse($params["OwnerID"], $this->UserID))
         {
             header("Content-Type: application/json", true);
@@ -53,15 +75,20 @@ class AddInventory implements IGridService
             exit();
         }
         
+        $config = parse_ini_file('services.ini', true);
+        $this->inventory = new ALT($db, $logger);
+        
         $this->Name = 'My Inventory';
         $RootID = $this->UserID;
         
-        $UserSkel = array(
-            array('ID' => $RootID, 'ParentID' => UUID::Parse(UUID::Zero), 'Name' => $this->Name, 'PreferredContentType' => 'application/vnd.ll.rootfolder'),
+        $clothingID = UUID::Random();
+        $outfitID = UUID::Random();
+        
+        $skeleton = array(
+            array('ID' => $RootID, 'ParentID' => UUID::Parse(UUID::Zero), 'Name' => $this->Name, 'PreferredContentType' => 'application/vnd.ll.folder'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Animations', 'PreferredContentType' => 'application/vnd.ll.animation'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Body Parts', 'PreferredContentType' => 'application/vnd.ll.bodypart'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Calling Cards', 'PreferredContentType' => 'application/vnd.ll.callingcard'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Clothing', 'PreferredContentType' => 'application/vnd.ll.clothing'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Gestures', 'PreferredContentType' => 'application/vnd.ll.gesture'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Landmarks', 'PreferredContentType' => 'application/vnd.ll.landmark'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Lost and Found', 'PreferredContentType' => 'application/vnd.ll.lostandfoundfolder'),
@@ -71,25 +98,43 @@ class AddInventory implements IGridService
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Scripts', 'PreferredContentType' => 'application/vnd.ll.lsltext'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Sounds', 'PreferredContentType' => 'application/ogg'),
             array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Textures', 'PreferredContentType' => 'image/x-j2c'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Trash', 'PreferredContentType' => 'application/vnd.ll.trashfolder'));
+            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Trash', 'PreferredContentType' => 'application/vnd.ll.trashfolder'),
+            array('ID' => $clothingID, 'ParentID' => $RootID, 'Name' => 'Clothing', 'PreferredContentType' => 'application/vnd.ll.clothing'),
+            array('ID' => $outfitID, 'ParentID' => $clothingID, 'Name' => 'Default Outfit', 'PreferredContentType' => 'application/octet-stream')
+        );
         
-        $Skel = $UserSkel;
+        $hairID = UUID::Random();
+        $pantsID = UUID::Random();
+        $shapeID = UUID::Random();
+        $shirtID = UUID::Random();
+        $skinID = UUID::Random();
+        $eyesID = UUID::Random();
+        
+        $items = array(
+            array('ID' => $hairID, 'ParentID' => $outfitID, 'Name' => 'Default Hair', 'AssetID' => 'dc675529-7ba5-4976-b91d-dcb9e5e36188'),
+            array('ID' => $pantsID, 'ParentID' => $outfitID, 'Name' => 'Default Pants', 'AssetID' => '3e8ee2d6-4f21-4a55-832d-77daa505edff'),
+            array('ID' => $shapeID, 'ParentID' => $outfitID, 'Name' => 'Default Shape', 'AssetID' => '530a2614-052e-49a2-af0e-534bb3c05af0'),
+            array('ID' => $shirtID, 'ParentID' => $outfitID, 'Name' => 'Default Shirt', 'AssetID' => '6a714f37-fe53-4230-b46f-8db384465981'),
+            array('ID' => $skinID, 'ParentID' => $outfitID, 'Name' => 'Default Skin', 'AssetID' => '5f787f25-f761-4a35-9764-6418ee4774c4'),
+            array('ID' => $eyesID, 'ParentID' => $outfitID, 'Name' => 'Default Eyes', 'AssetID' => '78d20332-9b07-44a2-bf74-3b368605f4b5')
+        );
         
         $db->beginTransaction();
-        for ($i = 0; $i < count($Skel); $i++)
+        
+        for ($i = 0; $i < count($skeleton); $i++)
         {
             try
             {
-                $Folder = new InventoryFolder($Skel[$i]["ID"]);
-                $Folder->ParentID = UUID::Parse($Skel[$i]["ParentID"]);
+                $Folder = new InventoryFolder($skeleton[$i]["ID"]);
+                $Folder->ParentID = UUID::Parse($skeleton[$i]["ParentID"]);
                 $Folder->OwnerID = $this->UserID;
-                $Folder->Name = $Skel[$i]["Name"];
-                $Folder->ContentType = $Skel[$i]["PreferredContentType"];
+                $Folder->Name = $skeleton[$i]["Name"];
+                $Folder->ContentType = $skeleton[$i]["PreferredContentType"];
                 
-                if (!$this->mptt->InsertNode($Folder))
+                if (!$this->inventory->InsertNode($Folder))
                 {
                     $db->rollBack();
-                    $logger->err(sprintf("Error occurred during node creation: %s", $this->mptt->LastError));
+                    $logger->err(sprintf("Error occurred during folder creation: %s", $this->inventory->LastError));
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Inventory creation error" }';
                     exit();
@@ -104,10 +149,83 @@ class AddInventory implements IGridService
                 exit();
             }
         }
+        
+        for ($i = 0; $i < count($items); $i++)
+        {
+            try
+            {
+                $item = new InventoryItem($items[$i]['ID']);
+                $item->ParentID = UUID::Parse($items[$i]['ParentID']);
+                $item->OwnerID = $this->UserID;
+                $item->Name = $items[$i]['Name'];
+                $item->AssetID = UUID::Parse($items[$i]['AssetID']);
+                
+                if (!$this->inventory->InsertNode($item))
+                {
+                    $db->rollBack();
+                    $logger->err(sprintf("Error occurred during item creation: %s", $this->inventory->LastError));
+                    header("Content-Type: application/json", true);
+                    echo '{ "Message": "Inventory creation error" }';
+                    exit();
+                }
+            }
+            catch (Exception $ex)
+            {
+                $db->rollBack();
+                $logger->err(sprintf("Error occurred during query: %s", $ex));
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Database query error" }';
+                exit();
+            }
+        }
+        
         $db->commit();
         
-        header("Content-Type: application/json", true);
-        echo sprintf('{"Success": true, "FolderID": "%s"}', $RootID);
-        exit();
+        // Update this users appearance in the user service
+        $appearance = array(
+            'Height' => 1.771488,
+            'ShapeItem' => (string)$shapeID,
+            'ShapeAsset' => '530a2614-052e-49a2-af0e-534bb3c05af0',
+            'EyesItem' => (string)$eyesID,
+            'EyesAsset' => '78d20332-9b07-44a2-bf74-3b368605f4b5',
+            //'GlovesItem' => '',
+            //'GlovesAsset' => '',
+            'HairItem' => (string)$hairID,
+            'HairAsset' => 'dc675529-7ba5-4976-b91d-dcb9e5e36188',
+            //'JacketItem' => '',
+            //'JacketAsset' => '',
+            'PantsItem' => (string)$pantsID,
+            'PantsAsset' => '3e8ee2d6-4f21-4a55-832d-77daa505edff',
+            'ShirtItem' => (string)$shirtID,
+            'ShirtAsset' => '6a714f37-fe53-4230-b46f-8db384465981',
+            //'ShoesItem' => '',
+            //'ShoesAsset' => '',
+            'SkinItem' => (string)$skinID,
+            'SkinAsset' => '5f787f25-f761-4a35-9764-6418ee4774c4'
+            //'SkirtItem' => '',
+            //'SkirtAsset' => '',
+            //'SocksItem' => '',
+            //'SocksAsset' => '',
+            //'UnderpantsItem' => '',
+            //'UnderpantsAsset' => '',
+            //'UndershirtItem' => '',
+            //'UndershirtAsset' => ''
+        );
+        
+        $userService = $config['UserService']['server_url'];
+        $response = update_appearance($userService, $this->UserID, $appearance, $logger);
+        
+        if (!empty($response['Success']))
+        {
+            header("Content-Type: application/json", true);
+            echo sprintf('{"Success": true, "FolderID": "%s"}', $RootID);
+            exit();
+        }
+        else
+        {
+            header("Content-Type: application/json", true);
+            echo sprintf('{ "Message": "%s" }', $response['Message']);
+            exit();
+        }
     }
 }

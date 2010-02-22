@@ -33,20 +33,21 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('MPTT') || require_once ('Class.MPTT.php');
+class_exists('ALT') || require_once ('Class.ALT.php');
 class_exists('Inventory') || require_once ('Class.Inventory.php');
 
 class AddInventoryItem implements IGridService
 {
     private $Item;
-    private $mptt;
+    private $inventory;
     
-    // TODO: This isn't necessary. We could do this fetch as part of the insert query in MPTT
+    // TODO: This isn't necessary. We could do this fetch as part of the insert query in ALT
     private function GetAssetMetadata($db)
     {
         // Fetch metadata for the asset this item points to
         $sql = "SELECT CreatorID, ContentType FROM AssetData WHERE ID=:ID";
         $sth = $db->prepare($sql);
+        
         if($sth->execute(array(':ID' => $this->Item->AssetID)))
         {
             if($sth->rowCount() == 1)
@@ -70,7 +71,7 @@ class AddInventoryItem implements IGridService
 
     public function Execute($db, $params, $logger)
     {
-        $this->mptt = new MPTT($db, $logger);
+        $this->inventory = new ALT($db, $logger);
         
         $itemid = NULL;
         if (!isset($params["ItemID"]) || !UUID::TryParse($params["ItemID"], $itemid))
@@ -102,11 +103,11 @@ class AddInventoryItem implements IGridService
         
         try
         {
-            $result = $this->mptt->InsertNode($this->Item);
+            $result = $this->inventory->InsertNode($this->Item);
             if ($result != FALSE)
             {
                 header("Content-Type: application/json", true);
-                echo sprintf('{ "Success": true, "ItemID": "%s" }', $result->UUID);
+                echo sprintf('{ "Success": true, "ItemID": "%s" }', $result);
                 exit();
             }
             else
