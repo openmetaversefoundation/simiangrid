@@ -82,5 +82,3 @@ class User_Temp extends Model
 		return $this->db->insert($this->_table, $data);
 	}
 }
-
-?>

@@ -22,7 +22,19 @@ $config['base_url']	= "http://localhost/frontend/";
 |
 */
 $config['user_service'] = 'http://localhost/users/';
+$config['inventory_service'] = 'http://localhost/inventory/';
 $config['grid_service'] = 'http://localhost/grid/';
+$config['asset_service'] = 'http://localhost/assets/';
+
+/*
+|--------------------------------------------------------------------------
+| SimianGrid Default Assets
+|--------------------------------------------------------------------------
+|
+| Folder containing the default SimianGrid assets
+|
+*/
+$config['default_asset_folder'] = '../default_assets';
 
 /*
 |--------------------------------------------------------------------------

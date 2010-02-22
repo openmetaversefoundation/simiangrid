@@ -172,5 +172,3 @@ class Users extends Model
 		return $this->db->update($this->_table);
 	}
 }
-
-?>

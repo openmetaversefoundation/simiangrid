@@ -373,4 +373,10 @@ class Auth extends Controller
 			$this->dx_auth->deny_access('login');
 		}
 	}
+	
+	function deny()
+	{
+	    $data['auth_message'] = 'You do not have permission to access this area.';
+	    parse_template($this->dx_auth->deny_view, $data);
+	}
 }

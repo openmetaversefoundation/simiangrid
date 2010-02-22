@@ -372,26 +372,11 @@ class DX_Auth
 					$action = $controller.'index/';
 				}
 				
-				// Get URI permissions from role and all parents
-				// Note: URI permissions is saved in 'uri' key
-				$roles_allowed_uris = $this->get_permissions_value('uri');
+				$have_access = TRUE;
 				
-				// Variable to determine if URI found
-				$have_access = ! $allow;
-				// Loop each roles URI permissions
-				foreach ($roles_allowed_uris as $allowed_uris)
-				{										
-					if ($allowed_uris != NULL)
-					{
-						// Check if user allowed to access URI
-						if ($this->_array_in_array(array('/', $controller, $action), $allowed_uris))
-						{
-								$have_access = $allow;
-								// Stop loop
-								break;
-						}
-					}
-				}
+				// Deny non-admins from the backend controller
+				if (strstr($controller, '/backend/'))
+				    $have_access = FALSE;
 				
 				// Trigger event
 				$this->ci->dx_auth_event->checked_uri_permissions($this->get_user_id(), $have_access);
@@ -408,124 +393,6 @@ class DX_Auth
 			// User haven't logged in, so just redirect user to login page
 			$this->deny_access('login');
 		}
-	}
-	
-	/*
-		Get permission value from specified key.
-		Call this function only when user is logged in already.
-		$key is permission array key (Note: permissions is saved as array in table).
-		If $check_parent is TRUE means if permission value not found in user role, it will try to get permission value from parent role.
-		Returning value if permission found, otherwise returning NULL
-	*/
-	function get_permission_value($key, $check_parent = TRUE)
-	{
-		// Default return value
-		$result = NULL;
-	
-		// Get current user permission
-		$permission = $this->ci->session->userdata('DX_permission');
-		
-		// Check if key is in user permission array
-		if (array_key_exists($key, $permission))
-		{
-			$result = $permission[$key];
-		}
-		// Key not found
-		else
-		{
-			if ($check_parent)
-			{
-				// Get current user parent permissions
-				$parent_permissions = $this->ci->session->userdata('DX_parent_permissions');
-				
-				// Check parent permissions array				
-				foreach ($parent_permissions as $permission)
-				{
-					if (array_key_exists($key, $permission))
-					{
-						$result = $permission[$key];
-						break;
-					}
-				}
-			}
-		}
-		
-		// Trigger event
-		$this->ci->dx_auth_event->got_permission_value($this->get_user_id(), $key);
-		
-		return $result;
-	}
-	
-	/*
-		Get permissions value from specified key.
-		Call this function only when user is logged in already.
-		This will get user permission, and it's parents permissions.
-				
-		$array_key = 'default'. Array ordered using 0, 1, 2 as array key.
-		$array_key = 'role_id'. Array ordered using role_id as array key.
-		$array_key = 'role_name'. Array ordered using role_name as array key.
-		
-		Returning array of value if permission found, otherwise returning NULL.
-	*/
-	function get_permissions_value($key, $array_key = 'default')
-	{
-		$result = array();
-		
-		$role_id = $this->ci->session->userdata('DX_role_id');
-		$role_name = $this->ci->session->userdata('DX_role_name');
-		
-		$parent_roles_id = $this->ci->session->userdata('DX_parent_roles_id');
-		$parent_roles_name = $this->ci->session->userdata('DX_parent_roles_name');
-		
-		// Get current user permission
-		$value = $this->get_permission_value($key, FALSE);
-		
-		if ($array_key == 'role_id')
-		{
-			$result[$role_id] = $value;
-		}
-		elseif ($array_key == 'role_name')
-		{
-			$result[$role_name] = $value;
-		}
-		else
-		{
-			array_push($result, $value);
-		}
-		
-		// Get current user parent permissions
-		$parent_permissions = $this->ci->session->userdata('DX_parent_permissions');
-		
-		$i = 0;
-		foreach ($parent_permissions as $permission)
-		{
-			if (array_key_exists($key, $permission))
-			{
-				$value = $permission[$key];
-			}
-			
-			if ($array_key == 'role_id')
-			{
-				// It's safe to use $parents_roles_id[$i] because array order is same with permission array
-				$result[$parent_roles_id[$i]] = $value;
-			}
-			elseif ($array_key == 'role_name')
-			{
-				// It's safe to use $parents_roles_name[$i] because array order is same with permission array
-				$result[$parent_roles_name[$i]] = $value;
-			}			
-			else
-			{
-				array_push($result, $value);
-			}
-			
-			$i++;
-		}
-		
-		// Trigger event
-		$this->ci->dx_auth_event->got_permissions_value($this->get_user_id(), $key);
-		
-		return $result;
 	}
 
 	function deny_access($uri = 'deny')
@@ -759,6 +626,7 @@ class DX_Auth
 	{
 	    $fullname = $first_name . ' ' . $last_name;
 	    
+	    // Create the user account
 	    $query = array(
 		    'RequestMethod' => 'AddUser',
 		    'UserID' => $userid,
@@ -770,6 +638,7 @@ class DX_Auth
 		
 		if (element('Success', $response))
 		{
+		    // Create an identity so this user can login with an LL viewer
 		    $query = array(
     		    'RequestMethod' => 'AddIdentity',
 		        'Identifier' => $fullname,
@@ -782,7 +651,22 @@ class DX_Auth
     		
     		if (element('Success', $response))
     		{
-    		    return TRUE;
+    		    // Create an inventory for this user
+    		    $query = array(
+    		        'RequestMethod' => 'AddInventory',
+    		        'OwnerID' => $userid
+    		    );
+    		    
+    		    $response = rest_post($this->ci->config->item('inventory_service'), $query);
+    		    
+    		    if (element('Success', $response))
+    		    {
+    		        return TRUE;
+    		    }
+    		    else
+    		    {
+    		        $this->_auth_error = 'Failed to create user inventory: ' . element('Message', $response, 'Unknown error');
+    		    }
     		}
     		else
     		{

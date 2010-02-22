@@ -35,4 +35,3 @@ class Login_Attempts extends Model
 	}	
 	
 }
-?>

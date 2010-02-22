@@ -69,5 +69,3 @@ class User_Autologin extends Model
 		return $this->db->delete($this->_table);
 	}
 }
-
-?>

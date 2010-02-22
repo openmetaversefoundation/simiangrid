@@ -11,4 +11,9 @@ class Home extends Controller {
 	{
 	    parse_template('home');
 	}
+	
+	function import_assets()
+	{
+	    import_asset_folder($this->config->item('default_asset_folder'));
+	}
 }
