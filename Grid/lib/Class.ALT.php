@@ -62,7 +62,7 @@ class ALT
         {
             $sql = "INSERT INTO Inventory (ID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, 
             			ExtraData, CreationDate, Type, LeftNode, RightNode)
-                    VALUES (:ID, :ParentID, :OwnerID, :OwnerID, :Name, '', :ContentType, '0', '', CURRENT_TIMESTAMP, 
+                    VALUES (:ID, :ParentID, :OwnerID, :OwnerID, :Name, '', :ContentType, 0, :ExtraData, CURRENT_TIMESTAMP, 
                     	'Folder', 0, 0)
                     ON DUPLICATE KEY UPDATE ParentID=VALUES(ParentID), CreatorID=VALUES(CreatorID), Name=VALUES(Name), 
                     	Description=VALUES(Description), ContentType=VALUES(ContentType), Version=Version+1";
@@ -76,11 +76,12 @@ class ALT
             $sth = $this->conn->prepare($sql);
             
             if ($sth->execute(array(
-            	':ID' => $inventory->ID->UUID,
+            	':ID' => $inventory->ID,
             	':ParentID' => $inventory->ParentID,
             	':OwnerID' => $inventory->OwnerID,
             	':Name' => $inventory->Name,
-            	':ContentType' => $inventory->ContentType)))
+            	':ContentType' => $inventory->ContentType,
+                ':ExtraData' => $inventory->ExtraData)))
             {
                 if ($inventory->ParentID != NULL)
                 {
@@ -102,28 +103,39 @@ class ALT
         }
         else if (is_a($inventory, "InventoryItem"))
         {
+            if (isset($inventory->CreatorID))
+                $creatorIDsql = ":CreatorID";
+            else
+                $creatorIDsql = "(SELECT CreatorID FROM AssetData WHERE ID=:AssetID)";
+            
             $sql = "INSERT INTO Inventory (ID, AssetID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, 
             			ExtraData, CreationDate, Type, LeftNode, RightNode)
-                    VALUES (:ID, :AssetID, :ParentID, :OwnerID, (SELECT CreatorID FROM AssetData WHERE ID=:AssetID), :Name, 
-                    	:Description, (SELECT ContentType FROM AssetData WHERE ID=:AssetID), '0', '', CURRENT_TIMESTAMP , 'Item', 0, 0)
+                    VALUES (:ID, :AssetID, :ParentID, :OwnerID, " . $creatorIDsql . ", :Name, 
+                    	:Description, (SELECT ContentType FROM AssetData WHERE ID=:AssetID), 0, :ExtraData, CURRENT_TIMESTAMP , 'Item', 0, 0)
                     ON DUPLICATE KEY UPDATE AssetID=VALUES(AssetID), ParentID=VALUES(ParentID), CreatorID=VALUES(CreatorID), 
                     	Name=VALUES(Name), Description=VALUES(Description), ContentType=VALUES(ContentType), Version=Version+1";
             if (!empty($inventory->ExtraData))
                 $sql .= ", ExtraData=VALUES(ExtraData)";
             
-            $sth = $this->conn->prepare($sql);
-            if ($sth->execute(array(
-            	':ID' => $inventory->ID->UUID,
-            	':AssetID' => $inventory->AssetID->UUID,
-            	':ParentID' => $inventory->ParentID->UUID,
-            	':OwnerID' => $inventory->OwnerID->UUID,
+            $dbValues = array(
+            	':ID' => $inventory->ID,
+            	':AssetID' => $inventory->AssetID,
+            	':ParentID' => $inventory->ParentID,
+            	':OwnerID' => $inventory->OwnerID,
             	':Name' => $inventory->Name,
-            	':Description' => $inventory->Description)))
+            	':Description' => $inventory->Description,
+                ':ExtraData' => $inventory->ExtraData);
+            if (isset($inventory->CreatorID))
+                $dbValues['CreatorID'] = $inventory->CreatorID;
+            
+            $sth = $this->conn->prepare($sql);
+            
+            if ($sth->execute($dbValues))
             {
                 // Increment the parent folder version
                 $sql = "UPDATE Inventory SET Version=Version+1 WHERE ID=:ParentID";
                 $sth = $this->conn->prepare($sql);
-                $sth->execute(array(':ParentID' => $inventory->ParentID->UUID));
+                $sth->execute(array(':ParentID' => $inventory->ParentID));
                 
                 return $inventory->ID;
             }
@@ -279,7 +291,10 @@ class ALT
         if ($item->Type == 'Folder')
         {
             $descendant = new InventoryFolder(UUID::Parse($item->ID));
-            $descendant->ParentID = UUID::Parse($item->ParentID);
+            
+            if (!UUID::TryParse($item->ParentID, $descendant->ParentID))
+                $descendant->ParentID = UUID::Parse(UUID::Zero);
+            
             $descendant->OwnerID = UUID::Parse($item->OwnerID);
             $descendant->Name = $item->Name;
             $descendant->ContentType = $item->ContentType;

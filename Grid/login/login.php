@@ -433,7 +433,8 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
     
     if (!empty($response['success']))
     {
-        $seedCapability = $regionBaseUrl . 'CAPS/' . $capsPath . '/';
+        // This is the hardcoded format OpenSim uses for seed capability URLs
+        $seedCapability = $regionBaseUrl . 'CAPS/' . $capsPath . '0000/';
         return TRUE;
     }
     
@@ -546,7 +547,8 @@ function process_login($method_name, $params, $user_data)
         	'message' => "Failed to establish a presence in the destination region. Please try again later.");
     }
     
-    $logger->debug(sprintf("Presence creation success for %s (%s) in %s", $fullname, $userID, $scene->Name));
+    $logger->debug(sprintf("Presence creation success for %s (%s) in %s with seedcap %s",
+        $fullname, $userID, $scene->Name, $seedCapability));
     
     // Build the response
     $response = array();

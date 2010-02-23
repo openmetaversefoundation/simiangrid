@@ -157,6 +157,7 @@ class AddInventory implements IGridService
                 $item = new InventoryItem($items[$i]['ID']);
                 $item->ParentID = UUID::Parse($items[$i]['ParentID']);
                 $item->OwnerID = $this->UserID;
+                $item->CreatorID = $this->UserID;
                 $item->Name = $items[$i]['Name'];
                 $item->AssetID = UUID::Parse($items[$i]['AssetID']);
                 

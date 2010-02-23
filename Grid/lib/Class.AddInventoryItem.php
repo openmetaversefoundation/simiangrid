@@ -40,34 +40,6 @@ class AddInventoryItem implements IGridService
 {
     private $Item;
     private $inventory;
-    
-    // TODO: This isn't necessary. We could do this fetch as part of the insert query in ALT
-    private function GetAssetMetadata($db)
-    {
-        // Fetch metadata for the asset this item points to
-        $sql = "SELECT CreatorID, ContentType FROM AssetData WHERE ID=:ID";
-        $sth = $db->prepare($sql);
-        
-        if($sth->execute(array(':ID' => $this->Item->AssetID)))
-        {
-            if($sth->rowCount() == 1)
-            {
-                $obj = $sth->fetchObject();
-                
-                $this->Item->CreatorID = UUID::Parse($obj->CreatorID);
-                $this->Item->ContentType = $obj->ContentType;
-                return TRUE;
-            }
-            else
-            {
-                return "Asset not found";
-            }
-        }
-        else
-        {
-            return "Error occurred during asset query";
-        }
-    }
 
     public function Execute($db, $params, $logger)
     {
@@ -93,12 +65,13 @@ class AddInventoryItem implements IGridService
         $this->Item->Description = (isset($params["Description"])) ? trim($params["Description"]) : '';
         $this->Item->ExtraData = (isset($params["ExtraData"])) ? trim($params["ExtraData"]) : '';
         
-        $response = $this->GetAssetMetadata($db);
-        if ($response !== TRUE)
+        // If the CreatorID is not set, invalid, or zero, we set CreatorID to NULL so the database
+        // layer will fetch CreatorID information based on AssetID 
+        if (!isset($params["CreatorID"]) ||
+            !UUID::TryParse($params["CreatorID"], $this->Item->CreatorID) ||
+            $this->Item->CreatorID == '00000000-0000-0000-0000-000000000000')
         {
-            header("Content-Type: application/json", true);
-            echo sprintf('{ "Message": "%s" }', $response);
-            exit();
+            $this->Item->CreatorID = NULL;
         }
         
         try

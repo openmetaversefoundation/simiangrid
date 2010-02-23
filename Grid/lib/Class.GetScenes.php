@@ -115,36 +115,27 @@ class GetScenes implements IGridService
 
     private function HandleQueryResponse($sth)
     {
-        if ($sth->rowCount() > 0)
-        {
-            $found = array();
+        $found = array();
             
-            while ($obj = $sth->fetchObject())
-            {
-                $scene = new Scene();
-                $scene->SceneID = $obj->ID;
-                $scene->Name = $obj->Name;
-                $scene->Enabled = $obj->Enabled;
-                $scene->MinPosition = Vector3d::Parse($obj->MinPosition);
-                $scene->MaxPosition = Vector3d::Parse($obj->MaxPosition);
-                $scene->Address = $obj->Address;
-                if (!is_null($obj->ExtraData))
-                    $scene->ExtraData = $obj->ExtraData;
-                else
-                    $scene->ExtraData = "{}";
-                
-                $found[] = $scene->toOSD();
-            }
-            
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true, "Scenes": [' . implode(',', $found) . '] }';
-            exit();
-        }
-        else
+        while ($obj = $sth->fetchObject())
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Success: true, "Scenes": [] }';
-            exit();
+            $scene = new Scene();
+            $scene->SceneID = $obj->ID;
+            $scene->Name = $obj->Name;
+            $scene->Enabled = $obj->Enabled;
+            $scene->MinPosition = Vector3d::Parse($obj->MinPosition);
+            $scene->MaxPosition = Vector3d::Parse($obj->MaxPosition);
+            $scene->Address = $obj->Address;
+            if (!is_null($obj->ExtraData))
+                $scene->ExtraData = $obj->ExtraData;
+            else
+                $scene->ExtraData = "{}";
+            
+            $found[] = $scene->toOSD();
         }
+        
+        header("Content-Type: application/json", true);
+        echo '{ "Success": true, "Scenes": [' . implode(',', $found) . '] }';
+        exit();
     }
 }
