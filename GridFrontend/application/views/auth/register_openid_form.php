@@ -1,17 +1,21 @@
 <?php
 
+if (!isset($openid_first)) $openid_first = '';
+if (!isset($openid_last)) $openid_last = '';
+if (!isset($openid_email)) $openid_email = '';
+
 $first_name = array(
 	'name'	=> 'first_name',
 	'id'	=> 'first_name',
 	'size'	=> 30,
-	'value' =>  set_value('first_name')
+	'value' =>  set_value('first_name', $openid_first)
 );
 
 $last_name = array(
 	'name'	=> 'last_name',
 	'id'	=> 'last_name',
 	'size'	=> 30,
-	'value' =>  set_value('last_name')
+	'value' =>  set_value('last_name', $openid_last)
 );
 
 $password = array(
@@ -33,7 +37,7 @@ $email = array(
 	'id'	=> 'email',
 	'maxlength'	=> 80,
 	'size'	=> 30,
-	'value'	=> set_value('email')
+	'value'	=> set_value('email', $openid_email)
 );
 
 $captcha = array(
@@ -42,42 +46,26 @@ $captcha = array(
 );
 
 $openid_identifier = array(
-    'name'  => 'openid_identifier',
-    'id'    => 'openid_identifier',
-    'size'  => 40
+    'name'     => 'openid_identifier',
+    'id'       => 'openid_identifier',
+    'size'     => 40,
+    'value'    => set_value('openid_identifier', $openid_success),
+    'readonly' => 'readonly'
 );
 ?>
 
-<fieldset><legend>Register with OpenID</legend>
-<dl>
-
-	<?php echo form_open(site_url('auth/register_openid'))?>
-    
-    <?php if (isset($msg)) { echo "<div class=\"alert\">$msg</div>"; }?>
-    <?php if (isset($error)) { echo "<div class=\"error\">$error</div>"; }?>
-    
-    <dt><?php echo form_label('OpenID', $openid_identifier['id']);?></dt>
-	<dd>
-		<?php echo form_input($openid_identifier)?>
-        <?php echo form_error($openid_identifier['name']); ?>
-	</dd>
-    
-    <?php echo form_hidden('action', 'verify');?>
-	
-	<dt></dt>
-	<dd><?php echo form_submit('register','Register', 'class="button"');?></dd>
-    
-    <?php echo form_close()?>
-
-</dl>
-</fieldset>
-
 <fieldset><legend>Register</legend>
+
 <?php echo form_open($this->uri->uri_string())?>
 
 <?php echo $this->dx_auth->get_auth_error(); ?>
 
 <dl>
+	<dt><?php echo form_label('OpenID', $openid_identifier['id']);?></dt>
+    <dd>
+        <?php echo form_input($openid_identifier);?>
+    </dd>
+
 	<dt><?php echo form_label('First Name', $first_name['id']);?></dt>
 	<dd>
 		<?php echo form_input($first_name)?>
@@ -126,5 +114,5 @@ $openid_identifier = array(
 </dl>
 
 <?php echo form_close()?>
-</fieldset>
 
+</fieldset>

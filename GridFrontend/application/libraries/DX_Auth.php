@@ -74,6 +74,7 @@ class DX_Auth
 		// Forms view
 		$this->login_view = $this->ci->config->item('DX_login_view');
 		$this->register_view = $this->ci->config->item('DX_register_view');
+		$this->register_openid_view = $this->ci->config->item('DX_register_openid_view');
 		$this->forgot_password_view = $this->ci->config->item('DX_forgot_password_view');
 		$this->change_password_view = $this->ci->config->item('DX_change_password_view');
 		$this->cancel_account_view = $this->ci->config->item('DX_cancel_account_view');

@@ -222,6 +222,7 @@ $config['DX_cancel_account_uri'] = '/auth/cancel_account/';
 // Forms view
 $config['DX_login_view'] = 'auth/login_form';
 $config['DX_register_view'] = 'auth/register_form';
+$config['DX_register_openid_view'] = 'auth/register_openid_form';
 $config['DX_forgot_password_view'] = 'auth/forgot_password_form';
 $config['DX_change_password_view'] = 'auth/change_password_form';
 $config['DX_cancel_account_view'] = 'auth/cancel_account_form';

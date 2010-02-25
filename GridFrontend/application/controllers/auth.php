@@ -11,12 +11,20 @@ class Auth extends Controller
 	{
 		parent::Controller();
 		
+		$this->lang->load('openid', 'english');
+		
 		$this->load->library('Form_validation');
-		$this->load->library('DX_Auth');			
+		$this->load->library('DX_Auth');
+		$this->load->library('Openid');
 		
 		$this->load->helper('url');
 		$this->load->helper('form');
 	}
+	
+    function _set_message($msg, $val = '', $sub = '%s')
+    {
+        return str_replace($sub, $val, $this->lang->line($msg));
+    }
 	
 	function index()
 	{
@@ -164,9 +172,9 @@ class Auth extends Controller
 				$val->set_rules('captcha', 'Confirmation Code', 'trim|xss_clean|required|callback_captcha_check');
 			}
 
-			// Run form validation and register user if it's pass the validation
+			// Run form validation and register user if validation succeeds
 			if ($val->run() AND $this->dx_auth->register($val->set_value('first_name'), $val->set_value('last_name'), $val->set_value('password'), $val->set_value('email')))
-			{	
+			{
 				// Set success message accordingly
 				if ($this->dx_auth->email_activation)
 				{
@@ -204,14 +212,15 @@ class Auth extends Controller
 		}
 	}
 	
-	function register_recaptcha()
+    function register_recaptcha()
 	{
 		if ( ! $this->dx_auth->is_logged_in() AND $this->dx_auth->allow_registration)
-		{	
+		{
 			$val = $this->form_validation;
 			
 			// Set form validation rules
-			$val->set_rules('username', 'Username', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_dash');
+			$val->set_rules('first_name', 'First Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_numeric');
+			$val->set_rules('last_name', 'Last Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_numeric');
 			$val->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->min_password.']|max_length['.$this->max_password.']|matches[confirm_password]');
 			$val->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean');
 			$val->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email|callback_email_check');
@@ -244,7 +253,7 @@ class Auth extends Controller
 			else
 			{
 				// Load registration page
-            	parse_template('auth/register_recaptcha_form', $data);
+            	parse_template('auth/register_recaptcha_form');
 			}
 		}
 		elseif ( ! $this->dx_auth->allow_registration)
@@ -257,6 +266,152 @@ class Auth extends Controller
 			$data['auth_message'] = 'You have to logout first, before registering.';
             parse_template($this->dx_auth->logged_in_view, $data);
 		}
+	}
+	
+	function register_openid()
+	{
+	    if ( ! $this->dx_auth->is_logged_in() AND $this->dx_auth->allow_registration)
+		{
+    	    if ($this->input->post('action') == 'verify')
+            {
+                $user_id = $this->input->post('openid_identifier');
+                $pape_policy_uris = $this->input->post('policies');
+                
+                if (!$pape_policy_uris)
+                {
+                  $pape_policy_uris = array();
+                }
+                
+                $this->config->load('openid');      
+                $sreg_req = $this->config->item('openid_sreg_required');
+                $sreg_opt = $this->config->item('openid_sreg_optional');
+                $ax_req = $this->config->item('openid_ax_required');
+                $ax_opt = $this->config->item('openid_ax_optional');
+                $policy = site_url($this->config->item('openid_policy'));
+                $request_to = site_url($this->config->item('openid_request_to'));
+                
+                $this->openid->set_request_to($request_to);
+                $this->openid->set_trust_root(base_url());
+                $this->openid->set_args(null);
+                $this->openid->set_sreg(true, $sreg_req, $sreg_opt, $policy);
+                $this->openid->set_ax(true, $ax_req, $ax_opt);
+                $this->openid->set_pape(false, $pape_policy_uris);
+                $this->openid->authenticate($user_id);
+            }
+            else
+            {
+                $val = $this->form_validation;
+    			
+    			// Set form validation rules	
+    			$val->set_rules('first_name', 'First Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_numeric');
+    			$val->set_rules('last_name', 'Last Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_numeric');
+    			$val->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->min_password.']|max_length['.$this->max_password.']|matches[confirm_password]');
+    			$val->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean');
+    			$val->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email|callback_email_check');
+    			
+    			if ($this->dx_auth->captcha_registration)
+    			{
+    				$val->set_rules('captcha', 'Confirmation Code', 'trim|xss_clean|required|callback_captcha_check');
+    			}
+    
+    			// Run form validation and register user if validation succeeds
+    			if ($val->run() AND $this->dx_auth->register($val->set_value('first_name'), $val->set_value('last_name'), $val->set_value('password'), $val->set_value('email')))
+    			{
+    				// Set success message accordingly
+    				if ($this->dx_auth->email_activation)
+    				{
+    					$data['auth_message'] = 'You have successfully registered. Check your email address to activate your account.';
+    				}
+    				else
+    				{					
+    					$data['auth_message'] = 'You have successfully registered. '.anchor(site_url($this->dx_auth->login_uri), 'Login');
+    				}
+    				
+    				// Load registration success page
+            	    parse_template($this->dx_auth->register_success_view, $data);
+    			}
+    			else
+    			{
+    				// Is registration using captcha
+    				if ($this->dx_auth->captcha_registration)
+    				{
+    					$this->dx_auth->captcha();										
+    				}
+    
+    				// Load OpenID registration page
+            	    parse_template($this->dx_auth->register_openid_view);
+    			}
+            }
+		}
+	    elseif ( ! $this->dx_auth->allow_registration)
+		{
+			$data['auth_message'] = 'Registration has been disabled.';
+            parse_template($this->dx_auth->register_disabled_view, $data);
+		}
+		else
+		{
+			$data['auth_message'] = 'You have to logout first, before registering.';
+            parse_template($this->dx_auth->logged_in_view, $data);
+		}
+	}
+	
+	function check_openid()
+	{
+	    $this->config->load('openid');
+	    $request_to = site_url($this->config->item('openid_request_to'));
+	    
+	    $this->openid->set_request_to($request_to);
+	    $response = $this->openid->getResponse();
+	    
+    	switch ($response->status)
+        {
+        case Auth_OpenID_CANCEL:
+            $data['msg'] = $this->lang->line('openid_cancel');
+            break;
+        case Auth_OpenID_FAILURE:
+            $data['error'] = $this->_set_message('openid_failure', $response->message);
+            break;
+        case Auth_OpenID_SUCCESS:
+            $openid = $response->getDisplayIdentifier();
+            $esc_identity = htmlspecialchars($openid, ENT_QUOTES);
+            
+            $data['openid_success'] = $openid;
+
+            //$data['success'] = $this->_set_message('openid_success', array($esc_identity, $esc_identity), array('%s','%t'));
+
+            //if ($response->endpoint->canonicalID) {
+            //    $data['success'] .= $this->_set_message('openid_canonical', $response->endpoint->canonicalID);
+            //}
+
+            $sreg_resp = Auth_OpenID_SRegResponse::fromSuccessResponse($response);
+            $sreg = $sreg_resp->contents();
+
+            $ax_resp = new Auth_OpenID_AX_FetchResponse();
+            $ax = $ax_resp->fromSuccessResponse($response);
+            
+            if (isset($sreg['email']))
+            {
+                $data['openid_email'] = $sreg['email'];
+            }
+            if (isset($sreg['fullname']))
+            {
+                list($data['openid_first'], $data['openid_last']) = explode(' ', $sreg['fullname']);
+            }
+            if ($ax)
+            {
+                if (isset($ax->data['http://axschema.org/contact/email']))
+                    $data['openid_email'] = $ax->getSingle('http://axschema.org/contact/email');
+                if (isset($ax->data['http://axschema.org/namePerson/first']))
+                    $data['openid_first'] = $ax->getSingle('http://axschema.org/namePerson/first');
+                if (isset($ax->data['http://axschema.org/namePerson/last']))
+                    $data['openid_last'] = $ax->getSingle('http://axschema.org/namePerson/last');
+            }
+
+            register_openid();
+            return;
+        }
+        
+        parse_template($this->dx_auth->register_view, $data);
 	}
 	
 	function activate()
