@@ -44,7 +44,7 @@ class Session implements IOSD
     public $SceneID;
     public $ScenePosition;
     public $SceneLookAt;
-    public $ExtraData;   
+    public $ExtraData;
 
     public function __construct()
     {

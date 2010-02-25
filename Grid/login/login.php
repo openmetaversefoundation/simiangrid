@@ -169,14 +169,14 @@ function get_session($userID)
 {
     global $config;
     $userService = $config['UserService']['server_url'];
-    
+        
     $response = webservice_post($userService, array(
     	'RequestMethod' => 'GetSession',
     	'UserID' => $userID)
     );
     
     if (!empty($response['Success']))
-        return Session::fromOSD($response);
+        return $response;
     
     return NULL;
 }
@@ -199,6 +199,29 @@ function add_session($userID, &$sessionID, &$secureSessionID)
     }
     
     return FALSE;
+}
+
+function remove_session($sessionID)
+{
+    global $config;
+    $userService = $config['UserService']['server_url'];
+    
+    $response = webservice_post($userService, array(
+    	'RequestMethod' => 'RemoveSession',
+    	'SessionID' => $sessionID)
+    );
+    
+    if (!empty($response['Success']))
+    {
+        return TRUE;
+    }
+    
+    return FALSE;
+}
+
+function inform_scene_of_logout($sceneID, $userID)
+{
+    // FIXME: Implement this
 }
 
 function get_user_locations($userID, &$homeLocation, &$lastLocation)
@@ -494,13 +517,23 @@ function process_login($method_name, $params, $user_data)
     
     // Check for an existing session
     $existingSession = get_session($userID);
+    
     if (!empty($existingSession))
     {
         $logger->debug(sprintf("Existing session %s found for %s in scene %s",
-            $existingSession->SessionID, $fullname, $existingSession->SceneID));
+            $existingSession["SessionID"], $fullname, $existingSession["SceneID"]));
         
-        return array('reason' => 'presence', 'login' => 'false',
-        	'message' => "You are already logged in from another location. Please try again later.");
+        $sceneID = NULL;
+        if (UUID::TryParse($existingSession["SceneID"], $sceneID))
+            inform_scene_of_logout($sceneID, $userID);
+        
+        if (!remove_session($userID))
+        {
+            // TODO: We should probably return a more accurate message explaining that there was problem
+            // and log the incident
+            return array('reason' => 'presence', 'login' => 'false',
+        		'message' => "You are already logged in from another location. Please try again later.");
+        }
     }
     else
     {
@@ -530,6 +563,11 @@ function process_login($method_name, $params, $user_data)
         return array('reason' => 'presence', 'login' => 'false',
         	'message' => "Error connecting to the grid. No suitable region to connect to.");
     }
+    
+    // Make starting position relative to the scene we are starting in
+    $startPosition->X -= $scene->MinPosition->X;
+    $startPosition->Y -= $scene->MinPosition->Y;
+    $startPosition->Z -= $scene->MinPosition->Z;
     
     $lludpAddress = $scene->ExtraData['ExternalAddress'];
     $lludpPort = $scene->ExtraData['ExternalPort'];
