@@ -21,10 +21,10 @@ $config['base_url']	= "http://localhost/frontend/";
 | Enter the URLs of each SimianGrid service below
 |
 */
-$config['user_service'] = 'http://localhost/users/';
-$config['inventory_service'] = 'http://localhost/inventory/';
-$config['grid_service'] = 'http://localhost/grid/';
-$config['asset_service'] = 'http://localhost/assets/';
+$config['user_service'] = 'http://localhost/GridService.php';
+$config['inventory_service'] = 'http://localhost/GridService.php';
+$config['grid_service'] = 'http://localhost/GridService.php';
+$config['asset_service'] = 'http://localhost/AssetService.php?id=';
 
 /*
 |--------------------------------------------------------------------------
