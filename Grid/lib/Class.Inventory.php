@@ -96,6 +96,10 @@ class InventoryFolder extends Inventory implements IOSD
                 {
                     $out .= $value;
                 }
+                else if ($key == "ExtraData")
+                {
+                    $out .= (!empty($value)) ? $value : '{}';
+                }
                 else if (is_string($value))
                 {
                     $out .= sprintf("\"%s\"", $value);
@@ -163,6 +167,10 @@ class InventoryItem extends Inventory implements IOSD
                 else if (is_numeric($value))
                 {
                     $out .= $value;
+                }
+                else if ($key == "ExtraData")
+                {
+                    $out .= (!empty($value)) ? $value : '{}';
                 }
                 else if (is_string($value))
                 {

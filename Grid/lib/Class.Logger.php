@@ -32,7 +32,75 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once 'Log.php';
+
+define('PEAR_LOG_EMERG',    0);     /* System is unusable */
+define('PEAR_LOG_ALERT',    1);     /* Immediate action required */
+define('PEAR_LOG_CRIT',     2);     /* Critical conditions */
+define('PEAR_LOG_ERR',      3);     /* Error conditions */
+define('PEAR_LOG_WARNING',  4);     /* Warning conditions */
+define('PEAR_LOG_NOTICE',   5);     /* Normal but significant */
+define('PEAR_LOG_INFO',     6);     /* Informational */
+define('PEAR_LOG_DEBUG',    7);     /* Debug-level messages */
+
+class LogWriter
+{
+    private $level;
+    private $service;
+    
+    function __construct($logLevel, $service)
+    {
+        $this->level = $logLevel;
+        $this->service = $service;
+    }
+
+    function emerg($message)
+    {
+        if ($this->level >= PEAR_LOG_EMERG)
+            error_log('[EMERG] ' . $this->service . ': ' . $message);
+    }
+
+    function alert($message)
+    {
+        if ($this->level >= PEAR_LOG_ALERT)
+            error_log('[ALERT] ' . $this->service . ': ' . $message);
+    }
+
+    function crit($message)
+    {
+        if ($this->level >= PEAR_LOG_CRIT)
+            error_log('[CRIT] ' . $this->service . ': ' . $message);
+    }
+
+    function err($message)
+    {
+        if ($this->level >= PEAR_LOG_ERR)
+            error_log('[ERR] ' . $this->service . ': ' . $message);
+    }
+
+    function warning($message)
+    {
+        if ($this->level >= PEAR_LOG_WARNING)
+            error_log('[WARNING] ' . $this->service . ': ' . $message);
+    }
+
+    function notice($message)
+    {
+        if ($this->level >= PEAR_LOG_NOTICE)
+            error_log('[NOTICE] ' . $this->service . ': ' . $message);
+    }
+
+    function info($message)
+    {
+        if ($this->level >= PEAR_LOG_INFO)
+            error_log('[INFO] ' . $this->service . ': ' . $message);
+    }
+
+    function debug($message)
+    {
+        if ($this->level >= PEAR_LOG_DEBUG)
+            error_log('[DEBUG] ' . $this->service . ': ' . $message);
+    }
+}
 
 class Logger
 {
@@ -40,27 +108,17 @@ class Logger
 
     function __construct($cfg_file, $service)
     {
+        $logLevel = PEAR_LOG_WARNING;
+        
         $config = parse_ini_file($cfg_file, true);
         $dir = dirname($cfg_file);
-        if (isset($config['Services']['log_file']) && $config['Services']['log_file'] != '')
+        
+        if (isset($config['Services']['log_level']) && $config['Services']['log_level'] != '')
         {
-            $this->LogInstance = &Log::singleton('file', realpath($dir . "/" . $config['Services']['log_file']), $service);
-            
-            if (isset($config['Services']['log_level']) && $config['Services']['log_level'] != "")
-            {
-                $mask = Log::UPTO(constant(str_replace('SIMIAN_', 'PEAR_', $config['Services']['log_level'])));
-            }
-            else
-            {
-                $mask = Log::UPTO(PEAR_LOG_NONE);
-            }
-            
-            $this->LogInstance->setMask($mask);
+            $logLevel = constant(str_replace('SIMIAN_', 'PEAR_', $config['Services']['log_level']));
         }
-        else
-        {
-            $this->LogInstance = &Log::singleton('null');
-        }
+        
+        $this->LogInstance = new LogWriter($logLevel, $service);
     }
 
     public function getInstance()

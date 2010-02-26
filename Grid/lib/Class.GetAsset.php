@@ -41,9 +41,15 @@
             $headrequest = (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE);
             
             if ($headrequest)
-                $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public FROM AssetData WHERE ID=:ID";
+            {
+                $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
+                		LENGTH(Data) as ContentLength FROM AssetData WHERE ID=:ID";
+            }
             else
-                $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public, Data FROM AssetData WHERE ID=:ID";
+            {
+                $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
+                		LENGTH(Data) as ContentLength, Data FROM AssetData WHERE ID=:ID";
+            }
 
             $sth = $db->prepare($sql);
 
@@ -60,6 +66,7 @@
                         header("Last-Modified: " . gmdate(DATE_RFC850, $obj->CreationDate));
                         header("X-Asset-Creator-Id: " . $obj->CreatorID);
                         header("Content-Type: " . $obj->ContentType);
+                        header("Content-Length: " . $obj->ContentLength);
                         
                         if (!$headrequest)
                             echo $obj->Data;

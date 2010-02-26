@@ -1,4 +1,5 @@
 <?php
+
 /** Simian grid services
  *
  * PHP version 5
@@ -32,22 +33,23 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    class MySQL extends PDO 
-    {
-        function __construct($host, $user, $pass, $db) 
-        {
-            $dsn = sprintf("mysql:host=%s;dbname=%s", $host, $db);
-            parent::__construct($dsn, $user, $pass);
-            $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('DBStatement', array($this)));
-        }
-    }
 
-    class DBStatement extends PDOStatement 
+class MySQL extends PDO
+{
+    function __construct($host, $user, $pass, $db)
     {
-        public $dbh;
-    
-        protected function __construct($dbh) 
-        {
-            $this->dbh = $dbh;
-        }
+        $dsn = sprintf("mysql:host=%s;dbname=%s", $host, $db);
+        parent::__construct($dsn, $user, $pass);
+        $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('DBStatement' , array($this)));
     }
+}
+
+class DBStatement extends PDOStatement
+{
+    public $dbh;
+
+    protected function __construct($dbh)
+    {
+        $this->dbh = $dbh;
+    }
+}
