@@ -35,7 +35,7 @@
 interface_exists('IGridService') || require_once ('Interface.GridService.php');
 class_exists('UUID') || require_once ('Class.UUID.php');
 
-class RemoveSession implements IGridService
+class RemoveSessions implements IGridService
 {
     private $ID;
 
