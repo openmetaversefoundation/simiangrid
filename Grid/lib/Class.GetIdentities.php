@@ -37,28 +37,19 @@ class_exists('UUID') || require_once ('Class.UUID.php');
 
 class GetIdentities implements IGridService
 {
-    private $UserID;
-    
     public function Execute($db, $params, $logger)
     {
-        if (isset($params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
+        $sql = "SELECT Identifier, Type, Credential, UserID, Enabled FROM Identities WHERE";
+        $id = null;
+        
+        if (isset($params["UserID"]) && UUID::TryParse($params["UserID"], $id))
         {
-            $sql = "SELECT Identifier, Type, Credential, Enabled FROM Identities WHERE UserID=:UserID";
-            
-            $sth = $db->prepare($sql);
-            
-            if ($sth->execute(array(':UserID' => $this->UserID)))
-            {
-                $this->HandleQueryResponse($sth);
-            }
-            else
-            {
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                $logger->debug(sprintf("Query: %s", $sql));
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Database query error" }';
-                exit();
-            }
+            $sql .= " UserID=:ID";
+        }
+        else if (isset($params["Identifier"]))
+        {
+            $id = $params["Identifier"];
+            $sql .= " Identifier=:ID";
         }
         else
         {
@@ -66,18 +57,17 @@ class GetIdentities implements IGridService
             echo '{ "Message": "Invalid parameters" }';
             exit();
         }
-    }
-
-    private function HandleQueryResponse($sth)
-    {
-        if ($sth->rowCount() > 0)
+        
+        $sth = $db->prepare($sql);
+        
+        if ($sth->execute(array(':ID' => $id)))
         {
             $found = array();
             
             while ($obj = $sth->fetchObject())
             {
-                $found[] = sprintf('{"Identifier":"%s","Credential":"%s","Type":"%s","Enabled":%s}',
-                    $obj->Identifier, $obj->Credential, $obj->Type, ($obj->Enabled) ? 'true' : 'false');
+                $found[] = sprintf('{"Identifier":"%s","Credential":"%s","Type":"%s","UserID":"%s","Enabled":%s}',
+                    $obj->Identifier, $obj->Credential, $obj->Type, $obj->UserID, ($obj->Enabled) ? 'true' : 'false');
             }
             
             header("Content-Type: application/json", true);
@@ -86,8 +76,10 @@ class GetIdentities implements IGridService
         }
         else
         {
+            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            $logger->debug(sprintf("Query: %s", $sql));
             header("Content-Type: application/json", true);
-            echo '{"Success:true,"Identities":[]}';
+            echo '{ "Message": "Database query error" }';
             exit();
         }
     }
