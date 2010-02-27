@@ -1,0 +1,11 @@
+Options -Indexes -MultiViews +FollowSymLinks
+
+## make sure nobody gets the htaccess files
+<Files ~ "^[\._]ht">
+    Order allow,deny
+    Deny from all
+    Satisfy All
+</Files>
+
+RewriteEngine On
+RewriteRule ^/(.*)$ /index.php [L]
