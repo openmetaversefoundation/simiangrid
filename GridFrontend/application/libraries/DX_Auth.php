@@ -19,7 +19,6 @@ class DX_Auth
 	var $_banned;
 	var $_ban_reason;
 	var $_auth_error;	// Contain user error when login
-	var $_captcha_image;
 	
 	function DX_Auth()
 	{
@@ -623,6 +622,25 @@ class DX_Auth
 		$this->ci->session->sess_destroy();		
 	}
 	
+	function _create_simiangrid_identity($identifier, $credential, $type, $userID)
+	{
+	    $query = array(
+    	    'RequestMethod' => 'AddIdentity',
+		    'Identifier' => $identifier,
+		    'Credential' => $credential,
+		    'Type' => $type,
+    	    'UserID' => $userID
+        );
+        
+        $response = rest_post($this->ci->config->item('user_service'), $query);
+        
+        if (element('Success', $response))
+            return true;
+        
+        $this->_auth_error = 'Failed to create a user identity: ' . element('Message', $response, 'Unknown error');
+        return false;
+	}
+	
     function _create_simiangrid_user($first_name, $last_name, $password, $email, $userid)
 	{
 	    $fullname = $first_name . ' ' . $last_name;
@@ -639,40 +657,32 @@ class DX_Auth
 		
 		if (element('Success', $response))
 		{
-		    // Create an identity so this user can login with an LL viewer
-		    $query = array(
-    		    'RequestMethod' => 'AddIdentity',
-		        'Identifier' => $fullname,
-		        'Credential' => '$1$' . md5($password),
-		        'Type' => 'md5hash',
-    		    'UserID' => $userid
-    		);
-    		
-    		$response = rest_post($this->ci->config->item('user_service'), $query);
-    		
-    		if (element('Success', $response))
+		    // Create an identity so this user can login with an SL-compatible viewer
+		    if ($this->_create_simiangrid_identity($fullname, '$1$' . md5($password), 'md5hash', $userid))
     		{
-    		    // Create an inventory for this user
-    		    $query = array(
-    		        'RequestMethod' => 'AddInventory',
-    		        'OwnerID' => $userid
-    		    );
-    		    
-    		    $response = rest_post($this->ci->config->item('inventory_service'), $query);
-    		    
-    		    if (element('Success', $response))
+    		    // Create a WebDAV identity for this user
+    		    if ($this->_create_simiangrid_identity($fullname, md5($fullname . ':Inventory:' . $password), 'a1hash', $userid))
     		    {
-    		        return TRUE;
-    		    }
-    		    else
-    		    {
-    		        $this->_auth_error = 'Failed to create user inventory: ' . element('Message', $response, 'Unknown error');
+        		    // Create an inventory for this user
+        		    $query = array(
+        		        'RequestMethod' => 'AddInventory',
+        		        'OwnerID' => $userid
+        		    );
+        		    
+        		    $response = rest_post($this->ci->config->item('inventory_service'), $query);
+        		    
+        		    if (element('Success', $response))
+        		    {
+        		        return TRUE;
+        		    }
+        		    else
+        		    {
+        		        $this->_auth_error = 'Failed to create user inventory: ' . element('Message', $response, 'Unknown error');
+        		    }
     		    }
     		}
-    		else
-    		{
-    		    $this->_auth_error = 'Failed to create a user identity: ' . element('Message', $response, 'Unknown error');
-    		}
+    		
+    		// TODO: If some part of the process failed, we should delete the user account 
 		}
 		else
 		{
@@ -983,77 +993,6 @@ class DX_Auth
 	
 	/* End of main function */
 	
-	/* Captcha related function */
-
-	function captcha()
-	{
-		$this->ci->load->helper('url');
-	
-		$this->ci->load->plugin('dx_captcha');
-		
-		$captcha_dir = trim($this->ci->config->item('DX_captcha_path'), './');
-
-		$vals = array(
-			'img_path'	 	=> './'.$captcha_dir.'/',
-			'img_url'			=> base_url().$captcha_dir.'/',
-			'font_path'	 	=> $this->ci->config->item('DX_captcha_fonts_path'),
-			'font_size'  	=> $this->ci->config->item('DX_captcha_font_size'),
-			'img_width'	 	=> $this->ci->config->item('DX_captcha_width'),
-			'img_height' 	=> $this->ci->config->item('DX_captcha_height'),
-			'show_grid'	 	=> $this->ci->config->item('DX_captcha_grid'),
-			'expiration' 	=> $this->ci->config->item('DX_captcha_expire')
-		);
-		
-		$cap = create_captcha($vals);
-
-		$store = array(
-			'captcha_word' => $cap['word'],
-			'captcha_time' => $cap['time']
-		);
-
-		// Plain, simple but effective
-		$this->ci->session->set_flashdata($store);
-
-		// Set our captcha
-		$this->_captcha_image = $cap['image'];
-	}
-	
-	function get_captcha_image()
-	{
-		return $this->_captcha_image;
-	}
-	
-	// Check if captcha already expired
-	// Use this in callback function in your form validation
-	function is_captcha_expired()
-	{
-		// Captcha Expired
-		list($usec, $sec) = explode(" ", microtime());
-		$now = ((float)$usec + (float)$sec);	
-		
-		// Check if captcha already expired
-		return (($this->ci->session->flashdata('captcha_time') + $this->ci->config->item('DX_captcha_expire')) < $now);						
-	}
-	
-	// Check is captcha match with code
-	// Use this in callback function in your form validation
-	function is_captcha_match($code)
-	{
-		if ($this->ci->config->item('DX_captcha_case_sensitive'))
-		{
-			// Just check if code is the same value with flash data captcha_word which created in captcha() function		
-			$result = ($code == $this->ci->session->flashdata('captcha_word'));
-		}
-		else
-		{
-			$result = strtolower($code) == strtolower($this->ci->session->flashdata('captcha_word'));
-		}
-		
-		return $result;
-	}		
-	
-	/* End of captcha related function */
-	
 	/* Recaptcha function */		
 		
 	function get_recaptcha_reload_link($text = 'Get another CAPTCHA')
@@ -1124,5 +1063,3 @@ class DX_Auth
 		
 	/* End of Recaptcha function */
 }
-
-?>

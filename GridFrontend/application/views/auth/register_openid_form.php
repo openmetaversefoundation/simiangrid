@@ -40,11 +40,6 @@ $email = array(
 	'value'	=> set_value('email', $openid_email)
 );
 
-$captcha = array(
-	'name'	=> 'captcha',
-	'id'	=> 'captcha'
-);
-
 $openid_identifier = array(
     'name'     => 'openid_identifier',
     'id'       => 'openid_identifier',
@@ -98,15 +93,28 @@ $openid_identifier = array(
 		
 <?php if ($this->dx_auth->captcha_registration): ?>
 
-	<dt>Enter the code exactly as it appears. There is no zero.</dt>
-	<dd><?php echo $this->dx_auth->get_captcha_image(); ?></dd>
-
-	<dt><?php echo form_label('Confirmation Code', $captcha['id']);?></dt>
+	<dt></dt>
 	<dd>
-		<?php echo form_input($captcha);?>
-		<?php echo form_error($captcha['name']); ?>
+		<?php 
+			// Show recaptcha image
+			echo $this->dx_auth->get_recaptcha_image(); 
+			// Show reload captcha link
+			echo $this->dx_auth->get_recaptcha_reload_link(); 
+			// Show switch to image captcha or audio link
+			echo $this->dx_auth->get_recaptcha_switch_image_audio_link(); 
+		?>
+	</dd>
+
+	<dt><?php echo $this->dx_auth->get_recaptcha_label(); ?></dt>
+	<dd>
+		<?php echo $this->dx_auth->get_recaptcha_input(); ?>
+		<?php echo form_error('recaptcha_response_field'); ?>
 	</dd>
 	
+	<?php 
+		// Get recaptcha javascript and non javasript html
+		echo $this->dx_auth->get_recaptcha_html();
+	?>
 <?php endif; ?>
 
 	<dt></dt>

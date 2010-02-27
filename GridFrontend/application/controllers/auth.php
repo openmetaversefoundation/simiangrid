@@ -54,25 +54,6 @@ class Auth extends Controller
 		
 		return $result;
 	}
-
-	function captcha_check($code)
-	{
-		$result = TRUE;
-		
-		if ($this->dx_auth->is_captcha_expired())
-		{
-			// Will replace this error msg with $lang
-			$this->form_validation->set_message('captcha_check', 'Your confirmation code has expired. Please try again.');			
-			$result = FALSE;
-		}
-		elseif ( ! $this->dx_auth->is_captcha_match($code))
-		{
-			$this->form_validation->set_message('captcha_check', 'Your confirmation code does not match the one in the image. Try again.');			
-			$result = FALSE;
-		}
-
-		return $result;
-	}
 	
 	function recaptcha_check()
 	{
@@ -100,10 +81,10 @@ class Auth extends Controller
 			$val->set_rules('password', 'Password', 'trim|required|xss_clean');
 			$val->set_rules('remember', 'Remember me', 'integer');
 
-			// Set captcha rules if login attempts exceed max attempts in config
-			if ($this->dx_auth->is_max_login_attempts_exceeded())
+			// Set captcha rules if login attempts exceed max attempts in config and captcha login is enabled
+			if ($this->dx_auth->is_max_login_attempts_exceeded() AND $this->dx_auth->captcha_login)
 			{
-				$val->set_rules('captcha', 'Confirmation Code', 'trim|required|xss_clean|callback_captcha_check');
+			    $val->set_rules('recaptcha_response_field', 'Confirmation Code', 'trim|xss_clean|required|callback_recaptcha_check');
 			}
 			
 			if ($val->run() AND $this->dx_auth->login($val->set_value('first_name'), $val->set_value('last_name'), $val->set_value('password'), $val->set_value('remember')))
@@ -121,15 +102,12 @@ class Auth extends Controller
 				}
 				else
 				{						
-					// Default is we don't show captcha until max login attempts eceeded
+					// Default is we don't show captcha until max login attempts exceeded
 					$data['show_captcha'] = FALSE;
-				
+				    
 					// Show captcha if login attempts exceed max attempts in config
-					if ($this->dx_auth->is_max_login_attempts_exceeded())
+					if ($this->dx_auth->is_max_login_attempts_exceeded() AND $this->dx_auth->captcha_login)
 					{
-						// Create catpcha						
-						$this->dx_auth->captcha();
-						
 						// Set view data to show captcha on view file
 						$data['show_captcha'] = TRUE;
 					}
@@ -167,9 +145,13 @@ class Auth extends Controller
 			$val->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean');
 			$val->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email|callback_email_check');
 			
+    		// Is registration using captcha
 			if ($this->dx_auth->captcha_registration)
 			{
-				$val->set_rules('captcha', 'Confirmation Code', 'trim|xss_clean|required|callback_captcha_check');
+				// Set recaptcha rules.
+				// IMPORTANT: Do not change 'recaptcha_response_field' because it's used by reCAPTCHA API,
+				// This is because the limitation of reCAPTCHA, not DX Auth library
+				$val->set_rules('recaptcha_response_field', 'Confirmation Code', 'trim|xss_clean|required|callback_recaptcha_check');
 			}
 
 			// Run form validation and register user if validation succeeds
@@ -190,12 +172,6 @@ class Auth extends Controller
 			}
 			else
 			{
-				// Is registration using captcha
-				if ($this->dx_auth->captcha_registration)
-				{
-					$this->dx_auth->captcha();										
-				}
-
 				// Load registration page
         	    parse_template($this->dx_auth->register_view);
 			}
@@ -209,62 +185,6 @@ class Auth extends Controller
 		{
 			$data['auth_message'] = 'You have to logout first, before registering.';
         	parse_template($this->dx_auth->logged_in_view, $data);
-		}
-	}
-	
-    function register_recaptcha()
-	{
-		if ( ! $this->dx_auth->is_logged_in() AND $this->dx_auth->allow_registration)
-		{
-			$val = $this->form_validation;
-			
-			// Set form validation rules
-			$val->set_rules('first_name', 'First Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_numeric');
-			$val->set_rules('last_name', 'Last Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_numeric');
-			$val->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->min_password.']|max_length['.$this->max_password.']|matches[confirm_password]');
-			$val->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean');
-			$val->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email|callback_email_check');
-			
-			// Is registration using captcha
-			if ($this->dx_auth->captcha_registration)
-			{
-				// Set recaptcha rules.
-				// IMPORTANT: Do not change 'recaptcha_response_field' because it's used by reCAPTCHA API,
-				// This is because the limitation of reCAPTCHA, not DX Auth library
-				$val->set_rules('recaptcha_response_field', 'Confirmation Code', 'trim|xss_clean|required|callback_recaptcha_check');
-			}
-
-			// Run form validation and register user if it's pass the validation
-			if ($val->run() AND $this->dx_auth->register($val->set_value('username'), $val->set_value('password'), $val->set_value('email')))
-			{	
-				// Set success message accordingly
-				if ($this->dx_auth->email_activation)
-				{
-					$data['auth_message'] = 'You have successfully registered. Check your email address to activate your account.';
-				}
-				else
-				{					
-					$data['auth_message'] = 'You have successfully registered. '.anchor(site_url($this->dx_auth->login_uri), 'Login');
-				}
-				
-				// Load registration success page
-            	parse_template($this->dx_auth->register_success_view, $data);
-			}
-			else
-			{
-				// Load registration page
-            	parse_template('auth/register_recaptcha_form');
-			}
-		}
-		elseif ( ! $this->dx_auth->allow_registration)
-		{
-			$data['auth_message'] = 'Registration has been disabled.';
-            parse_template($this->dx_auth->register_disabled_view, $data);
-		}
-		else
-		{
-			$data['auth_message'] = 'You have to logout first, before registering.';
-            parse_template($this->dx_auth->logged_in_view, $data);
 		}
 	}
 	
@@ -309,9 +229,13 @@ class Auth extends Controller
     			$val->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean');
     			$val->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email|callback_email_check');
     			
+                // Is registration using captcha
     			if ($this->dx_auth->captcha_registration)
     			{
-    				$val->set_rules('captcha', 'Confirmation Code', 'trim|xss_clean|required|callback_captcha_check');
+    				// Set recaptcha rules.
+    				// IMPORTANT: Do not change 'recaptcha_response_field' because it's used by reCAPTCHA API,
+    				// This is because the limitation of reCAPTCHA, not DX Auth library
+    				$val->set_rules('recaptcha_response_field', 'Confirmation Code', 'trim|xss_clean|required|callback_recaptcha_check');
     			}
     
     			// Run form validation and register user if validation succeeds

@@ -132,30 +132,6 @@ $config['DX_forgot_password_expire'] = 900;
 
 /*
 |--------------------------------------------------------------------------
-| Captcha
-|--------------------------------------------------------------------------
-|
-| You can set catpcha that created by DX Auth library in here.
-| 'DX_captcha_directory' = Directory where the catpcha will be created. 
-| 'DX_captcha_fonts_path' = Font in this directory will be used when creating captcha.
-| 'DX_captcha_font_size' = Font size when writing text to captcha. Leave blank for random font size.
-| 'DX_captcha_grid' = Show grid in created captcha.
-| 'DX_captcha_expire' = Life time of created captcha before expired, default is 3 minutes (180 seconds).
-| 'DX_captcha_expire' = Determine captcha case sensitive or not.
-|
-*/
-
-$config['DX_captcha_path'] = './captcha/';
-$config['DX_captcha_fonts_path'] = $config['DX_captcha_path'].'fonts'; 
-$config['DX_captcha_width'] = 320;
-$config['DX_captcha_height'] = 95;
-$config['DX_captcha_font_size'] = ''; 
-$config['DX_captcha_grid'] = TRUE;
-$config['DX_captcha_expire'] = 180; 
-$config['DX_captcha_case_sensitive'] = TRUE; 
-
-/*
-|--------------------------------------------------------------------------
 | reCAPTCHA
 |--------------------------------------------------------------------------
 |
@@ -166,6 +142,9 @@ $config['DX_captcha_case_sensitive'] = TRUE;
 
 $config['DX_recaptcha_public_key'] = ''; 
 $config['DX_recaptcha_private_key'] = '';
+
+$config['DX_captcha_registration'] = FALSE;
+$config['DX_captcha_login'] = FALSE;
 
 
 /*
@@ -207,10 +186,6 @@ $config['DX_reset_password_uri'] = '/auth/reset_password/';
 
 // Registration
 $config['DX_allow_registration'] = TRUE; 
-$config['DX_captcha_registration'] = TRUE;
-
-// Login
-$config['DX_captcha_login'] = FALSE;
 
 // URI Locations
 $config['DX_logout_uri'] = '/auth/logout/';
