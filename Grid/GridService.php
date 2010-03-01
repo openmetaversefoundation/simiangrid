@@ -52,6 +52,17 @@ if (stripos($_SERVER['REQUEST_METHOD'], 'POST') === FALSE)
     exit();
 }
 
+// Disable magic quotes
+if (get_magic_quotes_gpc())
+{
+    function stripslashes_gpc(&$value) { $value = stripslashes($value); }
+    
+    array_walk_recursive($_GET, 'stripslashes_gpc');
+    array_walk_recursive($_POST, 'stripslashes_gpc');
+    array_walk_recursive($_COOKIE, 'stripslashes_gpc');
+    array_walk_recursive($_REQUEST, 'stripslashes_gpc');
+}
+
 if (!isset($_SERVER['CONTENT_TYPE']) || $_SERVER['CONTENT_TYPE'] == 'application/x-www-form-urlencoded')
 {
     $REQUEST_DATA = $_POST;
