@@ -96,10 +96,14 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     if ($jsonRequest)
         $params = json_encode($params);
     
+    // POST our query and fetch the response
     $curl = new Curl();
-    $response = json_decode($curl->simple_post($url, $params), TRUE);
-	
-	$logger->debug(sprintf('Response received from POST to %s: %s', $url, json_encode($response)));
+    $response = $curl->simple_post($url, $params);
+    
+    $logger->debug(sprintf('Response received from POST to %s: %s', $url, $response));
+    
+    // JSON decode the response
+    $response = json_decode($response, TRUE);
 	
 	if (!isset($response))
 	    $response = array('Message' => 'Invalid or missing response');
