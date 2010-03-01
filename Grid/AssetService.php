@@ -104,6 +104,7 @@ else
 {
     $logger->warning('An Unsupported request method: ' . $_SERVER['REQUEST_METHOD'] . ' was requested');
     header("HTTP/1.0 405 Method Not Allowed");
+    echo 'Method is not allowed';
     exit();
 }
 

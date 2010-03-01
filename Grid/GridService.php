@@ -44,7 +44,15 @@ require_once ('lib/Class.ErrorHandler.php');
 require_once ('lib/Class.MySQL.php');
 require_once ('lib/Class.Factory.php');
 
-if ($_SERVER['CONTENT_TYPE'] == 'application/x-www-form-urlencoded')
+if (stripos($_SERVER['REQUEST_METHOD'], 'POST') === FALSE)
+{
+    $logger->warning('An Unsupported request method: ' . $_SERVER['REQUEST_METHOD'] . ' was requested');
+    header("HTTP/1.0 405 Method Not Allowed");
+    echo 'Method is not allowed';
+    exit();
+}
+
+if (!isset($_SERVER['CONTENT_TYPE']) || $_SERVER['CONTENT_TYPE'] == 'application/x-www-form-urlencoded')
 {
     $REQUEST_DATA = $_POST;
 }
