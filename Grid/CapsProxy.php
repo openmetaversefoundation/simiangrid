@@ -32,19 +32,6 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-ob_start();
-
-$fh = fopen("debug.log", 'w');
-echo '--- $_SERVER';
-print_r($_SERVER);
-echo '--- $_GET';
-print_r($_GET);
-echo '--- $_POST';
-print_r($_POST);
-
-fwrite($fh, ob_get_contents());
-ob_end_clean();
-fclose($fh);
 
 require_once ('lib/Class.Logger.php');
 $L = new Logger('services.ini', "PROXYSERVICE");

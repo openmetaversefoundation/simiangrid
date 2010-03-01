@@ -33,22 +33,6 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-/*
- * This section is used for debugging purposes, for production use it should be disabled
- */
-ob_start();
-$fh = fopen("debug.log", 'w');
-echo '--- $_SERVER';
-print_r($_SERVER);
-echo '--- $_GET';
-print_r($_GET);
-echo '--- $_POST';
-print_r($_POST);
-fwrite($fh, ob_get_contents());
-ob_end_clean();
-fclose($fh);
-/* End of developer debugging */
-
 require_once ('lib/Class.Logger.php');
 $L = new Logger('services.ini', "GRIDSERVICE");
 $logger = $L->getInstance();

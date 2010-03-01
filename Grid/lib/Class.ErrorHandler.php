@@ -44,36 +44,31 @@ class ErrorHandler
 
     public static function handleError($code, $message, $file, $line)
     {
-        require_once ('Log.php');
-        //self::printError($e);
-        global $logger;
-        $priority = PEAR_LOG_ERR;
         if (0 == error_reporting())
-        {
             return;
-        }
+        
+        $priority = '[ERROR]';
         
         switch ($code)
         {
             case E_WARNING:
             case E_USER_WARNING:
-                $priority = PEAR_LOG_WARNING;
+                $priority = '[WARN]';
                 break;
             case E_NOTICE:
             case E_USER_NOTICE:
-                $priority = PEAR_LOG_NOTICE;
+                $priority = '[NOTICE]';
                 break;
             case E_ERROR:
             case E_USER_ERROR:
-                $priority = PEAR_LOG_ERR;
+                $priority = '[ERROR]';
                 break;
             default:
-                $priotity = PEAR_LOG_INFO;
+                $priotity = '[INFO]';
         }
         
-        $logger->log($message . ' in ' . $file . ' at line ' . $line, $priority);
+        error_log($priority . ': ' . $message . ' in ' . $file . ' at line ' . $line);
         throw new ErrorException($message, 0, $code, $file, $line);
-    
     }
 }
 
