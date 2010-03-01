@@ -134,7 +134,7 @@ define('Auth_OpenID_ENCODE_HTML_FORM', 'HTML form');
  */
 function Auth_OpenID_isError($obj, $cls = 'Auth_OpenID_ServerError')
 {
-    return is_a($obj, $cls);
+    return $obj instanceof $cls;
 }
 
 /**
@@ -372,8 +372,7 @@ class Auth_OpenID_CheckAuthRequest extends Auth_OpenID_Request {
         foreach ($required_keys as $k) {
             if (!$message->getArg(Auth_OpenID_OPENID_NS, $k)) {
                 return new Auth_OpenID_ServerError($message,
-                    sprintf("%s request missing required parameter %s from \
-                            query", "check_authentication", $k));
+                    sprintf("%s request missing required parameter %s from query", "check_authentication", $k));
             }
         }
 
@@ -527,7 +526,7 @@ class Auth_OpenID_DiffieHellmanSHA1ServerSession {
     {
         $result = Auth_OpenID_DiffieHellmanSHA1ServerSession::getDH($message);
 
-        if (is_a($result, 'Auth_OpenID_ServerError')) {
+        if ($result instanceof Auth_OpenID_ServerError) {
             return $result;
         } else {
             list($dh, $consumer_pubkey) = $result;
@@ -564,7 +563,7 @@ class Auth_OpenID_DiffieHellmanSHA256ServerSession
     {
         $result = Auth_OpenID_DiffieHellmanSHA1ServerSession::getDH($message);
 
-        if (is_a($result, 'Auth_OpenID_ServerError')) {
+        if ($result instanceof Auth_OpenID_ServerError) {
             return $result;
         } else {
             list($dh, $consumer_pubkey) = $result;
@@ -630,7 +629,7 @@ class Auth_OpenID_AssociateRequest extends Auth_OpenID_Request {
 
         $session = call_user_func(array($session_class, 'fromMessage'),
                                   $message);
-        if (is_a($session, 'Auth_OpenID_ServerError')) {
+        if ($session instanceof Auth_OpenID_ServerError) {
             return $session;
         }
 
@@ -792,7 +791,7 @@ class Auth_OpenID_CheckIDRequest extends Auth_OpenID_Request {
     function equals($other)
     {
         return (
-                (is_a($other, 'Auth_OpenID_CheckIDRequest')) &&
+                ($other instanceof Auth_OpenID_CheckIDRequest) &&
                 ($this->namespace == $other->namespace) &&
                 ($this->assoc_handle == $other->assoc_handle) &&
                 ($this->identity == $other->identity) &&
@@ -895,7 +894,7 @@ class Auth_OpenID_CheckIDRequest extends Auth_OpenID_Request {
                                                 $assoc_handle,
                                                 $server);
 
-        if (is_a($obj, 'Auth_OpenID_ServerError')) {
+        if ($obj instanceof Auth_OpenID_ServerError) {
             return $obj;
         }
 
@@ -1163,10 +1162,7 @@ class Auth_OpenID_CheckIDRequest extends Auth_OpenID_Request {
         }
 
         if ($this->immediate) {
-            return new Auth_OpenID_ServerError(null,
-                                               "Cancel is not an appropriate \
-                                               response to immediate mode \
-                                               requests.");
+            return new Auth_OpenID_ServerError(null, "Cancel is not an appropriate response to immediate mode requests.");
         }
 
         $response = new Auth_OpenID_Message(
@@ -1454,7 +1450,7 @@ class Auth_OpenID_Encoder {
         $encode_as = $response->whichEncoding();
         if ($encode_as == Auth_OpenID_ENCODE_KVFORM) {
             $wr = new $cls(null, null, $response->encodeToKVForm());
-            if (is_a($response, 'Auth_OpenID_ServerError')) {
+            if ($response instanceof Auth_OpenID_ServerError) {
                 $wr->code = AUTH_OPENID_HTTP_ERROR;
             }
         } else if ($encode_as == Auth_OpenID_ENCODE_URL) {
@@ -1491,7 +1487,7 @@ class Auth_OpenID_SigningEncoder extends Auth_OpenID_Encoder {
     {
         // the isinstance is a bit of a kludge... it means there isn't
         // really an adapter to make the interfaces quite match.
-        if (!is_a($response, 'Auth_OpenID_ServerError') &&
+        if ($response instanceof Auth_OpenID_ServerError &&
             $response->needsSigning()) {
 
             if (!$this->signatory) {
@@ -1571,7 +1567,7 @@ class Auth_OpenID_Decoder {
         $handlerCls = Auth_OpenID::arrayGet($this->handlers, $mode,
                                             $this->defaultDecoder($message));
 
-        if (!is_a($handlerCls, 'Auth_OpenID_ServerError')) {
+        if ($handlerCls instanceof Auth_OpenID_ServerError) {
             return call_user_func_array(array($handlerCls, 'fromMessage'),
                                         array($message, $this->server));
         } else {

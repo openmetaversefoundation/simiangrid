@@ -45,7 +45,7 @@ class ALT
     public function __construct($db_conn, $logger)
     {
         $this->logger = $logger;
-        if (!$db_conn || !is_a($db_conn, "MySQL"))
+        if (!$db_conn || !($db_conn instanceof PDO))
             throw new Exception("ALT::__construct expects first parameter passed to be a valid database resource. " . print_r($db_conn, true));
         
         $this->conn = $db_conn;
@@ -58,7 +58,7 @@ class ALT
 
     public function InsertNode(Inventory $inventory)
     {
-        if (is_a($inventory, "InventoryFolder"))
+        if ($inventory instanceof InventoryFolder)
         {
             $sql = "INSERT INTO Inventory (ID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, 
             			ExtraData, CreationDate, Type, LeftNode, RightNode)
@@ -101,7 +101,7 @@ class ALT
                 return FALSE;
             }
         }
-        else if (is_a($inventory, "InventoryItem"))
+        else if ($inventory instanceof InventoryItem)
         {
             if (isset($inventory->CreatorID))
                 $creatorIDsql = ":CreatorID";

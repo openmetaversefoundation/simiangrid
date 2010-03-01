@@ -641,6 +641,22 @@ class DX_Auth
         return false;
 	}
 	
+	function _create_simiangrid_inventory($userID)
+	{
+	    $query = array(
+        	'RequestMethod' => 'AddInventory',
+        	'OwnerID' => $userID
+        );
+        
+        $response = rest_post($this->ci->config->item('inventory_service'), $query);
+        
+        if (element('Success', $response))
+            return true;
+        
+        $this->_auth_error = 'Failed to create user inventory: ' . element('Message', $response, 'Unknown error');
+        return false;
+	}
+	
     function _create_simiangrid_user($first_name, $last_name, $password, $email, $userid)
 	{
 	    $fullname = $first_name . ' ' . $last_name;
@@ -663,26 +679,15 @@ class DX_Auth
     		    // Create a WebDAV identity for this user
     		    if ($this->_create_simiangrid_identity($fullname, md5($fullname . ':Inventory:' . $password), 'a1hash', $userid))
     		    {
-        		    // Create an inventory for this user
-        		    $query = array(
-        		        'RequestMethod' => 'AddInventory',
-        		        'OwnerID' => $userid
-        		    );
-        		    
-        		    $response = rest_post($this->ci->config->item('inventory_service'), $query);
-        		    
-        		    if (element('Success', $response))
-        		    {
-        		        return TRUE;
-        		    }
-        		    else
-        		    {
-        		        $this->_auth_error = 'Failed to create user inventory: ' . element('Message', $response, 'Unknown error');
-        		    }
+    		        // Create an inventory for this user
+    		        if ($this->_create_simiangrid_inventory($userid))
+    		        {
+    		            return TRUE;
+    		        }
     		    }
     		}
     		
-    		// TODO: If some part of the process failed, we should delete the user account 
+    		// TODO: If some part of the process failed, we should delete the user account
 		}
 		else
 		{

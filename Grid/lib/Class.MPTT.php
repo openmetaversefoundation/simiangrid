@@ -45,7 +45,7 @@ class MPTT
     public function __construct($db_conn, $logger)
     {
         $this->logger = $logger;
-        if (!$db_conn || !is_a($db_conn, "MySQL"))
+        if (!$db_conn || !($db_conn instanceof PDO))
         {
             throw new Exception("MPTT::__construct expects first parameter passed to be a valid database resource. " . print_r($db_conn, true));
         }
@@ -60,7 +60,7 @@ class MPTT
 
     public function InsertNode(Inventory $inventory)
     {
-        if (!is_a($inventory, "InventoryFolder") && !is_a($inventory, "InventoryItem"))
+        if (!($inventory instanceof InventoryFolder) && !($inventory instanceof InventoryItem))
         {
             $this->LastError = "InsertNode passed an invalid object. Must be either an InventoryFolder or InventoryItem, Not " . gettype($inventory);
             throw new Exception("InsertNode passed an invalid object. Must be either an InventoryFolder or InventoryItem");
@@ -100,7 +100,7 @@ class MPTT
         
         $this->AllocateSpace(2, $parent_level);
         
-        if (is_a($inventory, "InventoryFolder"))
+        if ($inventory instanceof InventoryFolder)
         {
             $sql = "INSERT INTO Inventory (ID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, ExtraData, CreationDate, Type, LeftNode, RightNode)
                     VALUES (:ID, :ParentID, :OwnerID, :OwnerID, :Name, '', :ContentType, '0', '', CURRENT_TIMESTAMP, 'Folder', :ParentLevel, :ParentLevel + 1)
@@ -134,7 +134,7 @@ class MPTT
             }
         
         }
-        else if (is_a($inventory, "InventoryItem"))
+        else if ($inventory instanceof InventoryItem)
         {
             $sql = "INSERT INTO Inventory (ID, AssetID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, ExtraData, CreationDate, Type, LeftNode, RightNode)
                     VALUES (:ID, :AssetID, :ParentID, :OwnerID, :CreatorID, :Name, :Description, :ContentType, '0', '', CURRENT_TIMESTAMP , 'Item', :ParentLevel, :ParentLevel + 1)
