@@ -53,6 +53,7 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Users` (
   `ID` CHAR(36) NOT NULL ,
   `Name` VARCHAR(60) NOT NULL ,
   `Email` VARCHAR(60) NOT NULL ,
+  `AccessLevel` TINYINT UNSIGNED NOT NULL DEFAULT 0 ,
   PRIMARY KEY (`ID`) ,
   UNIQUE INDEX `name` (`Name` ASC) ,
   UNIQUE INDEX `email` (`Email` ASC) )
