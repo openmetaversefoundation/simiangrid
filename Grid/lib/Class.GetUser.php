@@ -42,11 +42,20 @@ class GetUser implements IGridService
     public function Execute($db, $params, $logger)
     {
         $sql = "SELECT * FROM Users";
+        $values = array();
         
         if (isset($params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
         {
-            $sql .= " WHERE Users.ID=:UserID";
-            $values["UserID"] = $this->UserID;
+            // Handle the special case of a request for the admin user
+            if ($this->UserID == UUID::Zero)
+            {
+                $sql .= " ORDER BY AccessLevel DESC LIMIT 1";
+            }
+            else
+            {
+                $sql .= " WHERE Users.ID=:UserID";
+                $values["UserID"] = $this->UserID;
+            }
         }
         else if (isset($params["Name"]))
         {
@@ -73,8 +82,8 @@ class GetUser implements IGridService
             {
                 $obj = $sth->fetchObject();
                 
-                $output = sprintf('{ "Success": true, "User": { "UserID":"%s","Name":"%s","Email":"%s"',
-                    $obj->ID, $obj->Name, $obj->Email);
+                $output = sprintf('{ "Success": true, "User": { "UserID":"%s","Name":"%s","Email":"%s","AccessLevel":%s',
+                    $obj->ID, $obj->Name, $obj->Email, $obj->AccessLevel);
                 
                 // Fetch ExtraData from the UserData table
                 $sql = "SELECT `Key`, `Value` FROM UserData WHERE ID=:ID";

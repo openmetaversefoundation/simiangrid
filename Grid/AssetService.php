@@ -56,11 +56,12 @@ if (stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE || (stripos($_SERVER['R
     {
         $logger->warning('Received a GET request to the asset service without an asset id');
         header("HTTP/1.1 404 Not Found");
+        echo 'Asset not found';
         exit();
     }
     
     $action = Factory::CreateInstanceOf('GetAsset');
-    $asset->ID = $_GET['id'];
+    $asset->ID = ltrim($_GET['id'], '/');
 }
 else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
 {
@@ -74,18 +75,28 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
         if (!isset($_POST['CreatorID']) || !UUID::TryParse($_POST['CreatorID'], $asset->CreatorID))
             $asset->CreatorID = UUID::Zero;
         
-        $tmpName = $_FILES['Asset']['tmp_name'];
-        $fp = fopen($tmpName, 'r');
-        $asset->Data = fread($fp, filesize($tmpName));
-        fclose($fp);
-        
-        $asset->SHA256 = hash_file('sha256', $tmpName);
-        $asset->ContentType = $_FILES['Asset']['type'];
-        $asset->Temporary = !empty($_POST['Temporary']);
-        if (isset($_POST['Public']))
-            $asset->Public = ($_POST['Public']) ? TRUE : FALSE;
+        if (!empty($_FILES['Asset']['tmp_name']))
+        {
+            $tmpName = $_FILES['Asset']['tmp_name'];
+            $fp = fopen($tmpName, 'r');
+            $asset->Data = fread($fp, filesize($tmpName));
+            fclose($fp);
+            
+            $asset->SHA256 = hash_file('sha256', $tmpName);
+            $asset->ContentType = $_FILES['Asset']['type'];
+            $asset->Temporary = !empty($_POST['Temporary']);
+            if (isset($_POST['Public']))
+                $asset->Public = ($_POST['Public']) ? TRUE : FALSE;
+            else
+                $asset->Public = TRUE;
+        }
         else
-            $asset->Public = TRUE;
+        {
+            $logger->err('Asset Upload Failed, Asset specified but no filedata included in request: ' . print_r($_FILES, TRUE));
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Missing asset data" }';
+            exit();
+        }
     }
     else
     {

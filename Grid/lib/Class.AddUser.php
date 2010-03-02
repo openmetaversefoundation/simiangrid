@@ -43,11 +43,25 @@ class AddUser implements IGridService
     {
         if (isset($params["UserID"], $params["Name"], $params["Email"]) && UUID::TryParse($params["UserID"], $this->UserID))
         {
-            $sql = "REPLACE INTO Users (ID, Name, Email) VALUES (:ID, :Name, :Email)";
+            $sql = "REPLACE INTO Users (ID, Name, Email, AccessLevel) VALUES (:ID, :Name, :Email, :AccessLevel)";
+            
+            // Set the AccessLevel for this user
+            if (isset($params["AccessLevel"]) && is_numeric($params["AccessLevel"]))
+            {
+                $accessLevel = (int)$params["AccessLevel"];
+                if ($accessLevel > 255)
+                    $accessLevel = 255;
+                else if ($accessLevel < 0)
+                    $accessLevel = 0;
+            }
+            else
+            {
+                $accessLevel = 0;
+            }
             
             $sth = $db->prepare($sql);
             
-            if ($sth->execute(array('ID' => $this->UserID, 'Name' => $params["Name"], 'Email' => $params["Email"])))
+            if ($sth->execute(array('ID' => $this->UserID, 'Name' => $params["Name"], 'Email' => $params["Email"], 'AccessLevel' => $accessLevel)))
             {
                 if ($sth->rowCount() > 0)
                 {

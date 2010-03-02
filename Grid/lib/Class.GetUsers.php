@@ -44,13 +44,7 @@ class GetUsers implements IGridService
     {
         if (isset($params["NameQuery"]))
         {
-            // This query pre-assembles some of the data into JSON form for speed.
-            // If we wanted to return data in a different transport format, a
-            // different query would be needed
-            $sql = "SELECT Users.ID AS ID, Users.Name, Users.Email,
-            		GROUP_CONCAT(CONCAT('\"', UserData.`Key`, '\":'), CONCAT('\"', UserData.`Value`, '\"'))
-            		AS ExtraData FROM Users LEFT OUTER JOIN UserData ON Users.ID = UserData.ID
-            		WHERE Name LIKE :NameQuery GROUP BY ID";
+            $sql = "SELECT * FROM Users WHERE Name LIKE :NameQuery";
             $nameQuery = '%' . $params["NameQuery"] . '%';
             
             if (isset($params["MaxNumber"]))
@@ -66,11 +60,8 @@ class GetUsers implements IGridService
                     
                     while ($obj = $sth->fetchObject())
                     {
-                        $userJson = sprintf('{"UserID":"%s","Name":"%s","Email":"%s"', $obj->ID, $obj->Name, $obj->Email);
-                        if (strlen($obj->ExtraData) > 0)
-                            $userJson .= ',' . $obj->ExtraData;
-                        $userJson .= '}';
-                        
+                        $userJson = sprintf('{"UserID":"%s","Name":"%s","Email":"%s","AccessLevel":%s}',
+                            $obj->ID, $obj->Name, $obj->Email, $obj->AccessLevel);
                         $found[] = $userJson;
                     }
                     
