@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -32,64 +33,48 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once(BASEPATH . 'common/ALT.php');
 
-class MoveInventoryNodes implements IGridService
+class UUID
 {
-    private $inventory;
-    
-    public function Execute($db, $params)
+    const Zero = '00000000-0000-0000-0000-000000000000';
+    const strpat = '/^(?<UUID>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/';
+
+    static function Parse($str)
     {
-        $ownerID = NULL;
-        $folderID = NULL;
-        
-        if (!isset($params['OwnerID'], $params['FolderID'], $params['Items']) ||
-            !UUID::TryParse($params['OwnerID'], $ownerID) ||
-            !UUID::TryParse($params['FolderID'], $folderID))
+        if (preg_match(self::strpat, preg_replace('/[\s\"]?/', '', trim($str)), $matches))
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
-        }
-        
-        $itemIDs = explode(',', $params['Items']);
-        if (!isset($itemIDs) || count($itemIDs) < 1)
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
-        }
-        
-        $uuidItemIDs = array();
-        foreach ($itemIDs as $itemID)
-        {
-            $parsedItemID = NULL;
-            
-            if (UUID::TryParse($itemID, $parsedItemID))
-            {
-                $uuidItemIDs[] = $parsedItemID;
-            }
-            else
-            {
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Invalid parameters" }';
-                exit();
-            }
-        }
-        
-        $this->inventory = new ALT($db);
-        
-        if ($this->inventory->MoveNodes($uuidItemIDs, $folderID))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
+            return $matches["UUID"];
         }
         else
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
-            exit();
+            return null;
         }
+    }
+    
+    static function TryParse($str, &$uuid)
+    {
+        if (preg_match(self::strpat, preg_replace('/[\s\"]?/', '', trim($str)), $matches))
+        {
+            $uuid = $matches["UUID"];
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    static function Random()
+    {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
+        );
     }
 }

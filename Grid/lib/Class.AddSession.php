@@ -32,8 +32,6 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
 
 class AddSession implements IGridService
 {
@@ -41,7 +39,7 @@ class AddSession implements IGridService
     private $SessionID;
     private $SecureSessionID;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
         if (isset($params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
         {
@@ -65,7 +63,8 @@ class AddSession implements IGridService
                     }
                     else
                     {
-                        $logger->err("Failed updating the database");
+                        log_message('error', "Failed updating the database");
+                        
                         header("Content-Type: application/json", true);
                         echo '{ "Message": "Database update failed" }';
                         exit();
@@ -73,8 +72,9 @@ class AddSession implements IGridService
                 }
                 else
                 {
-                    $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                    $logger->debug(sprintf("Query: %s", $sql));
+                    log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                    log_message('debug', sprintf("Query: %s", $sql));
+                    
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Database query error" }';
                     exit();
@@ -101,7 +101,8 @@ class AddSession implements IGridService
                     }
                     else
                     {
-                        $logger->err("Failed updating the database");
+                        log_message('error', "Failed updating the database");
+                        
                         header("Content-Type: application/json", true);
                         echo '{ "Message": "Database update failed" }';
                         exit();
@@ -125,7 +126,8 @@ class AddSession implements IGridService
                         }
                         else
                         {
-                            $logger->err("Failed retrieving user session from the database");
+                            log_message('error', "Failed retrieving user session from the database");
+                            
                             header("Content-Type: application/json", true);
                             echo '{ "Message": "No user session found" }';
                             exit();
@@ -133,8 +135,9 @@ class AddSession implements IGridService
                     }
                     else
                     {
-                        $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                        $logger->debug(sprintf("Query: %s", $sql));
+                        log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                        log_message('debug', sprintf("Query: %s", $sql));
+                        
                         header("Content-Type: application/json", true);
                         echo '{ "Message": "Database query error" }';
                         exit();

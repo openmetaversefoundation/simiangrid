@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -32,37 +33,35 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once(BASEPATH . 'common/ALT.php');
 
-class PurgeInventoryFolder implements IGridService
+class StopWatch
 {
-    private $inventory;
-    
-    public function Execute($db, $params)
+    private $Start = 0.0;
+    private $Stop = 0.0;
+    private $Elapsed = 0.0;
+
+    public function __construct($start = false)
     {
-        $ownerID = null;
-        $folderID = null;
-        
-        if (!isset($params["OwnerID"], $params["FolderID"]) || !UUID::TryParse($params["OwnerID"], $ownerID) || !UUID::TryParse($params["FolderID"], $folderID))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
-        }
-        
-        $this->inventory = new ALT($db);
-        
-        if ($this->inventory->RemoveNode($folderID, TRUE))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
-        }
+        if ($start)
+            $this->Start = microtime(true);
+    }
+
+    public function Start()
+    {
+        $this->Start = microtime(true);
+    }
+
+    public function Stop()
+    {
+        $this->Stop = microtime(true);
+    }
+
+    // return the elapsed time in milliseconds
+    public function Elapsed()
+    {
+        if ($this->Stop > 0)
+            return ($this->Stop - $this->Start) * 1000;
         else
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
-            exit();
-        }
+            return (microtime(true) - $this->Start) * 1000;
     }
 }

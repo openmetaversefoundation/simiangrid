@@ -32,11 +32,10 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
 
 class AuthorizeIdentity implements IGridService
 {
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
         if (isset($params["Identifier"], $params["Credential"], $params["Type"]))
         {
@@ -63,7 +62,8 @@ class AuthorizeIdentity implements IGridService
             }
             else
             {
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                
                 header("Content-Type: application/json", true);
                 echo '{ "Message": "Database query error" }';
                 exit();

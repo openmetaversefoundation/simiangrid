@@ -32,13 +32,10 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
-class_exists('Vector3d') || require_once ('Class.Vector3d.php');
 
 function handle_uuid_parameter($paramName, $params, &$sql, &$dbValues, &$addComma)
 {
-    $uuid = NULL;
+    $uuid = null;
     
     if (isset($params[$paramName]) && UUID::TryParse($params[$paramName], $uuid))
     {
@@ -52,9 +49,9 @@ function handle_uuid_parameter($paramName, $params, &$sql, &$dbValues, &$addComm
 
 function handle_vector_parameter($paramName, $params, &$sql, &$dbValues, &$addComma)
 {
-    $vector = NULL;
+    $vector = null;
     
-    if (isset($params[$paramName]) && Vector3d::TryParse($params[$paramName], $vector))
+    if (isset($params[$paramName]) && Vector3::TryParse($params[$paramName], $vector))
     {
         if ($addComma) $sql .= ",";
         else $addComma = TRUE;
@@ -85,7 +82,7 @@ class UpdateSession implements IGridService
     private $SceneLookAt;
     private $ExtraData;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
         if (isset($params["SessionID"]) && UUID::TryParse($params["SessionID"], $this->SessionID))
         {
@@ -120,8 +117,9 @@ class UpdateSession implements IGridService
             }
             else
             {
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                $logger->debug(sprintf("Query: %s", $sql));
+                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                log_message('debug', sprintf("Query: %s", $sql));
+                
                 header("Content-Type: application/json", true);
                 echo '{ "Message": "Database query error" }';
                 exit();

@@ -37,18 +37,15 @@
 class inventory_skeleton
 {
     private $User;
-    private $Config;
 
-    function __construct($user, $config)
+    function __construct($user)
     {
         $this->User = $user;
-        $this->Config = $config;
     }
 
     public function GetResults()
     {
-        global $logger;
-        require_once("InventoryMimeMap.php");
+        $mimes =& get_mimes();
         
         $rootFolderID = NULL;
         $items = NULL;
@@ -59,7 +56,7 @@ class inventory_skeleton
         {
             foreach ($items as $item)
             {
-                $type = isset($InventoryMimeMap, $InventoryMimeMap[$item['ContentType']]) ? $InventoryMimeMap[$item['ContentType']] : -1;
+                $type = isset($mimes[$item['ContentType']]) ? $mimes[$item['ContentType']] : -1;
                 $folders[] = array(
                     'folder_id' => (string)$item['ID'],
                     'name' => $item['Name'],
@@ -71,10 +68,10 @@ class inventory_skeleton
         }
         else
         {
-            $logger->err('Failed to fetch inventory skeleton for ' . $this->User['UserID']);
+            log_message('error', 'Failed to fetch inventory skeleton for ' . $this->User['UserID']);
         }
         
-        $logger->debug('Returning ' . count($folders) . ' inventory folders in the skeleton');
+        log_message('debug', 'Returning ' . count($folders) . ' inventory folders in the skeleton');
         return $folders;
     }
 }

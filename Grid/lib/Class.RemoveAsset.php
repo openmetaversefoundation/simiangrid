@@ -32,11 +32,10 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
 
 class AssetDelete implements IGridService
 {
-    public function Execute($db, $asset, $logger)
+    public function Execute($db, $asset)
     {
         $sql = "DELETE FROM AssetData WHERE ID=:ID";
         
@@ -51,17 +50,21 @@ class AssetDelete implements IGridService
             }
             else
             {
+                log_message('debug', "RemoveAsset could not find asset " . $asset->ID);
+                
                 header("HTTP/1.1 404 Not Found");
+                echo 'Asset not found';
                 exit();
             }
         }
         else
         {
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
+            
             header("HTTP/1.1 500 Internal Server Error");
-            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-            $logger->debug(sprintf("Query: %s", $sql));
+            echo 'Internal server error';
             exit();
         }
     }
 }
-?>

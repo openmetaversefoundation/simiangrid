@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -32,37 +33,30 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once(BASEPATH . 'common/ALT.php');
 
-class PurgeInventoryFolder implements IGridService
+class SceneLocation implements IOSD
 {
-    private $inventory;
+    public $SceneID;
+    public $Position;
+    public $LookAt;
     
-    public function Execute($db, $params)
+    public function toOSD()
     {
-        $ownerID = null;
-        $folderID = null;
+        return sprintf('{"SceneID": "%s", "Position": "%s", "LookAt": "%s"}',
+            $this->SceneID, $this->Position, $this->LookAt);
+    }
+    
+    public static function fromOSD($osd)
+    {
+        if (!isset($osd)) return NULL;
+        if (!is_array($osd)) $osd = json_decode($osd, true);
+        if (!isset($osd, $osd['SceneID'], $osd['Position'], $osd['LookAt'])) return NULL;
         
-        if (!isset($params["OwnerID"], $params["FolderID"]) || !UUID::TryParse($params["OwnerID"], $ownerID) || !UUID::TryParse($params["FolderID"], $folderID))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
-        }
+        $location = new SceneLocation();
+        $location->SceneID = $osd["SceneID"];
+        $location->Position = Vector3::Parse('<' . implode(',', $osd["Position"]) . '>');
+        $location->LookAt = Vector3::Parse('<' . implode(',', $osd["LookAt"]) . '>');
         
-        $this->inventory = new ALT($db);
-        
-        if ($this->inventory->RemoveNode($folderID, TRUE))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
-        }
-        else
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
-            exit();
-        }
+        return $location;
     }
 }

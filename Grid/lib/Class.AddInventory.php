@@ -32,19 +32,17 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('ALT') || require_once ('Class.ALT.php');
-class_exists('Curl') || require_once ('Class.Curl.php');
-class_exists('Inventory') || require_once ('Class.Inventory.php');
+require_once(BASEPATH . 'common/Curl.php');
+require_once(BASEPATH . 'common/ALT.php');
 
-function update_appearance($url, $userID, $appearance, $logger)
+function update_appearance($url, $userID, $appearance)
 {
     if (empty($url))
         return array('Message' => 'Missing user service URL');
     
     $params = array(
         'RequestMethod' => 'AddUserData',
-        'UserID' => (string)$userID,
+        'UserID' => $userID,
         'LLAppearance' => json_encode($appearance)
     );
     
@@ -53,7 +51,7 @@ function update_appearance($url, $userID, $appearance, $logger)
     
     if (!isset($response))
     {
-        $logger->err('Update appearance call to ' . $url . ' failed');
+        log_message('error', "Update appearance call to $url failed");
 	    $response = array('Message' => 'Invalid or missing response');
     }
 	
@@ -66,7 +64,7 @@ class AddInventory implements IGridService
     private $Name;
     private $inventory;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
         if (!isset($params["OwnerID"]) || !UUID::TryParse($params["OwnerID"], $this->UserID))
         {
@@ -76,7 +74,7 @@ class AddInventory implements IGridService
         }
         
         $config = parse_ini_file('services.ini', true);
-        $this->inventory = new ALT($db, $logger);
+        $this->inventory = new ALT($db);
         
         $this->Name = 'My Inventory';
         $RootID = $this->UserID;
@@ -134,7 +132,8 @@ class AddInventory implements IGridService
                 if (!$this->inventory->InsertNode($Folder))
                 {
                     $db->rollBack();
-                    $logger->err(sprintf("Error occurred during folder creation: %s", $this->inventory->LastError));
+                    log_message('error', sprintf("Error occurred during folder creation: %s", $this->inventory->LastError));
+                    
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Inventory creation error" }';
                     exit();
@@ -143,7 +142,8 @@ class AddInventory implements IGridService
             catch (Exception $ex)
             {
                 $db->rollBack();
-                $logger->err(sprintf("Error occurred during query: %s", $ex));
+                log_message('error', sprintf("Error occurred during query: %s", $ex));
+                
                 header("Content-Type: application/json", true);
                 echo '{ "Message": "Database query error" }';
                 exit();
@@ -164,7 +164,8 @@ class AddInventory implements IGridService
                 if (!$this->inventory->InsertNode($item))
                 {
                     $db->rollBack();
-                    $logger->err(sprintf("Error occurred during item creation: %s", $this->inventory->LastError));
+                    log_message('error', sprintf("Error occurred during item creation: %s", $this->inventory->LastError));
+                    
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Inventory creation error" }';
                     exit();
@@ -173,7 +174,8 @@ class AddInventory implements IGridService
             catch (Exception $ex)
             {
                 $db->rollBack();
-                $logger->err(sprintf("Error occurred during query: %s", $ex));
+                log_message('error', sprintf("Error occurred during query: %s", $ex));
+                
                 header("Content-Type: application/json", true);
                 echo '{ "Message": "Database query error" }';
                 exit();
@@ -214,7 +216,7 @@ class AddInventory implements IGridService
         );
         
         $userService = $config['UserService']['server_url'];
-        $response = update_appearance($userService, $this->UserID, $appearance, $logger);
+        $response = update_appearance($userService, $this->UserID, $appearance);
         
         if (!empty($response['Success']))
         {

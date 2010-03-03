@@ -38,14 +38,18 @@ class inventory_lib_owner
 {
     private $Config;
 
-    function __construct($user, $config)
+    function __construct($user)
     {
-        $this->Config = $config;
     }
 
     public function GetResults()
     {
-        $results[] = array('agent_id' => $this->Config["shared_folder_owner_id"]);
+        $config =& get_config();
+        
+        $results[] = array(
+        	'agent_id' => $config['library_owner_id']
+        );
+        
         return $results;
     }
 }

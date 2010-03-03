@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -27,24 +28,21 @@
  *
  *
  * @package    SimianGrid
- * @author     Jim Radford <http://www.jimradford.com/>
+ * @author     John Hurliman <http://software.intel.com/en-us/blogs/author/john-hurliman/>
  * @copyright  Open Metaverse Foundation
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-class_exists('Inventory') || require_once ('Class.Inventory.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
+require_once('Inventory.php');
 
 class ALT
 {
     public $LastError = '';
     
     private $conn;
-    private $logger;
 
-    public function __construct($db_conn, $logger)
+    public function __construct($db_conn)
     {
-        $this->logger = $logger;
         if (!$db_conn || !($db_conn instanceof PDO))
             throw new Exception("ALT::__construct expects first parameter passed to be a valid database resource. " . print_r($db_conn, true));
         
@@ -69,8 +67,8 @@ class ALT
             if (!empty($inventory->ExtraData))
                 $sql .= ", ExtraData=VALUES(ExtraData)";
             
-            // ParentID of UUID.Zero means this is a root folder, so we set ParentID to null
-            if ($inventory->ParentID == '00000000-0000-0000-0000-000000000000')
+            // ParentID of UUID::Zero means this is a root folder, so we set ParentID to null
+            if ($inventory->ParentID == UUID::Zero)
                 $inventory->ParentID = NULL;
             
             $sth = $this->conn->prepare($sql);
@@ -171,7 +169,7 @@ class ALT
         }
         else
         {
-            $this->logger->err(sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
+            log_message('error', sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
             $this->LastError = '[ALT::Fetch] SQL Query Error ' . sprintf("Error occurred during query: %d %s %s", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql);
             return FALSE;
         }
@@ -215,7 +213,7 @@ class ALT
         }
         else
         {
-            $this->logger->err(sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
+            log_message('error', sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
             $this->LastError = '[ALT::Fetch] SQL Query Error ' . sprintf("Error occurred during query: %d %s %s", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql);
         }
         
@@ -225,7 +223,7 @@ class ALT
             return FALSE;
     }
 
-    public function MoveNodes($sourceIDs, UUID $newParentID)
+    public function MoveNodes($sourceIDs, $newParentID)
     {
         if (!is_array($sourceIDs) || count($sourceIDs) < 1)
         {
@@ -257,13 +255,13 @@ class ALT
         }
         else
         {
-            $this->logger->err(sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
+            log_message('error', sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
             $this->LastError = '[ALT::Move] SQL Query Error ' . sprintf("Error occurred during query: %d %s %s", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql);
             return FALSE;
         }
     }
 
-    public function RemoveNode(UUID $itemID, $childrenOnly = FALSE)
+    public function RemoveNode($itemID, $childrenOnly = FALSE)
     {
         if (!$childrenOnly)
             $sql = "DELETE FROM Inventory WHERE ID=:ItemID";
@@ -278,7 +276,7 @@ class ALT
         }
         else
         {
-            $this->logger->err(sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
+            log_message('error', sprintf("Error occurred during query: %d %s SQL:'%s'", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql));
             $this->LastError = '[ALT::Remove] SQL Query Error ' . sprintf("Error occurred during query: %d %s %s", $sth->errorCode(), print_r($sth->errorInfo(), true), $sql);
             return FALSE;
         }

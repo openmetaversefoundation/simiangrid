@@ -36,15 +36,19 @@
 
 class global_textures
 {
-    function __construct($user, $config)
-    {}
+    function __construct($user)
+    {
+    }
 
     public function GetResults()
     {
-        $sun = (isset($this->Config["sun_texture_id"]) && $this->Config["sun_texture_id"]) != '' ? $this->Config["sun_texture_id"] : '00000000-0000-0000-0000-000000000000';
-        $moon = (isset($this->Config["moon_texture_id"]) && $this->Config["moon_texture_id"]) != '' ? $this->Config["moon_texture_id"] : '00000000-0000-0000-0000-000000000000';
-        $cloud = (isset($this->Config["cloud_texture_id"]) && $this->Config["cloud_texture_id"]) != '' ? $this->Config["cloud_texture_id"] : '00000000-0000-0000-0000-000000000000';
-        $result[] = array('sun_texture_id' => $sun , 'moon_texture_id' => $moon , 'cloud_texture_id' => $cloud);
+        $config =& get_config();
+        
+        $result[] = array(
+        	'sun_texture_id' => $config['sun_texture_id'],
+        	'moon_texture_id' => $config['moon_texture_id'],
+        	'cloud_texture_id' => $config['cloud_texture_id']);
+        
         return $result;
     }
 }

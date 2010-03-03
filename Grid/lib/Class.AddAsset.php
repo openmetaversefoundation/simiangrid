@@ -32,17 +32,16 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
 
 class AddAsset implements IGridService
 {
-    public function Execute($db, $asset, $logger)
+    public function Execute($db, $asset)
     {
         $p = ($asset->Public) ? '1' : '0';
         $t = ($asset->Temporary) ? '1' : '0';
         
         $sql = "INSERT INTO AssetData (ID, Data, ContentType, CreatorID, SHA256, Public, Temporary)
-        		VALUES (:ID, :Data, :ContentType, :CreatorID, :SHA256, " . $p . ", " . $t . ")
+        		VALUES (:ID, :Data, :ContentType, :CreatorID, :SHA256, $p, $t)
         		ON DUPLICATE KEY UPDATE Data=VALUES(Data), SHA256=VALUES(SHA256), Public=VALUES(Public), Temporary=VALUES(Temporary)";
         
         $sth = $db->prepare($sql);
@@ -54,7 +53,7 @@ class AddAsset implements IGridService
         	':CreatorID' => $asset->CreatorID,
         	':SHA256' => $asset->SHA256)))
         {
-            $status = "";
+            $status = '';
             
             // 0 = No Update to existing asset
             // 1 = A new asset was created
@@ -73,7 +72,8 @@ class AddAsset implements IGridService
             }
             else
             {
-                $logger->err(sprintf("Unable to store asset: %s", $asset->ID));
+                log_message('error', sprintf("Unable to store asset: %s", $asset->ID));
+                
                 header("Content-Type: application/json", true);
                 echo '{ "Message": "Unable to store asset" }';
                 exit();

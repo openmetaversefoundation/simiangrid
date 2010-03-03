@@ -1,6 +1,6 @@
-<?php
-/** Simian grid services
- * Provides structures for InventoryFolders and InventoryItems
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -34,37 +34,12 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-class_exists('UUID') || require_once ('Class.UUID.php');
-interface_exists('IOSD') || require_once ('Interface.OSD.php');
-
-/**
- * Inventory Base class
- * @package UserServices
- * @subpackage Inventory
- */
-class Inventory
-{
-    /**
-     * The Inventory Item or Folder ID
-     * @access private
-     * @var UUID
-     */
-    public $ID;
-    public $ParentID;
-    public $OwnerID;
-    public $Name;
-    public $ContentType;
-    public $ExtraData;
-    public $CreationDate;
-    public $Type;
-}
-
 class InventoryFolder extends Inventory implements IOSD
 {
     public $Version = 0;
     public $ChildCount = 0;
 
-    function __construct(UUID $id)
+    function __construct($id)
     {
         $this->Type = 'Folder';
         $this->ID = $id;
@@ -135,7 +110,7 @@ class InventoryItem extends Inventory implements IOSD
     public $CreatorID;
     public $Description;
 
-    function __construct(UUID $id)
+    function __construct($id)
     {
         $this->ID = $id;
         $this->Type = 'Item';

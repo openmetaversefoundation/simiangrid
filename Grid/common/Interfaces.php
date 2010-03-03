@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -33,31 +34,37 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-class_exists('Vector3d') || require_once ('Class.Vector3d.php');
-
-class SceneLocation
+interface IGridService
 {
-    public $SceneName;
-    public $Position;
-    public $LookAt;
-    
-    public function toOSD()
-    {
-        return sprintf('{"SceneName": "%s", "Position": "%s", "LookAt": "%s"}',
-            $this->SceneName, $this->Position, $this->LookAt);
-    }
-    
-    public static function fromOSD($osd)
-    {
-        if (!isset($osd)) return NULL;
-        if (!is_array($osd)) $osd = json_decode($osd, true);
-        if (!isset($osd)) return NULL;
-        
-        $location = new SceneLocation();
-        $location->SceneName = $osd["SceneName"];
-        $location->Position = Vector3d::Parse('<' . implode(',', $osd["Position"]) . '>');
-        $location->LookAt = Vector3d::Parse('<' . implode(',', $osd["LookAt"]) . '>');
-        
-        return $location;
-    }
+    public function Execute($db, $request);
+}
+
+interface IOSD
+{
+    public function toOSD();
+    public static function fromOSD($strOsd);
+}
+
+class Asset
+{
+    public $ID;
+    public $CreatorID;
+    public $ContentType;
+    public $CreationDate;
+    public $SHA256;
+    public $Temporary;
+    public $Public;
+    public $Data;
+}
+
+class Inventory
+{
+    public $ID;
+    public $ParentID;
+    public $OwnerID;
+    public $Name;
+    public $ContentType;
+    public $ExtraData;
+    public $CreationDate;
+    public $Type;
 }

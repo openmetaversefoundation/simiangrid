@@ -38,19 +38,22 @@ class login_flags
 {
     private $User;
 
-    function __construct($user, $config)
+    function __construct($user)
     {
         $this->User = $user;
     }
 
     public function GetResults()
     {
+        $everLoggedIn = isset($this->User->LastLocation);
+        
         $result[] = array(
         	'stipend_since_login' => 'N',
-        	'gendered' => (isset($this->User->LastLocation) && $this->User->LastLocation != '') ? 'Y' : 'N',
+        	'gendered' => 'Y',
         	'daylight_savings' => (date('I')) ? 'Y' : 'N',
-        	'ever_logged_in' => (isset($this->User->LastLocation) && $this->User->LastLocation != '') ? 'Y' : 'N'
+        	'ever_logged_in' => ($everLoggedIn) ? 'Y' : 'N'
         );
+        
         return $result;
     }
 }

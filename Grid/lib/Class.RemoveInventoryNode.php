@@ -32,18 +32,16 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
-class_exists('ALT') || require_once ('Class.ALT.php');
+require_once(BASEPATH . 'common/ALT.php');
 
 class RemoveInventoryNode implements IGridService
 {
     private $inventory;
     
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
-        $ownerID = NULL;
-        $itemID = NULL;
+        $ownerID = null;
+        $itemID = null;
         
         if (!isset($params["OwnerID"], $params["ItemID"]) || !UUID::TryParse($params["OwnerID"], $ownerID) || !UUID::TryParse($params["ItemID"], $itemID))
         {
@@ -52,7 +50,7 @@ class RemoveInventoryNode implements IGridService
             exit();
         }
         
-        $this->inventory = new ALT($db, $logger);
+        $this->inventory = new ALT($db);
         
         if ($this->inventory->RemoveNode($itemID, FALSE))
         {

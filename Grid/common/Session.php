@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -32,9 +33,6 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IOSD') || require_once ('Interface.OSD.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
-class_exists('Vector3d') || require_once ('Class.Vector3d.php');
 
 class Session implements IOSD
 {
@@ -52,8 +50,8 @@ class Session implements IOSD
         $this->SessionID = new UUID();
         $this->SecureSessionID = new UUID();
         $this->SceneID = new UUID();
-        $this->ScenePosition = new Vector3d();
-        $this->SceneLookAt = new Vector3d();
+        $this->ScenePosition = new Vector3();
+        $this->SceneLookAt = new Vector3();
         $this->ExtraData = '';
     }
 
@@ -112,8 +110,8 @@ class Session implements IOSD
         $session->SessionID = UUID::Parse($osd['SessionID']);
         $session->SecureSessionID = UUID::Parse($osd['SecureSessionID']);
         $session->SceneID = UUID::Parse($osd['SceneID']);
-        $session->ScenePosition = Vector3d::Parse($osd['ScenePosition']);
-        $session->SceneLookAt = Vector3d::Parse($osd['SceneLookAt']);
+        $session->ScenePosition = Vector3::Parse($osd['ScenePosition']);
+        $session->SceneLookAt = Vector3::Parse($osd['SceneLookAt']);
         $session->ExtraData = json_decode($osd['ExtraData']);
         
         return $session;

@@ -32,18 +32,16 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('ALT') || require_once ('Class.ALT.php');
-class_exists('Inventory') || require_once ('Class.Inventory.php');
+require_once(BASEPATH . 'common/ALT.php');
 
 class AddInventoryFolder implements IGridService
 {
     private $Folder;
     private $inventory;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
-        $this->inventory = new ALT($db, $logger);
+        $this->inventory = new ALT($db);
         
         $folderid = '';
         if (!isset($params["FolderID"]) || !UUID::TryParse($params["FolderID"], $folderid))
@@ -70,7 +68,7 @@ class AddInventoryFolder implements IGridService
             if ($result != FALSE)
             {
                 header("Content-Type: application/json", true);
-                echo sprintf('{ "Success": true, "FolderID": "%s" }', $result->UUID);
+                echo sprintf('{ "Success": true, "FolderID": "%s" }', $result);
                 exit();
             }
             else
@@ -82,7 +80,8 @@ class AddInventoryFolder implements IGridService
         }
         catch (Exception $ex)
         {
-            $logger->err(sprintf("Error occurred during query: %s", $ex));
+            log_message('error', sprintf("Error occurred during query: %s", $ex));
+            
             header("Content-Type: application/json", true);
             echo '{ "Message": "Database query error" }';
             exit();

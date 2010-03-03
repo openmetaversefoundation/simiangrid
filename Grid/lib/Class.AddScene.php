@@ -32,16 +32,13 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
-class_exists('Scene') || require_once ('Class.Scene.php');
-class_exists('Vector3d') || require_once ('Class.Vector3d.php');
+require_once(BASEPATH . 'common/Scene.php');
 
 class AddScene implements IGridService
 {
     private $Scene;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
         $this->Scene = new Scene();
         
@@ -51,7 +48,7 @@ class AddScene implements IGridService
             $sql = "UPDATE Scenes SET Enabled=0 WHERE ID=:ID";
             
             $sth = $db->prepare($sql);
-            if ($sth->execute(array(':ID' => $this->Scene->ID->UUID)))
+            if ($sth->execute(array(':ID' => $this->Scene->ID)))
             {
                 if ($sth->rowCount() > 0)
                 {
@@ -61,7 +58,8 @@ class AddScene implements IGridService
                 }
                 else
                 {
-                    $logger->err("Failed updating the database");
+                    log_message('error', "Failed updating the database");
+                    
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Database update failed" }';
                     exit();
@@ -69,7 +67,8 @@ class AddScene implements IGridService
             }
             else
             {
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                
                 header("Content-Type: application/json", true);
                 echo '{ "Message": "Database query error" }';
                 exit();
@@ -78,9 +77,13 @@ class AddScene implements IGridService
         else
         {
             // Scene enabling
-            if (!isset($params["SceneID"], $params["Name"], $params["MinPosition"], $params["MaxPosition"], $params["Address"], $params["Enabled"]) || !UUID::TryParse($params["SceneID"], $this->Scene->ID) || !Vector3d::TryParse($params["MinPosition"], $this->Scene->MinPosition) || !Vector3d::TryParse($params["MaxPosition"], $this->Scene->MaxPosition))
+            if (!isset($params["SceneID"], $params["Name"], $params["MinPosition"], $params["MaxPosition"], $params["Address"], $params["Enabled"]) ||
+                !UUID::TryParse($params["SceneID"], $this->Scene->ID) ||
+                !Vector3::TryParse($params["MinPosition"], $this->Scene->MinPosition) ||
+                !Vector3::TryParse($params["MaxPosition"], $this->Scene->MaxPosition))
             {
-                $logger->err(sprintf("AddScene: Unable to parse passed parameters or parameter missing: '%s'", print_r($params, true)));
+                log_message('error', sprintf("AddScene: Unable to parse passed parameters or parameter missing: '%s'", print_r($params, true)));
+                
                 header("Content-Type: application/json", true);
                 echo '{ "Message": "Invalid parameters" }';
                 exit();
@@ -100,21 +103,21 @@ class AddScene implements IGridService
             }
             
             $sql = "REPLACE INTO Scenes (ID, Name, MinX, MinY, MinZ, MaxX, MaxY, MaxZ, Address, Enabled, ExtraData, XYPlane) 
-                        VALUES (:ID, :Name, :MinX, :MinY,  :MinZ, :MaxX, :MaxY, :MaxZ, :Address, :Enabled, :ExtraData, GeomFromText(:XY))";
+					VALUES (:ID, :Name, :MinX, :MinY,  :MinZ, :MaxX, :MaxY, :MaxZ, :Address, :Enabled, :ExtraData, GeomFromText(:XY))";
             
             $sth = $db->prepare($sql);
             if ($sth->execute(array(
-            	':ID' => $this->Scene->ID->UUID ,
-            	':Name' => $this->Scene->Name ,
-            	':MinX' => $this->Scene->MinPosition->X ,
-            	':MinY' => $this->Scene->MinPosition->Y ,
-            	':MinZ' => $this->Scene->MinPosition->Z ,
-            	':MaxX' => $this->Scene->MaxPosition->X ,
-            	':MaxY' => $this->Scene->MaxPosition->Y ,
-            	':MaxZ' => $this->Scene->MaxPosition->Z ,
-            	':Address' => $this->Scene->Address ,
-            	':Enabled' => $this->Scene->Enabled ,
-            	':ExtraData' => $this->Scene->ExtraData ,
+            	':ID' => $this->Scene->ID,
+            	':Name' => $this->Scene->Name,
+            	':MinX' => $this->Scene->MinPosition->X,
+            	':MinY' => $this->Scene->MinPosition->Y,
+            	':MinZ' => $this->Scene->MinPosition->Z,
+            	':MaxX' => $this->Scene->MaxPosition->X,
+            	':MaxY' => $this->Scene->MaxPosition->Y,
+            	':MaxZ' => $this->Scene->MaxPosition->Z,
+            	':Address' => $this->Scene->Address,
+            	':Enabled' => $this->Scene->Enabled,
+            	':ExtraData' => $this->Scene->ExtraData,
             	':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))",
                     $this->Scene->MinPosition->X, $this->Scene->MinPosition->Y,
                     $this->Scene->MaxPosition->X, $this->Scene->MinPosition->Y,
@@ -130,7 +133,8 @@ class AddScene implements IGridService
                 }
                 else
                 {
-                    $logger->err("Failed updating the database");
+                    log_message('error', "Failed updating the database");
+                    
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Database update failed" }';
                     exit();
@@ -138,7 +142,8 @@ class AddScene implements IGridService
             }
             else
             {
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                
                 header("Content-Type: application/json", true);
                 echo '{ "Message": "Database query error" }';
                 exit();

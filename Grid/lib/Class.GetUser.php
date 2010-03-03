@@ -32,14 +32,12 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
 
 class GetUser implements IGridService
 {
     private $UserID;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
         $sql = "SELECT * FROM Users";
         $values = array();
@@ -103,7 +101,8 @@ class GetUser implements IGridService
                 }
                 else
                 {
-                    $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                    log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                    
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Database query error" }';
                     exit();
@@ -118,7 +117,8 @@ class GetUser implements IGridService
         }
         else
         {
-            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            
             header("Content-Type: application/json", true);
             echo '{ "Message": "Database query error" }';
             exit();

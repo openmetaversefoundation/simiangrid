@@ -32,65 +32,70 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-    interface_exists('IGridService') || require_once('Interface.GridService.php');
 
-    class GetAsset implements IGridService
+class GetAsset implements IGridService
+{
+    public function Execute($db, $asset)
     {
-        public function Execute($db, $asset, $logger)
+        $headrequest = (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE);
+        
+        if ($headrequest)
         {
-            $headrequest = (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE);
-            
-            if ($headrequest)
-            {
-                $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
+            $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
                 		LENGTH(Data) as ContentLength FROM AssetData WHERE ID=:ID";
-            }
-            else
-            {
-                $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
+        }
+        else
+        {
+            $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
                 		LENGTH(Data) as ContentLength, Data FROM AssetData WHERE ID=:ID";
-            }
-
-            $sth = $db->prepare($sql);
-
-            if($sth->execute(array(':ID' => $asset->ID)))
+        }
+        
+        $sth = $db->prepare($sql);
+        
+        if ($sth->execute(array(':ID' => $asset->ID)))
+        {
+            if ($sth->rowCount() == 1)
             {
-                if($sth->rowCount() == 1)
+                $obj = $sth->fetchObject();
+                
+                // TODO: Check authentication once we support one or more auth methods
+                if ($obj->Public)
                 {
-                    $obj = $sth->fetchObject();
+                    header("ETag: " . $obj->SHA256);
+                    header("Last-Modified: " . gmdate(DATE_RFC850, $obj->CreationDate));
+                    header("X-Asset-Creator-Id: " . $obj->CreatorID);
+                    header("Content-Type: " . $obj->ContentType);
+                    header("Content-Length: " . $obj->ContentLength);
                     
-                    // TODO: Check authentication once we support one or more auth methods
-                    if ($obj->Public)
-                    {
-                        header("ETag: " . $obj->SHA256);
-                        header("Last-Modified: " . gmdate(DATE_RFC850, $obj->CreationDate));
-                        header("X-Asset-Creator-Id: " . $obj->CreatorID);
-                        header("Content-Type: " . $obj->ContentType);
-                        header("Content-Length: " . $obj->ContentLength);
-                        
-                        if (!$headrequest)
-                            echo $obj->Data;
-                        
-                        exit();
-                    }
-                    else
-                    {
-                        header("HTTP/1.1 403 Forbidden");
-                        exit();
-                    }
+                    if (!$headrequest)
+                        echo $obj->Data;
+                    
+                    exit();
                 }
                 else
                 {
-                    header("HTTP/1.1 404 Not Found");
+                    log_message('debug', "Access forbidden to private asset " . $asset->ID);
+                    
+                    header("HTTP/1.1 403 Forbidden");
+                    echo 'Access forbidden';
                     exit();
                 }
             }
             else
             {
-                header("HTTP/1.1 500 Internal Server Error");
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                $logger->debug(sprintf("Query: %s", $sql));
+                header("HTTP/1.1 404 Not Found");
+                echo 'Asset not found';
                 exit();
             }
         }
+        else
+        {
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
+            
+            header("HTTP/1.1 500 Internal Server Error");
+            echo 'Internal server error';
+            exit();
+        }
     }
+}

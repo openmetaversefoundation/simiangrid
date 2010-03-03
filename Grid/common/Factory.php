@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -27,69 +28,52 @@
  *
  *
  * @package    SimianGrid
- * @author     Jim Radford <http://www.jimradford.com/>
+ * @author     John Hurliman <http://software.intel.com/en-us/blogs/author/john-hurliman/>
  * @copyright  Open Metaverse Foundation
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once(BASEPATH . 'common/ALT.php');
 
-class MoveInventoryNodes implements IGridService
+function load_class($type)
 {
-    private $inventory;
+    if (class_exists($type))
+        return new $type;
     
-    public function Execute($db, $params)
+    $classFile = BASEPATH . 'lib/Class.' . $type . '.php';
+    
+    if (file_exists($classFile))
     {
-        $ownerID = NULL;
-        $folderID = NULL;
-        
-        if (!isset($params['OwnerID'], $params['FolderID'], $params['Items']) ||
-            !UUID::TryParse($params['OwnerID'], $ownerID) ||
-            !UUID::TryParse($params['FolderID'], $folderID))
+        include_once $classFile;
+        return new $type();
+    }
+    else
+    {
+        log_message('warn', "$classFile not found");
+        return false;
+    }
+}
+
+function execute_command($command, $db, $request)
+{
+    if (!empty($command) && ($action = load_class($command)))
+    {
+        try
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
+            $action->Execute($db, $request);
         }
-        
-        $itemIDs = explode(',', $params['Items']);
-        if (!isset($itemIDs) || count($itemIDs) < 1)
+        catch (Exception $ex)
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
-        }
-        
-        $uuidItemIDs = array();
-        foreach ($itemIDs as $itemID)
-        {
-            $parsedItemID = NULL;
+            log_message('error', "Service $command threw an exception: " . print_r($ex, true));
             
-            if (UUID::TryParse($itemID, $parsedItemID))
-            {
-                $uuidItemIDs[] = $parsedItemID;
-            }
-            else
-            {
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Invalid parameters" }';
-                exit();
-            }
-        }
-        
-        $this->inventory = new ALT($db);
-        
-        if ($this->inventory->MoveNodes($uuidItemIDs, $folderID))
-        {
             header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
+            echo '{"Message":"Unhandled error"}';
         }
-        else
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
-            exit();
-        }
+    }
+    else
+    {
+        log_message('warn', 'An empty or unrecognized command was requested: ' . $command);
+        
+        header("Content-Type: application/json", true);
+        echo '{"Message":"Unsupported or missing RequestMethod"}';
     }
 }

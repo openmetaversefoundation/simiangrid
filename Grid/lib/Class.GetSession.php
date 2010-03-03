@@ -32,16 +32,13 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
-class_exists('Vector3d') || require_once ('Class.Vector3d.php');
-class_exists('Session') || require_once ('Class.Session.php');
+require_once(BASEPATH . 'common/Session.php');
 
 class GetSession implements IGridService
 {
     private $ID;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
         $sql = "SELECT * FROM Sessions WHERE";
         
@@ -73,8 +70,8 @@ class GetSession implements IGridService
                 $session->SessionID = $obj->SessionID;
                 $session->SecureSessionID = $obj->SecureSessionID;
                 $session->SceneID = $obj->SceneID;
-                $session->ScenePosition = Vector3d::Parse($obj->ScenePosition);
-                $session->SceneLookAt = Vector3d::Parse($obj->SceneLookAt);
+                $session->ScenePosition = Vector3::Parse($obj->ScenePosition);
+                $session->SceneLookAt = Vector3::Parse($obj->SceneLookAt);
                 $session->ExtraData = $obj->ExtraData;
                 if (empty($session->ExtraData))
                     $session->ExtraData = "{}";
@@ -97,8 +94,9 @@ class GetSession implements IGridService
         }
         else
         {
-            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-            $logger->debug(sprintf("Query: %s", $sql));
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
+            
             header("Content-Type: application/json", true);
             echo '{ "Message": "Database query error" }';
             exit();

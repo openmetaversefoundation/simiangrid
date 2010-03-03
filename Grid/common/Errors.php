@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -27,42 +28,50 @@
  *
  *
  * @package    SimianGrid
- * @author     Jim Radford <http://www.jimradford.com/>
+ * @author     John Hurliman <http://software.intel.com/en-us/blogs/author/john-hurliman/>
  * @copyright  Open Metaverse Foundation
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once(BASEPATH . 'common/ALT.php');
 
-class PurgeInventoryFolder implements IGridService
+class ErrorHandler
 {
-    private $inventory;
-    
-    public function Execute($db, $params)
+    public static function handle_error($code, $message, $file, $line)
     {
-        $ownerID = null;
-        $folderID = null;
+        if (0 == error_reporting())
+            return;
         
-        if (!isset($params["OwnerID"], $params["FolderID"]) || !UUID::TryParse($params["OwnerID"], $ownerID) || !UUID::TryParse($params["FolderID"], $folderID))
+        $priority = 'error';
+        
+        switch ($code)
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
+            case E_ERROR:
+            case E_USER_ERROR:
+                $priority = 'error';
+                break;
+            case E_WARNING:
+            case E_USER_WARNING:
+                $priority = 'warn';
+                break;
+            case E_NOTICE:
+            case E_USER_NOTICE:
+            default:
+                $priotity = 'info';
         }
         
-        $this->inventory = new ALT($db);
-        
-        if ($this->inventory->RemoveNode($folderID, TRUE))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
-        }
-        else
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
-            exit();
-        }
+        log_message($priority, 'CAUGHT ERROR: ' . $message . ' in ' . $file . ' at line ' . $line);
+        throw new ErrorException($message, 0, $code, $file, $line);
     }
 }
+
+class ExceptionHandler
+{
+    public static function handle_exception(Exception $e)
+    {
+        log_message('error', sprintf("CAUGHT EXCEPTION: Class: %s Code: %d Message: %s -- %s",
+            get_class($e), $e->getCode(), $e->getMessage(), print_r($e, true)));
+    }
+}
+
+set_error_handler(array("ErrorHandler" , "handle_error"));
+set_exception_handler(array("ExceptionHandler" , "handle_exception"));

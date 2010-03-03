@@ -36,12 +36,17 @@
 
 class tutorial_setting
 {
-    function __construct($userID)
-    {}
+    function __construct($user)
+    {
+    }
 
     public function GetResults()
     {
-        $result[] = array('tutorial_url' => "http://help.simian.org/orientation" , 'use_tutorial' => '');
+        $result[] = array(
+        	'tutorial_url' => "http://help.simian.org/orientation",
+        	'use_tutorial' => ''
+        );
+        
         return $result;
     }
 }

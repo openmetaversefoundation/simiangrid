@@ -36,7 +36,7 @@
 
 class event_notifications
 {
-    function __construct($userID)
+    function __construct($user)
     {}
 
     public function GetResults()

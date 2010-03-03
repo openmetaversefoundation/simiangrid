@@ -1,4 +1,4 @@
-<?php
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 /** Simian grid services
  *
  * PHP version 5
@@ -32,8 +32,6 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-class_exists('Inventory') || require_once ('Class.Inventory.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
 
 class MPTT
 {
@@ -68,12 +66,12 @@ class MPTT
         
         $parent_level = 0;
         
-        if ($inventory->ParentID->UUID == UUID::Zero)
+        if ($inventory->ParentID == UUID::Zero)
         {
             $parent_level = 1;
             $sql = sprintf("SELECT RightNode + 1 AS RightNode FROM Inventory WHERE OwnerID=:OwnerID ORDER BY RightNode DESC LIMIT 1");
             $sth = $this->conn->prepare($sql);
-            if ($sth->execute(array(':OwnerID' => $inventory->OwnerID->UUID)))
+            if ($sth->execute(array(':OwnerID' => $inventory->OwnerID)))
             {
                 if ($sth->rowCount() == 1)
                 {
@@ -86,14 +84,14 @@ class MPTT
         {
             $sql = sprintf("SELECT RightNode FROM Inventory WHERE OwnerID=:OwnerID AND ID=:ParentID AND Type='Folder' ORDER BY RightNode DESC LIMIT 1");
             $sth = $this->conn->prepare($sql);
-            if ($sth->execute(array(':OwnerID' => $inventory->OwnerID->UUID , ':ParentID' => $inventory->ParentID->UUID)) && $sth->rowCount() == 1)
+            if ($sth->execute(array(':OwnerID' => $inventory->OwnerID, ':ParentID' => $inventory->ParentID)) && $sth->rowCount() == 1)
             {
                 $obj = $sth->fetchObject();
                 $parent_level = (int)$obj->RightNode;
             }
             else
             {
-                $this->LastError = sprintf("Unable to locate destinations parent folder: %s for %s", $inventory->ParentID->UUID, $inventory->OwnerID->UUID);
+                $this->LastError = sprintf("Unable to locate destinations parent folder: %s for %s", $inventory->ParentID, $inventory->OwnerID);
                 return FALSE;
             }
         }
@@ -110,9 +108,9 @@ class MPTT
             
             $sth = $this->conn->prepare($sql);
             if ($sth->execute(array(
-            	':ID' => $inventory->ID->UUID,
-            	':ParentID' => $inventory->ParentID->UUID,
-            	':OwnerID' => $inventory->OwnerID->UUID,
+            	':ID' => $inventory->ID,
+            	':ParentID' => $inventory->ParentID,
+            	':OwnerID' => $inventory->OwnerID,
             	':Name' => $inventory->Name,
             	':ContentType' => $inventory->ContentType,
             	':ParentLevel' => $parent_level)))
@@ -122,7 +120,7 @@ class MPTT
                  */
                 $sql = "UPDATE Inventory SET Version=Version+1 WHERE ID=:Parent";
                 $sth = $this->conn->prepare($sql);
-                $sth->execute(array(':Parent' => $inventory->ParentID->UUID));
+                $sth->execute(array(':Parent' => $inventory->ParentID));
                 
                 // Node Inserted!
                 return $inventory->ID;
@@ -144,11 +142,11 @@ class MPTT
             
             $sth = $this->conn->prepare($sql);
             if ($sth->execute(array(
-            	':ID' => $inventory->ID->UUID,
-            	':AssetID' => $inventory->AssetID->UUID,
-            	':ParentID' => $inventory->ParentID->UUID,
-            	':OwnerID' => $inventory->OwnerID->UUID,
-            	':CreatorID' => $inventory->CreatorID->UUID,
+            	':ID' => $inventory->ID,
+            	':AssetID' => $inventory->AssetID,
+            	':ParentID' => $inventory->ParentID,
+            	':OwnerID' => $inventory->OwnerID,
+            	':CreatorID' => $inventory->CreatorID,
             	':Name' => $inventory->Name,
             	':Description' => $inventory->Description,
             	':ContentType' => $inventory->ContentType,
@@ -159,7 +157,7 @@ class MPTT
                  */
                 $sql = "UPDATE Inventory SET Version=Version+1 WHERE ID=:Parent";
                 $sth = $this->conn->prepare($sql);
-                $sth->execute(array(':Parent' => $inventory->ParentID->UUID));
+                $sth->execute(array(':Parent' => $inventory->ParentID));
                 
                 return $inventory->ID;
             }
@@ -213,7 +211,7 @@ class MPTT
     public function FetchDescendants($folderID, $fetchFolders = TRUE, $fetchItems = TRUE, $childrenOnly = FALSE)
     {
         global $logger;
-        //            $logger->debug("MPTT::FetchDescendants FolderID: $folderID->UUID");
+        //            $logger->debug("MPTT::FetchDescendants FolderID: $folderID");
         $sql = "SELECT * FROM Inventory WHERE ID=:Parent";
         $sth = $this->conn->prepare($sql);
         
@@ -279,7 +277,7 @@ class MPTT
     {
         $sql = "SELECT LeftNode, RightNode, Type FROM Inventory WHERE ID=:ID";
         $sth = $this->conn->prepare($sql);
-        if ($sth->execute(array(':ID' => $itemID->UUID)))
+        if ($sth->execute(array(':ID' => $itemID)))
         {
             $obj = $sth->fetchObject();
             $deleted_left = $obj->LeftNode;
@@ -293,7 +291,7 @@ class MPTT
         
         if (empty($deleted_left) || empty($deleted_right))
         {
-            $this->LastError = "[MPTT::RemoveNode] Unable to find Node for $itemID->UUID";
+            $this->LastError = "[MPTT::RemoveNode] Unable to find Node for $itemID";
             return FALSE;
         }
         

@@ -32,14 +32,12 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
 
 class AddIdentity implements IGridService
 {
     private $UserID;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
         if (isset($params["Identifier"], $params["Credential"], $params["Type"], $params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
         {
@@ -59,7 +57,8 @@ class AddIdentity implements IGridService
                 }
                 else
                 {
-                    $logger->err("Failed updating the database");
+                    log_message('error', "Failed updating the database");
+                    
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Database update failed" }';
                     exit();
@@ -67,8 +66,9 @@ class AddIdentity implements IGridService
             }
             else
             {
-                $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                $logger->debug(sprintf("Query: %s", $sql));
+                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                log_message('debug', sprintf("Query: %s", $sql));
+                
                 header("Content-Type: application/json", true);
                 echo '{ "Message": "Database query error" }';
                 exit();

@@ -37,7 +37,7 @@
 class classified_categories
 {
 
-    function __construct($userID)
+    function __construct($user)
     {}
 
     public function GetResults()

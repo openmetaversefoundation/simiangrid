@@ -32,15 +32,13 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('UUID') || require_once ('Class.UUID.php');
 
 class AddCapability implements IGridService
 {
     private $CapabilityID;
     private $OwnerID;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
         // TODO: Sanity check the expiration date
         // TODO: Also run a regex on Resource to make sure it's a valid (relative or absolute) URL
@@ -71,8 +69,9 @@ class AddCapability implements IGridService
         }
         else
         {
-            $logger->err(sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-            $logger->debug(sprintf("Query: %s", $sql));
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
+            
             header("Content-Type: application/json", true);
             echo '{ "Message": "Database query error" }';
             exit();

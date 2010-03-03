@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -27,69 +28,56 @@
  *
  *
  * @package    SimianGrid
- * @author     Jim Radford <http://www.jimradford.com/>
+ * @author     John Hurliman <http://software.intel.com/en-us/blogs/author/john-hurliman/>
  * @copyright  Open Metaverse Foundation
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once(BASEPATH . 'common/ALT.php');
 
-class MoveInventoryNodes implements IGridService
+function &get_config()
 {
-    private $inventory;
+    static $main_conf;
     
-    public function Execute($db, $params)
+    if (!isset($main_conf))
     {
-        $ownerID = NULL;
-        $folderID = NULL;
-        
-        if (!isset($params['OwnerID'], $params['FolderID'], $params['Items']) ||
-            !UUID::TryParse($params['OwnerID'], $ownerID) ||
-            !UUID::TryParse($params['FolderID'], $folderID))
+        if (!file_exists(BASEPATH . 'config/config.php'))
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
+            throw new Exception('The configuration file config.php does not exist.');
         }
         
-        $itemIDs = explode(',', $params['Items']);
-        if (!isset($itemIDs) || count($itemIDs) < 1)
+        require (BASEPATH . 'config/config.php');
+        
+        if (!isset($config) or !is_array($config))
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
+            throw new Exception('Your config file does not appear to be formatted correctly.');
         }
         
-        $uuidItemIDs = array();
-        foreach ($itemIDs as $itemID)
-        {
-            $parsedItemID = NULL;
-            
-            if (UUID::TryParse($itemID, $parsedItemID))
-            {
-                $uuidItemIDs[] = $parsedItemID;
-            }
-            else
-            {
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Invalid parameters" }';
-                exit();
-            }
-        }
-        
-        $this->inventory = new ALT($db);
-        
-        if ($this->inventory->MoveNodes($uuidItemIDs, $folderID))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
-        }
-        else
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
-            exit();
-        }
+        $main_conf[0] = &$config;
     }
+    
+    return $main_conf[0];
+}
+
+function &get_mimes()
+{
+    static $mime_conf;
+    
+    if (!isset($mime_conf))
+    {
+        if (!file_exists(BASEPATH . 'config/mimes.php'))
+        {
+            throw new Exception('The configuration file mimes.php does not exist.');
+        }
+        
+        require (BASEPATH . 'config/mimes.php');
+        
+        if (!isset($mimes) or !is_array($mimes))
+        {
+            throw new Exception('Your config file does not appear to be formatted correctly.');
+        }
+        
+        $mime_conf[0] = &$mimes;
+    }
+    
+    return $mime_conf[0];
 }

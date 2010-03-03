@@ -36,18 +36,19 @@
 
 class inventory_root
 {
-    private $Config;
     private $User;
 
-    function __construct($user, $config)
+    function __construct($user)
     {
         $this->User = $user;
-        $this->Config = $config;
     }
 
     public function GetResults()
     {
-        $folder[] = array('folder_id' => (string)$this->User['UserID']);
+        $folder[] = array(
+        	'folder_id' => $this->User['UserID']
+        );
+        
         return $folder;
     }
 }

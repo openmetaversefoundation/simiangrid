@@ -32,20 +32,18 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('ALT') || require_once ('Class.ALT.php');
-class_exists('Inventory') || require_once ('Class.Inventory.php');
+require_once(BASEPATH . 'common/ALT.php');
 
 class AddInventoryItem implements IGridService
 {
     private $Item;
     private $inventory;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
-        $this->inventory = new ALT($db, $logger);
+        $this->inventory = new ALT($db);
         
-        $itemid = NULL;
+        $itemid = null;
         if (!isset($params["ItemID"]) || !UUID::TryParse($params["ItemID"], $itemid))
             $itemid = UUID::Random();
         
@@ -71,13 +69,13 @@ class AddInventoryItem implements IGridService
             !UUID::TryParse($params["CreatorID"], $this->Item->CreatorID) ||
             $this->Item->CreatorID == '00000000-0000-0000-0000-000000000000')
         {
-            $this->Item->CreatorID = NULL;
+            $this->Item->CreatorID = null;
         }
         
         try
         {
             $result = $this->inventory->InsertNode($this->Item);
-            if ($result != FALSE)
+            if ($result != false)
             {
                 header("Content-Type: application/json", true);
                 echo sprintf('{ "Success": true, "ItemID": "%s" }', $result);
@@ -92,7 +90,8 @@ class AddInventoryItem implements IGridService
         }
         catch (Exception $ex)
         {
-            $logger->err(sprintf("Error occurred during query: %s", $ex));
+            log_message('error', sprintf("Error occurred during query: %s", $ex));
+            
             header("Content-Type: application/json", true);
             echo '{ "Message": "Database query error" }';
             exit();

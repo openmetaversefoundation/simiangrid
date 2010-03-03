@@ -37,19 +37,16 @@
 class inventory_skel_lib
 {
     private $User;
-    private $Config;
 
-    function __construct($user, $config)
+    function __construct($user)
     {
         $this->User = $user;
-        $this->Config = $config;
     }
 
     public function GetResults()
     {
-        global $logger;
-        require_once ("InventoryMimeMap.php");
-        $InventoryMimeMap = $GLOBALS["InventoryMimeMap"];
+        $mimes =& get_mimes();
+
         $folders = array();
         
         // FIXME:

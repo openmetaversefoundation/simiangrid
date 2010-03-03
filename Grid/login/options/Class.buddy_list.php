@@ -38,7 +38,7 @@ class buddy_list
 {
     private $User;
 
-    function __construct($user, $config)
+    function __construct($user)
     {
         $this->User = $user;
     }

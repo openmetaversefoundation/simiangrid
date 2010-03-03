@@ -35,7 +35,7 @@
  */
 class initial_outfit
 {
-    function __construct($userID)
+    function __construct($user)
     {}
 
     public function GetResults()

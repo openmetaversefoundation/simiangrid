@@ -33,34 +33,26 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-$path = '..'.PATH_SEPARATOR.'../lib';
-set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+define('BASEPATH', str_replace("\\", "/", realpath(dirname(__FILE__) . '/..') . '/'));
 
-class_exists('Logger') || require_once('Class.Logger.php');
-class_exists('UUID') || require_once('Class.UUID.php');
-class_exists('Scene') || require_once('Class.Scene.php');
-class_exists('SceneLocation') || require_once('Class.SceneLocation.php');
-class_exists('Session') || require_once('Class.Session.php');
-class_exists('Curl') || require_once('Class.Curl.php');
+require_once(BASEPATH . 'common/Config.php');
+require_once(BASEPATH . 'common/Errors.php');
+require_once(BASEPATH . 'common/Log.php');
+require_once(BASEPATH . 'common/Interfaces.php');
+require_once(BASEPATH . 'common/UUID.php');
+require_once(BASEPATH . 'common/Vector3.php');
+require_once(BASEPATH . 'common/Curl.php');
+require_once(BASEPATH . 'common/Scene.php');
+require_once(BASEPATH . 'common/SceneLocation.php');
+require_once(BASEPATH . 'common/Session.php');
 
-$L = new Logger('../services.ini', "LOGINCLIENT");
-$logger = $L->getInstance();
-
-$config = parse_ini_file('../services.ini', true);
+///////////////////////////////////////////////////////////////////////////////
+// XML-RPC Server
 
 $xmlrpc_server = xmlrpc_server_create();
 xmlrpc_server_register_method($xmlrpc_server, "login_to_simulator", "process_login");
 
-if (isset($HTTP_RAW_POST_DATA))
-{
-    $request_xml = $HTTP_RAW_POST_DATA;
-}
-else
-{
-    $request_xml = file_get_contents("php://input");
-    // For local debugging without a client
-    //$request_xml = file_get_contents("login.xml");
-}
+$request_xml = file_get_contents("php://input");
 
 $response = xmlrpc_server_call_method($xmlrpc_server, $request_xml, '');
 
@@ -85,12 +77,16 @@ function ends_with($str, $sub)
 
 function webservice_post($url, $params, $jsonRequest = FALSE)
 {
-    global $logger;
+    // Parse the RequestMethod out of the request for debugging purposes
+    if (isset($params['RequestMethod']))
+        $requestMethod = $params['RequestMethod'];
+    else
+        $requestMethod = '';
     
     if (empty($url))
     {
-        $logger->err('Canceling web service POST to an empty URL');
-        return array('Message' => 'Web service address is not configured');
+        log_message('error', "Canceling $requestMethod POST to an empty URL");
+        return array('Message' => 'Web service URL is not configured');
     }
     
     if ($jsonRequest)
@@ -100,7 +96,7 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     $curl = new Curl();
     $response = $curl->simple_post($url, $params);
     
-    $logger->debug(sprintf('Response received from POST to %s: %s', $url, $response));
+    log_message('debug', sprintf('Response received from %s POST to %s: %s', $requestMethod, $url, $response));
     
     // JSON decode the response
     $response = json_decode($response, TRUE);
@@ -111,32 +107,10 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     return $response;
 }
 
-function opensim_post($url, $params)
-{
-    global $logger;
-    
-    if (empty($url))
-    {
-        $logger->err('Canceling web service POST to an empty URL');
-        return array('Message' => 'Web service address is not configured');
-    }
-    
-    $curl = new Curl();
-    $response = $curl->simple_post($url, json_encode($params));
-	
-	$logger->debug(sprintf('Response received from POST to %s: %s', $url, $response));
-	
-	if (!isset($response))
-	    $response = "FAIL";
-	
-    return $response;
-}
-
 function authorize_identity($name, $passHash)
 {
-    global $logger;
-    global $config;
-    $userService = $config['UserService']['server_url'];
+    $config =& get_config();
+    $userService = $config['user_service'];
     
     $userID = NULL;
     
@@ -155,8 +129,8 @@ function authorize_identity($name, $passHash)
 
 function get_user($userID)
 {
-    global $config;
-    $userService = $config['UserService']['server_url'];
+    $config =& get_config();
+    $userService = $config['user_service'];
     
     $response = webservice_post($userService, array(
     	'RequestMethod' => 'GetUser',
@@ -166,13 +140,13 @@ function get_user($userID)
     if (!empty($response['Success']) && !empty($response['User']))
         return $response['User'];
     
-    return NULL;
+    return null;
 }
 
 function get_session($userID)
 {
-    global $config;
-    $userService = $config['UserService']['server_url'];
+    $config =& get_config();
+    $userService = $config['user_service'];
         
     $response = webservice_post($userService, array(
     	'RequestMethod' => 'GetSession',
@@ -182,13 +156,13 @@ function get_session($userID)
     if (!empty($response['Success']))
         return $response;
     
-    return NULL;
+    return null;
 }
 
 function add_session($userID, &$sessionID, &$secureSessionID)
 {
-    global $config;
-    $userService = $config['UserService']['server_url'];
+    $config =& get_config();
+    $userService = $config['user_service'];
     
     $response = webservice_post($userService, array(
     	'RequestMethod' => 'AddSession',
@@ -199,16 +173,16 @@ function add_session($userID, &$sessionID, &$secureSessionID)
         UUID::TryParse($response['SessionID'], $sessionID) &&
         UUID::TryParse($response['SecureSessionID'], $secureSessionID))
     {
-        return TRUE;
+        return true;
     }
     
-    return FALSE;
+    return false;
 }
 
 function remove_session($sessionID)
 {
-    global $config;
-    $userService = $config['UserService']['server_url'];
+    $config =& get_config();
+    $userService = $config['user_service'];
     
     $response = webservice_post($userService, array(
     	'RequestMethod' => 'RemoveSession',
@@ -216,11 +190,9 @@ function remove_session($sessionID)
     );
     
     if (!empty($response['Success']))
-    {
-        return TRUE;
-    }
+        return true;
     
-    return FALSE;
+    return false;
 }
 
 function inform_scene_of_logout($sceneID, $userID)
@@ -228,37 +200,29 @@ function inform_scene_of_logout($sceneID, $userID)
     // FIXME: Implement this
 }
 
-function get_user_locations($userID, &$homeLocation, &$lastLocation)
+function lookup_scene_by_id($sceneID)
 {
-    global $config;
-    $userService = $config['UserService']['server_url'];
+    $config =& get_config();
+    $gridService = $config['grid_service'];
     
-    $response = webservice_post($userService, array(
-    	'RequestMethod' => 'GetUser',
-    	'UserID' => $userID)
+    $response = webservice_post($gridService, array(
+    	'RequestMethod' => 'GetScene',
+    	'SceneID' => $sceneID,
+    	'Enabled' => '1')
     );
     
-    if (!empty($response['Success']) && !empty($response['User']))
-    {
-        $user = $response['User'];
-        $homeLocation = SceneLocation::fromOSD($user['HomeLocation']);
-        $lastLocation = SceneLocation::fromOSD($user['LastLocation']);
-    }
-    else
-    {
-        $homeLocation = NULL;
-        $lastLocation = NULL;
-    }
+    if (!empty($response['Success']))
+        return Scene::fromOSD($response);
     
-    return (isset($homeLocation) && isset($lastLocation));
+    return null;
 }
 
 function lookup_scene_by_name($name)
 {
-    global $config;
-    $sceneService = $config['SceneService']['server_url'];
+    $config =& get_config();
+    $gridService = $config['grid_service'];
     
-    $response = webservice_post($sceneService, array(
+    $response = webservice_post($gridService, array(
     	'RequestMethod' => 'GetScenes',
     	'NameQuery' => $name,
     	'Enabled' => '1',
@@ -268,15 +232,15 @@ function lookup_scene_by_name($name)
     if (!empty($response['Success']) && is_array($response['Scenes']))
         return Scene::fromOSD($response['Scenes'][0]);
     
-    return NULL;
+    return null;
 }
 
-function lookup_scene_by_position($position, $findClosest = FALSE)
+function lookup_scene_by_position($position, $findClosest = false)
 {
-    global $config;
-    $sceneService = $config['SceneService']['server_url'];
+    $config =& get_config();
+    $gridService = $config['grid_service'];
     
-    $response = webservice_post($sceneService, array(
+    $response = webservice_post($gridService, array(
     	'RequestMethod' => 'GetScene',
     	'Position' => $position,
         'FindClosest' => ($findClosest ? '1' : '0'),
@@ -286,13 +250,13 @@ function lookup_scene_by_position($position, $findClosest = FALSE)
     if (!empty($response['Success']))
         return Scene::fromOSD($response);
     
-    return NULL;
+    return null;
 }
 
 function get_inventory($userID, &$rootFolderID, &$items)
 {
-    global $config;
-    $inventoryService = $config['InventoryService']['server_url'];
+    $config =& get_config();
+    $inventoryService = $config['inventory_service'];
     
     // This is always true in SimianGrid
     $rootFolderID = $userID;
@@ -309,27 +273,24 @@ function get_inventory($userID, &$rootFolderID, &$items)
     if (!empty($response['Success']) && is_array($response['Items']))
     {
         $items = $response['Items'];
-        return TRUE;
+        return true;
     }
     
-    $rootFolderID = NULL;
-    $items = NULL;
-    return FALSE;
+    $items = null;
+    return false;
 }
 
 function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$startPosition, &$startLookAt)
 {
-    global $logger;
-    
-    $scene = NULL;
+    $scene = null;
     
     if (strtolower($start) == "last")
     {
         if (isset($lastLocation))
         {
-            $logger->debug(sprintf("Finding start location (last) for '%s'", $lastLocation));
+            log_message('debug', sprintf("Finding start location (last) for '%s'", $lastLocation->SceneID));
             
-            $scene = lookup_scene_by_name($lastLocation->SceneName);
+            $scene = lookup_scene_by_id($lastLocation->SceneID);
             if (isset($scene))
             {
                 $startPosition = $lastLocation->Position;
@@ -342,9 +303,9 @@ function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$st
     {
         if (isset($homeLocation))
         {
-            $logger->debug(sprintf("Finding start location (home) for '%s'", $homeLocation));
+            log_message('debug', sprintf("Finding start location (home) for '%s'", $homeLocation->SceneID));
             
-            $scene = lookup_scene_by_name($homeLocation->SceneName);
+            $scene = lookup_scene_by_id($homeLocation->SceneID);
             if (isset($scene))
             {
                 $startPosition = $homeLocation->Position;
@@ -355,33 +316,33 @@ function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$st
     }
     else if (preg_match('/^([a-zA-Z0-9\s]+)\/?(\d+)?\/?(\d+)?\/?(\d+)?$/', $start, $matches))
     {
-        $logger->debug(sprintf("Finding start location (custom: %s) for '%s'", $start, $matches[1]));
+        log_message('debug', sprintf("Finding start location (custom: %s) for '%s'", $start, $matches[1]));
         
         $scene = lookup_scene_by_name($matches[1]);
         if (isset($scene))
         {
             // FIXME: Parse starting position out of the request
-            $startPosition = new Vector3d(
+            $startPosition = new Vector3(
                 ($scene->MinPosition->X + $scene->MaxPosition->X) / 2,
                 ($scene->MinPosition->Y + $scene->MaxPosition->Y) / 2,
                 25);
-            $startLookAt = new Vector3d(1, 0, 0);
+            $startLookAt = new Vector3(1, 0, 0);
             return true;
         }
     }
     
     // Last resort lookup
-    $position = Vector3d::Zero();
-    $logger->debug(sprintf("Finding start location (any) for '%s'", $position));
+    $position = Vector3::Zero();
+    log_message('debug', sprintf("Finding start location (any) for '%s'", $position));
     
-    $scene = lookup_scene_by_position($position, TRUE);
+    $scene = lookup_scene_by_position($position, true);
     if (isset($scene))
     {
-        $startPosition = new Vector3d(
+        $startPosition = new Vector3(
             ($scene->MinPosition->X + $scene->MaxPosition->X) / 2,
             ($scene->MinPosition->Y + $scene->MaxPosition->Y) / 2,
             25);
-        $startLookAt = new Vector3d(1, 0, 0);
+        $startLookAt = new Vector3(1, 0, 0);
         return true;
     }
     
@@ -390,19 +351,17 @@ function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$st
 
 function add_wearable(&$wearables, $appearance, $wearableName)
 {
-    global $logger;
-    
-    $uuid = NULL;
+    $uuid = null;
     
     // ItemID
-    if (UUID::TryParse($appearance[$wearableName . 'Item'], $uuid))
-        $wearables[] = (string)$uuid;
+    if (isset($appearance[$wearableName . 'Item']) && UUID::TryParse($appearance[$wearableName . 'Item'], $uuid))
+        $wearables[] = $uuid;
     else
         $wearables[] = UUID::Zero;
     
     // AssetID
-    if (UUID::TryParse($appearance[$wearableName . 'Asset'], $uuid))
-        $wearables[] = (string)$uuid;
+    if (isset($appearance[$wearableName . 'Asset']) && UUID::TryParse($appearance[$wearableName . 'Asset'], $uuid))
+        $wearables[] = $uuid;
     else
         $wearables[] = UUID::Zero;
 }
@@ -410,8 +369,6 @@ function add_wearable(&$wearables, $appearance, $wearableName)
 function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appearance, 
     $sessionID, $secureSessionID, $startPosition, &$seedCapability)
 {
-    global $logger;
-    
     $regionBaseUrl = $scene->Address;
     if (!ends_with($regionBaseUrl, '/'))
         $regionBaseUrl .= '/';
@@ -440,45 +397,42 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
     }
     
     $response = webservice_post($regionUrl, array(
-    	'agent_id' => (string)$userID,
-    	'caps_path' => (string)$capsPath,
+    	'agent_id' => $userID,
+    	'caps_path' => $capsPath,
     	'child' => false,
     	'circuit_code' => $circuitCode,
         'first_name' => $firstName,
         'last_name' => $lastName,
-        'session_id' => (string)$sessionID,
-        'secure_session_id' => (string)$secureSessionID,
+        'session_id' => $sessionID,
+        'secure_session_id' => $secureSessionID,
         'start_pos' => (string)$startPosition,
         'appearance_serial' => 1,
         'destination_x' => $scene->MinPosition->X,
         'destination_y' => $scene->MinPosition->Y,
         'destination_name' => $scene->Name,
-        'destination_uuid' => (string)$scene->SceneID,
-        'wearables' => $wearables),
-        TRUE
-    );
+        'destination_uuid' => $scene->SceneID,
+        'wearables' => $wearables
+    ), true);
     
     if (!empty($response['success']))
     {
         // This is the hardcoded format OpenSim uses for seed capability URLs
         $seedCapability = $regionBaseUrl . 'CAPS/' . $capsPath . '0000/';
-        return TRUE;
+        return true;
     }
     
-    $seedCapability = NULL;
-    return FALSE;
+    $seedCapability = null;
+    return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 function process_login($method_name, $params, $user_data)
 {
-    global $config;
-    global $logger;
+    $config =& get_config();
+    $userService = $config['user_service'];
     
-    $userService = $config['UserService']['server_url'];
-    
-    $logger->debug("Processing new login request");
+    log_message('debug', "Processing new login request");
     
     $req = $params[0];
     $fullname = $req["first"] . ' ' . $req["last"];
@@ -499,7 +453,7 @@ function process_login($method_name, $params, $user_data)
         	"Sorry! We couldn't log you in.\nPlease check to make sure you entered the right\n    * Account name\n    * Password\nAlso, please make sure your Caps Lock key is off.");
     }
     
-    $logger->debug(sprintf("Authorization success for %s", $userID));
+    log_message('debug', sprintf("Authorization success for %s", $userID));
     
     // Get information about the user account
     $user = get_user($userID);
@@ -509,44 +463,43 @@ function process_login($method_name, $params, $user_data)
         	"Sorry! We couldn't log you in. User account information could not be retrieved. If this problem persists, please contact the grid operator.");
     }
     
-    $lastLocation = NULL;
+    $lastLocation = null;
     if (isset($user['LastLocation']))
-        $lastLocation = SceneLocation::Parse($user['LastLocation']);
+        $lastLocation = SceneLocation::fromOSD($user['LastLocation']);
     
-    $homeLocation = NULL;
+    $homeLocation = null;
     if (isset($user['HomeLocation']))
-        $homeLocation = SceneLocation::Parse($user['HomeLocation']);
+        $homeLocation = SceneLocation::fromOSD($user['HomeLocation']);
     
-    $logger->debug(sprintf("User retrieval success for %s", $fullname));
+    log_message('debug', sprintf("User retrieval success for %s", $fullname));
     
     // Check for an existing session
     $existingSession = get_session($userID);
     
     if (!empty($existingSession))
     {
-        $logger->debug(sprintf("Existing session %s found for %s in scene %s",
+        log_message('debug', sprintf("Existing session %s found for %s in scene %s",
             $existingSession["SessionID"], $fullname, $existingSession["SceneID"]));
         
-        $sceneID = NULL;
+        $sceneID = null;
         if (UUID::TryParse($existingSession["SceneID"], $sceneID))
             inform_scene_of_logout($sceneID, $userID);
         
         if (!remove_session($userID))
         {
-            // TODO: We should probably return a more accurate message explaining that there was problem
-            // and log the incident
+            log_message('warn', "Failed to remove session for " . $userID);
             return array('reason' => 'presence', 'login' => 'false',
         		'message' => "You are already logged in from another location. Please try again later.");
         }
     }
     else
     {
-        $logger->debug(sprintf("No existing sessions found for %s", $fullname));
+        log_message('debug', sprintf("No existing sessions found for %s", $fullname));
     }
     
     // Create a login session
-    $sessionID = NULL;
-    $secureSessionID = NULL;
+    $sessionID = null;
+    $secureSessionID = null;
     
     if (!add_session($userID, $sessionID, $secureSessionID))
     {
@@ -554,12 +507,12 @@ function process_login($method_name, $params, $user_data)
         	'message' => "Failed to create a login session. Please try again later.");
     }
     
-    $logger->debug(sprintf("Session creation success for %s (%s)", $fullname, $userID));
+    log_message('debug', sprintf("Session creation success for %s (%s)", $fullname, $userID));
     
     // Find the starting scene for this user
-    $scene = NULL;
-    $startPosition = NULL;
-    $startLookAt = NULL;
+    $scene = null;
+    $startPosition = null;
+    $startLookAt = null;
     
     if (!find_start_location($req['start'], $lastLocation, $homeLocation, $scene, $startPosition, $startLookAt) ||
         !isset($scene->ExtraData['ExternalAddress'], $scene->ExtraData['ExternalPort']))
@@ -589,52 +542,52 @@ function process_login($method_name, $params, $user_data)
         	'message' => "Failed to establish a presence in the destination region. Please try again later.");
     }
     
-    $logger->debug(sprintf("Presence creation success for %s (%s) in %s with seedcap %s",
+    log_message('debug', sprintf("Presence creation success for %s (%s) in %s with seedcap %s",
         $fullname, $userID, $scene->Name, $seedCapability));
     
     // Build the response
     $response = array();
-    $response["seconds_since_epoch"] = time();
-    $response["login"] = "true";
-    $response["agent_id"] = (string)$userID;
-    list($response["first_name"], $response["last_name"]) = explode(' ', $fullname);
-    $response["message"] = $config["UserService"]["motd"];
-    $response["udp_blacklist"] = $config["UserService"]["udp_blacklist"];
-    $response["circuit_code"] = $circuitCode;
-    $response["sim_ip"] = $lludpAddress;
-    $response["sim_port"] = (int)$lludpPort;
-    $response["seed_capability"] = $seedCapability;
-    $response["region_x"] = (string)$scene->MinPosition->X;
-    $response["region_y"] = (string)$scene->MinPosition->Y;
-    $response["look_at"] = sprintf("[r%s, r%s, r%s]", $startLookAt->X, $startLookAt->Y, $startLookAt->Z);
+    $response['seconds_since_epoch'] = time();
+    $response['login'] = 'true';
+    $response['agent_id'] = (string)$userID;
+    list($response['first_name'], $response['last_name']) = explode(' ', $fullname);
+    $response['message'] = $config['message_of_the_day'];
+    $response['udp_blacklist'] = $config['udp_blacklist'];
+    $response['circuit_code'] = $circuitCode;
+    $response['sim_ip'] = $lludpAddress;
+    $response['sim_port'] = (int)$lludpPort;
+    $response['seed_capability'] = $seedCapability;
+    $response['region_x'] = (string)$scene->MinPosition->X;
+    $response['region_y'] = (string)$scene->MinPosition->Y;
+    $response['look_at'] = sprintf("[r%s, r%s, r%s]", $startLookAt->X, $startLookAt->Y, $startLookAt->Z);
     // TODO: If a valid $homeLocation is set, we should be pulling region_handle / position / lookat out of it
-    $response["home"] = sprintf("{'region_handle':[r%s, r%s], 'position':[r%s, r%s, r%s], 'look_at':[r%s, r%s, r%s]}",
+    $response['home'] = sprintf("{'region_handle':[r%s, r%s], 'position':[r%s, r%s, r%s], 'look_at':[r%s, r%s, r%s]}",
         $scene->MinPosition->X, $scene->MinPosition->Y,
         $startPosition->X, $startPosition->Y, $startPosition->Z,
         $startLookAt->X, $startLookAt->Y, $startLookAt->Z);
-    $response["session_id"] = (string)$sessionID;
-    $response["secure_session_id"] = (string)$secureSessionID;
+    $response['session_id'] = (string)$sessionID;
+    $response['secure_session_id'] = (string)$secureSessionID;
     
-    $req["options"][] = "initial-outfit";
-    for ($i = 0; $i < count($req["options"]); $i++)
+    $req['options'][] = 'initial-outfit';
+    for ($i = 0; $i < count($req['options']); $i++)
     {
-        $option = str_replace('-', '_', $req["options"][$i]);
+        $option = str_replace('-', '_', $req['options'][$i]);
         
-        if (file_exists("options/Class." . $option . ".php"))
+        if (file_exists("options/Class.$option.php"))
         {
-            if (include_once 'options/Class.' . $option . ".php")
+            if (include_once("options/Class.$option.php"))
             {
-                $instance = new $option($user, $config["LindenView"]);
+                $instance = new $option($user);
                 $response[$req["options"][$i]] = $instance->GetResults();
             }
             else
             {
-                $logger->debug("Unable to process login option: " . $option);
+               log_message('warn', "Unable to process login option: " . $option);
             }
         }
         else
         {
-            $logger->debug("Option " . $option . " not implemented.");
+            log_message('debug', "Option " . $option . " not implemented.");
         }
     }
     
@@ -646,7 +599,7 @@ function process_login($method_name, $params, $user_data)
     $response["ao_transition"] = 0;
     $response["inventory_host"] = "127.0.0.1";
     
-    $logger->notice(sprintf("Login User=%s %s Channel=%s Start=%s Platform=%s Viewer=%s id0=%s Mac=%s",
+    log_message('info', sprintf("Login User=%s %s Channel=%s Start=%s Platform=%s Viewer=%s id0=%s Mac=%s",
         $req["first"], $req["last"], $req["channel"], $req["start"], $req["platform"], $req["version"],
         $req["id0"], $req["mac"]));
     

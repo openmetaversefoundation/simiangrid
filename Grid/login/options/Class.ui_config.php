@@ -36,12 +36,16 @@
 
 class ui_config
 {
-    function __construct($userID)
-    {}
+    function __construct($user)
+    {
+    }
 
     public function GetResults()
     {
-        $result[] = array('allow_first_life' => 'Y');
+        $result[] = array(
+        	'allow_first_life' => 'Y'
+        );
+        
         return $result;
     }
 }

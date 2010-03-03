@@ -32,15 +32,13 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-interface_exists('IGridService') || require_once ('Interface.GridService.php');
-class_exists('ALT') || require_once ('Class.ALT.php');
-class_exists('Inventory') || require_once ('Class.Inventory.php');
+require_once(BASEPATH . 'common/ALT.php');
 
 class GetInventoryNode implements IGridService
 {
     private $inventory;
 
-    public function Execute($db, $params, $logger)
+    public function Execute($db, $params)
     {
         $itemID = NULL;
         $ownerID = NULL;
@@ -62,14 +60,14 @@ class GetInventoryNode implements IGridService
         if (isset($params["ChildrenOnly"]))
             $childrenOnly = (bool)$params["ChildrenOnly"];
         
-        $this->inventory = new ALT($db, $logger);
+        $this->inventory = new ALT($db);
         
         $results = array();
         
         // Optimization for inventory skeleton fetching
         if ($itemID == $ownerID && $fetchFolders && !$fetchItems && !$childrenOnly)
         {
-            $logger->debug('Doing a FetchSkeleton for ' . $ownerID);
+            log_message('debug', 'Doing a FetchSkeleton for ' . $ownerID);
             
             if ($library = $this->inventory->FetchSkeleton($ownerID))
             {

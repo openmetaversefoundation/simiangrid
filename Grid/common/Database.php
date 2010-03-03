@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -27,42 +28,39 @@
  *
  *
  * @package    SimianGrid
- * @author     Jim Radford <http://www.jimradford.com/>
+ * @author     John Hurliman <http://software.intel.com/en-us/blogs/author/john-hurliman/>
  * @copyright  Open Metaverse Foundation
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once(BASEPATH . 'common/ALT.php');
 
-class PurgeInventoryFolder implements IGridService
+class Database extends PDO
 {
-    private $inventory;
-    
-    public function Execute($db, $params)
+    function __construct()
     {
-        $ownerID = null;
-        $folderID = null;
+        $config =& get_config();
         
-        if (!isset($params["OwnerID"], $params["FolderID"]) || !UUID::TryParse($params["OwnerID"], $ownerID) || !UUID::TryParse($params["FolderID"], $folderID))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
-        }
+        $driver = $config['db_driver'];
+        $host = $config['db_hostname'];
+        $user = $config['db_username'];
+        $pass = $config['db_password'];
+        $db = $config['db_database'];
         
-        $this->inventory = new ALT($db);
+        $dsn = "$driver:host=$host;dbname=$db";
+        parent::__construct($dsn, $user, $pass);
+        $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('DBStatement', array($this)));
         
-        if ($this->inventory->RemoveNode($folderID, TRUE))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
-        }
-        else
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
-            exit();
-        }
+        if ($config['db_persistent'])
+            $this->setAttribute(PDO::ATTR_PERSISTENT, true);
+    }
+}
+
+class DBStatement extends PDOStatement
+{
+    public $dbh;
+
+    protected function __construct($dbh)
+    {
+        $this->dbh = $dbh;
     }
 }
