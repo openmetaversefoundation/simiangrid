@@ -125,8 +125,8 @@ class Log
 		fwrite($fp, $message);
 		flock($fp, LOCK_UN);
 		fclose($fp);
-	
-		@chmod($filepath, FILE_WRITE_MODE); 		
+	    
+		@chmod($filepath, 0666); 		
 		return TRUE;
 	}
 }
