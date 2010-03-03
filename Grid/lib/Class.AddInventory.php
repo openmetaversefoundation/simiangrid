@@ -35,10 +35,10 @@
 require_once(BASEPATH . 'common/Curl.php');
 require_once(BASEPATH . 'common/ALT.php');
 
-function update_appearance($url, $userID, $appearance)
+function update_appearance($userID, $appearance)
 {
-    if (empty($url))
-        return array('Message' => 'Missing user service URL');
+    $config =& get_config();
+    $url = $config['user_service'];
     
     $params = array(
         'RequestMethod' => 'AddUserData',
@@ -73,7 +73,6 @@ class AddInventory implements IGridService
             exit();
         }
         
-        $config = parse_ini_file('services.ini', true);
         $this->inventory = new ALT($db);
         
         $this->Name = 'My Inventory';
@@ -215,8 +214,7 @@ class AddInventory implements IGridService
             //'UndershirtAsset' => ''
         );
         
-        $userService = $config['UserService']['server_url'];
-        $response = update_appearance($userService, $this->UserID, $appearance);
+        $response = update_appearance($this->UserID, $appearance);
         
         if (!empty($response['Success']))
         {
