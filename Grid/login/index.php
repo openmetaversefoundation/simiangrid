@@ -339,10 +339,11 @@ function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$st
     if (isset($scene))
     {
         $startPosition = new Vector3(
-            ($scene->MinPosition->X + $scene->MaxPosition->X) / 2,
-            ($scene->MinPosition->Y + $scene->MaxPosition->Y) / 2,
+            (($scene->MinPosition->X + $scene->MaxPosition->X) / 2) - $scene->MinPosition->X,
+            (($scene->MinPosition->Y + $scene->MaxPosition->Y) / 2) - $scene->MinPosition->Y,
             25);
         $startLookAt = new Vector3(1, 0, 0);
+        
         return true;
     }
     
@@ -520,11 +521,6 @@ function process_login($method_name, $params, $user_data)
         return array('reason' => 'presence', 'login' => 'false',
         	'message' => "Error connecting to the grid. No suitable region to connect to.");
     }
-    
-    // Make starting position relative to the scene we are starting in
-    $startPosition->X -= $scene->MinPosition->X;
-    $startPosition->Y -= $scene->MinPosition->Y;
-    $startPosition->Z -= $scene->MinPosition->Z;
     
     $lludpAddress = $scene->ExtraData['ExternalAddress'];
     $lludpPort = $scene->ExtraData['ExternalPort'];

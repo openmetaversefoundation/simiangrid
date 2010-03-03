@@ -92,10 +92,10 @@ class Log
 		{
 			return FALSE;
 		}
-	
+	    
 		$level = strtoupper($level);
 		
-		if ( ! isset($this->_levels[$level]) OR ($this->_levels[$level] > $this->_threshold))
+		if (!isset($this->_levels[$level]) OR ($this->_levels[$level] > $this->_threshold))
 		{
 			return FALSE;
 		}
@@ -109,25 +109,33 @@ class Log
 		$filepath = $this->log_path.'log-'.date('Y-m-d').'.php';
 		$message  = '';
 		
-		if (!file_exists($filepath))
+		try
 		{
-			$message .= "<"."?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed'); ?".">\n\n";
+    		if (!file_exists($filepath))
+    		{
+    			$message .= "<"."?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed'); ?".">\n\n";
+    		}
+    		
+    		if (!$fp = @fopen($filepath, 'ab'))
+    		{
+    			return FALSE;
+    		}
+    
+    		$message .= $level.' '.(($level == 'INFO') ? ' -' : '-').' '.date($this->_date_fmt). ' --> '.$msg."\n";
+    		
+    		flock($fp, LOCK_EX);	
+    		fwrite($fp, $message);
+    		flock($fp, LOCK_UN);
+    		fclose($fp);
+    	    
+    		@chmod($filepath, 0666);
+    		return TRUE;
 		}
-		
-		if (!$fp = @fopen($filepath, 'ab'))
+		catch (Exception $ex)
 		{
-			return FALSE;
+		    error_log("Exception occurred logging message \"$msg\" to $filepath (is this file writable?)");
+		    return FALSE;
 		}
-
-		$message .= $level.' '.(($level == 'INFO') ? ' -' : '-').' '.date($this->_date_fmt). ' --> '.$msg."\n";
-		
-		flock($fp, LOCK_EX);	
-		fwrite($fp, $message);
-		flock($fp, LOCK_UN);
-		fclose($fp);
-	    
-		@chmod($filepath, 0666); 		
-		return TRUE;
 	}
 }
 
