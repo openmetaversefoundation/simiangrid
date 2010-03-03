@@ -53,10 +53,14 @@ class SceneLocation implements IOSD
         if (!isset($osd, $osd['SceneID'], $osd['Position'], $osd['LookAt'])) return NULL;
         
         $location = new SceneLocation();
-        $location->SceneID = $osd["SceneID"];
-        $location->Position = Vector3::Parse('<' . implode(',', $osd["Position"]) . '>');
-        $location->LookAt = Vector3::Parse('<' . implode(',', $osd["LookAt"]) . '>');
+        $location->SceneID = $osd['SceneID'];
         
-        return $location;
+        if (Vector3::TryParse($osd['Position'], $location->Position) &&
+            Vector3::TryParse($osd['LookAt'], $location->LookAt))
+        {
+            return $location;
+        }
+        
+        return null;
     }
 }
