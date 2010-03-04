@@ -32,55 +32,32 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
+require_once(BASEPATH . 'common/SQLAssets.php');
+//require_once(BASEPATH . 'common/MongoAssets.php');
 
 class AddAsset implements IGridService
 {
     public function Execute($db, $asset)
     {
-        $p = ($asset->Public) ? '1' : '0';
-        $t = ($asset->Temporary) ? '1' : '0';
+        $assets = new SQLAssets($db);
+        //$assets = new MongoAssets($db);
+        $created = false;
         
-        $sql = "INSERT INTO AssetData (ID, Data, ContentType, CreatorID, SHA256, Public, Temporary)
-        		VALUES (:ID, :Data, :ContentType, :CreatorID, :SHA256, $p, $t)
-        		ON DUPLICATE KEY UPDATE Data=VALUES(Data), SHA256=VALUES(SHA256), Public=VALUES(Public), Temporary=VALUES(Temporary)";
-        
-        $sth = $db->prepare($sql);
-        
-        if ($sth->execute(array(
-        	':ID' => $asset->ID,
-        	':Data' => trim($asset->Data),
-        	':ContentType' => $asset->ContentType,
-        	':CreatorID' => $asset->CreatorID,
-        	':SHA256' => $asset->SHA256)))
+        if ($assets->AddAsset($asset, $created))
         {
-            $status = '';
-            
-            // 0 = No Update to existing asset
-            // 1 = A new asset was created
-            // 2 = An existing asset was updated
-            if ($sth->rowCount() == 0)
-            {
-                $status = "Unchanged";
-            }
-            else if ($sth->rowCount() == 1)
-            {
+            if ($created)
                 $status = "Created";
-            }
-            else if ($sth->rowCount() == 2)
-            {
-                $status = "Modified";
-            }
             else
-            {
-                log_message('error', sprintf("Unable to store asset: %s", $asset->ID));
-                
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Unable to store asset" }';
-                exit();
-            }
+                $status = "Updated";
             
             header("Content-Type: application/json", true);
             echo '{ "Success": true, "AssetID": "' . $asset->ID . '", "Status": "' . $status . '" }';
+            exit();
+        }
+        else
+        {
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Unable to store asset" }';
             exit();
         }
     }

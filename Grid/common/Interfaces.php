@@ -49,6 +49,7 @@ class Asset
 {
     public $ID;
     public $CreatorID;
+    public $ContentLength;
     public $ContentType;
     public $CreationDate;
     public $SHA256;

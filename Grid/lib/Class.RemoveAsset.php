@@ -32,38 +32,25 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
+require_once(BASEPATH . 'common/SQLAssets.php');
+//require_once(BASEPATH . 'common/MongoAssets.php');
 
 class AssetDelete implements IGridService
 {
     public function Execute($db, $asset)
     {
-        $sql = "DELETE FROM AssetData WHERE ID=:ID";
+        $assets = new SQLAssets($db);
+        //$assets = new MongoAssets($db);
         
-        $sth = $db->prepare($sql);
-        
-        if ($sth->execute(array(':ID' => $asset->ID)))
+        if ($assets->RemoveAsset($asset->ID))
         {
-            if ($sth->rowCount() == 1)
-            {
-                header("HTTP/1.1 204 No Content");
-                exit();
-            }
-            else
-            {
-                log_message('debug', "RemoveAsset could not find asset " . $asset->ID);
-                
-                header("HTTP/1.1 404 Not Found");
-                echo 'Asset not found';
-                exit();
-            }
+            header("HTTP/1.1 204 No Content");
+            exit();
         }
         else
         {
-            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-            log_message('debug', sprintf("Query: %s", $sql));
-            
-            header("HTTP/1.1 500 Internal Server Error");
-            echo 'Internal server error';
+            header("HTTP/1.1 404 Not Found");
+            echo 'Asset not found';
             exit();
         }
     }

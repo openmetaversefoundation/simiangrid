@@ -31,6 +31,38 @@ $config['inventory_service'] = "http://localhost/Grid/";
 
 /*
 |--------------------------------------------------------------------------
+| Asset Driver
+|--------------------------------------------------------------------------
+|
+| Select the inventory backend to use. Possible values:
+|   SQLAssets - Database-backed asset backend.
+|   MongoAssets - MongoDB-backed asset backend.
+|
+*/
+$config['asset_driver'] = "SQLAssets";
+//$config['asset_driver'] = "MongoAssets";
+
+/* MongoDB server hostname and port number for the MongoAssets driver */
+$config['mongo_server'] = "localhost:27017";
+/* MongoDB database name */
+$config['mongo_database'] = "SimianGrid";
+
+/*
+|--------------------------------------------------------------------------
+| Inventory Driver
+|--------------------------------------------------------------------------
+|
+| Select the inventory backend to use. Possible values:
+|   ALT - Adjacency List Table. A simple and fast database-backed inventory
+|   MPTT - Modified Preorder Tree Table. An advanced database-backed
+|          inventory optimized for read access. WORK IN PROGRESS.
+|
+*/
+$config['inventory_driver'] = "ALT";
+//$config['inventory_driver'] = "MPTT";
+
+/*
+|--------------------------------------------------------------------------
 | Error Logging Threshold
 |--------------------------------------------------------------------------
 |

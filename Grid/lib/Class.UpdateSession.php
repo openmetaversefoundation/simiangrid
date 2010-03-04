@@ -110,6 +110,8 @@ class UpdateSession implements IGridService
                 }
                 else
                 {
+                    // FIXME: rowCount() will be 0 if no changes were made. No 
+                    // change should still be reported as a success
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Session does not exist" }';
                     exit();

@@ -32,6 +32,8 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
+require_once(BASEPATH . 'common/SQLAssets.php');
+//require_once(BASEPATH . 'common/MongoAssets.php');
 
 class GetAsset implements IGridService
 {
@@ -39,62 +41,47 @@ class GetAsset implements IGridService
     {
         $headrequest = (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE);
         
+        $assets = new SQLAssets($db);
+        //$assets = new MongoAssets($db);
+        
         if ($headrequest)
         {
-            $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
-                		LENGTH(Data) as ContentLength FROM AssetData WHERE ID=:ID";
+            $asset = $assets->GetAsset($asset->ID);
         }
         else
         {
-            $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
-                		LENGTH(Data) as ContentLength, Data FROM AssetData WHERE ID=:ID";
+            $asset = $assets->GetAssetMetadata($asset->ID);
         }
         
-        $sth = $db->prepare($sql);
-        
-        if ($sth->execute(array(':ID' => $asset->ID)))
+        if ($asset)
         {
-            if ($sth->rowCount() == 1)
+            // TODO: Check authentication once we support one or more auth methods
+            if ($obj->Public)
             {
-                $obj = $sth->fetchObject();
+                header("ETag: " . $obj->SHA256);
+                header("Last-Modified: " . gmdate(DATE_RFC850, $obj->CreationDate));
+                header("X-Asset-Creator-Id: " . $obj->CreatorID);
+                header("Content-Type: " . $obj->ContentType);
+                header("Content-Length: " . $obj->ContentLength);
                 
-                // TODO: Check authentication once we support one or more auth methods
-                if ($obj->Public)
-                {
-                    header("ETag: " . $obj->SHA256);
-                    header("Last-Modified: " . gmdate(DATE_RFC850, $obj->CreationDate));
-                    header("X-Asset-Creator-Id: " . $obj->CreatorID);
-                    header("Content-Type: " . $obj->ContentType);
-                    header("Content-Length: " . $obj->ContentLength);
-                    
-                    if (!$headrequest)
-                        echo $obj->Data;
-                    
-                    exit();
-                }
-                else
-                {
-                    log_message('debug', "Access forbidden to private asset " . $asset->ID);
-                    
-                    header("HTTP/1.1 403 Forbidden");
-                    echo 'Access forbidden';
-                    exit();
-                }
+                if (!$headrequest)
+                    echo $obj->Data;
+                
+                exit();
             }
             else
             {
-                header("HTTP/1.1 404 Not Found");
-                echo 'Asset not found';
+                log_message('debug', "Access forbidden to private asset " . $asset->ID);
+                
+                header("HTTP/1.1 403 Forbidden");
+                echo 'Access forbidden';
                 exit();
             }
         }
         else
         {
-            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-            log_message('debug', sprintf("Query: %s", $sql));
-            
-            header("HTTP/1.1 500 Internal Server Error");
-            echo 'Internal server error';
+            header("HTTP/1.1 404 Not Found");
+            echo 'Asset not found';
             exit();
         }
     }

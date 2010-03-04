@@ -178,6 +178,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
             fclose($fp);
             
             $asset->SHA256 = hash_file('sha256', $tmpName);
+            $asset->ContentLength = filesize($tmpName);
             $asset->ContentType = $_FILES['Asset']['type'];
             $asset->Temporary = !empty($_POST['Temporary']);
             if (isset($_POST['Public']))
