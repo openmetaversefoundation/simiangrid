@@ -53,7 +53,7 @@ class SQLAssets
         
         $sth = $this->conn->prepare($sql);
         
-        if ($sth->execute(array(':ID' => $asset->ID)))
+        if ($sth->execute(array(':ID' => $assetID)))
         {
             if ($sth->rowCount() == 1)
             {
@@ -90,7 +90,7 @@ class SQLAssets
         
         $sth = $this->conn->prepare($sql);
         
-        if ($sth->execute(array(':ID' => $asset->ID)))
+        if ($sth->execute(array(':ID' => $assetID)))
         {
             if ($sth->rowCount() == 1)
             {

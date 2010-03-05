@@ -56,16 +56,16 @@ class GetAsset implements IGridService
         if ($asset)
         {
             // TODO: Check authentication once we support one or more auth methods
-            if ($obj->Public)
+            if ($asset->Public)
             {
-                header("ETag: " . $obj->SHA256);
-                header("Last-Modified: " . gmdate(DATE_RFC850, $obj->CreationDate));
-                header("X-Asset-Creator-Id: " . $obj->CreatorID);
-                header("Content-Type: " . $obj->ContentType);
-                header("Content-Length: " . $obj->ContentLength);
+                header("ETag: " . $asset->SHA256);
+                header("Last-Modified: " . gmdate(DATE_RFC850, $asset->CreationDate));
+                header("X-Asset-Creator-Id: " . $asset->CreatorID);
+                header("Content-Type: " . $asset->ContentType);
+                header("Content-Length: " . $asset->ContentLength);
                 
                 if (!$headrequest)
-                    echo $obj->Data;
+                    echo $asset->Data;
                 
                 exit();
             }

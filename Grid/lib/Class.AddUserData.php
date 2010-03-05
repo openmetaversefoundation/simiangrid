@@ -39,7 +39,6 @@ function escape_json($json)
     $json = str_replace('\t', '\\t', $json);
     $json = str_replace('\\', '\\\\', $json);
     $json = str_replace('"', '\"', $json);
-    $json = str_replace("'", "\\'", $json);
     
     return $json;
 }

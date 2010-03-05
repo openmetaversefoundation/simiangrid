@@ -51,7 +51,7 @@ class MongoAssets
         $this->coll = $this->db->AssetData;
         
         // Build an index on AssetData.ID if one does not already exist
-        $this->coll->ensureIndex(array('ID' => 1));
+        $this->coll->ensureIndex(array('ID' => 1), array('unique' => 1));
     }
     
     public function GetAssetMetadata($assetID)
