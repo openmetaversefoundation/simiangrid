@@ -27,30 +27,42 @@
  *
  *
  * @package    SimianGrid
- * @author     Jim Radford <http://www.jimradford.com/>
+ * @author     John Hurliman <http://software.intel.com/en-us/blogs/author/john-hurliman/>
  * @copyright  Open Metaverse Foundation
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
 
-class AddIdentity implements IGridService
+class GetGenerics implements IGridService
 {
-    private $UserID;
-
     public function Execute($db, $params)
     {
-        if (isset($params["Identifier"], $params["Credential"], $params["Type"], $params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
+        $ownerID = null;
+        
+        if (isset($params["OwnerID"], $params["Type"]))
         {
-            $sql = "INSERT INTO Identities (Identifier, Credential, Type, UserID)
-            		VALUES (:Identifier, :Credential, :Type, :UserID)
-            		ON DUPLICATE KEY UPDATE Credential=VALUES(Credential), Type=VALUES(Type), UserID=VALUES(UserID)";
+            $sql = "SELECT `Key`, `Value` FROM Generic WHERE `OwnerID`=:OwnerID AND `Type`=:Type";
+            $dbValues = array(':OwnerID' => $ownerID, ':Type' => $params["Type"]);
+            
+            if (isset($params["Key"]))
+            {
+                $sql .= " AND `Key`=:Key";
+                $dbValues[':Key'] = $params["Key"];
+            }
             
             $sth = $db->prepare($sql);
             
-            if ($sth->execute(array(':Identifier' => $params["Identifier"], ':Credential' => $params["Credential"], ':Type' => $params["Type"], ':UserID' => $this->UserID)))
+            if ($sth->execute($dbValues))
             {
+                $found = array();
+                
+                while ($obj = $sth->fetchObject())
+                {
+                    $found[] = json_encode(array('Key' => $obj->Key, 'Value' => $obj->Value));
+                }
+                
                 header("Content-Type: application/json", true);
-                echo '{ "Success": true }';
+                echo '{ "Success": true, "Entries": [' . implode(',', $found) . '] }';
                 exit();
             }
             else
@@ -67,7 +79,6 @@ class AddIdentity implements IGridService
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
-            exit();
         }
     }
 }

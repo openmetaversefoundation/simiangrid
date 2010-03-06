@@ -182,6 +182,20 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`UserData` (
 ENGINE = InnoDB;
 
 
+-- -----------------------------------------------------
+-- Table `Simian`.`Generic`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Simian`.`Generic` ;
+
+CREATE  TABLE IF NOT EXISTS `Simian`.`Generic` (
+  `OwnerID` CHAR(36) NOT NULL ,
+  `Type` VARCHAR(45) NOT NULL ,
+  `Key` VARCHAR(45) NOT NULL ,
+  `Value` MEDIUMTEXT NULL ,
+  UNIQUE INDEX `owner_type_key` (`OwnerID` ASC, `Type` ASC, `Key` ASC) )
+ENGINE = InnoDB;
+
+
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

@@ -27,27 +27,27 @@
  *
  *
  * @package    SimianGrid
- * @author     Jim Radford <http://www.jimradford.com/>
+ * @author     John Hurliman <http://software.intel.com/en-us/blogs/author/john-hurliman/>
  * @copyright  Open Metaverse Foundation
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
 
-class AddIdentity implements IGridService
+class AddGeneric implements IGridService
 {
-    private $UserID;
-
     public function Execute($db, $params)
     {
-        if (isset($params["Identifier"], $params["Credential"], $params["Type"], $params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
+        $ownerID = null;
+        
+        if (isset($params["OwnerID"], $params["Type"], $params["Key"], $params["Value"]) && UUID::TryParse($params["OwnerID"], $ownerID))
         {
-            $sql = "INSERT INTO Identities (Identifier, Credential, Type, UserID)
-            		VALUES (:Identifier, :Credential, :Type, :UserID)
-            		ON DUPLICATE KEY UPDATE Credential=VALUES(Credential), Type=VALUES(Type), UserID=VALUES(UserID)";
+            $sql = "INSERT INTO Generic (`OwnerID`, `Type`, `Key`, `Value`)
+            		VALUES (:OwnerID, :Type, :Key, :Value)
+            		ON DUPLICATE KEY UPDATE `Type`=VALUES(`Type`), `Key`=VALUES(`Key`), `Value`=VALUES(`Value`)";
             
             $sth = $db->prepare($sql);
             
-            if ($sth->execute(array(':Identifier' => $params["Identifier"], ':Credential' => $params["Credential"], ':Type' => $params["Type"], ':UserID' => $this->UserID)))
+            if ($sth->execute(array(':OwnerID' => $ownerID, ':Type' => $params["Type"], ':Key' => $params["Key"], ':Value' => $params["Value"])))
             {
                 header("Content-Type: application/json", true);
                 echo '{ "Success": true }';
