@@ -367,7 +367,7 @@ function add_wearable(&$wearables, $appearance, $wearableName)
         $wearables[] = UUID::Zero;
 }
 
-function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appearance, 
+function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appearance, $attachments,
     $sessionID, $secureSessionID, $startPosition, &$seedCapability)
 {
     $regionBaseUrl = $scene->Address;
@@ -379,6 +379,7 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
     $capsPath = UUID::Random();
     
     $wearables = array();
+    $attached = array();
     
     if (isset($appearance))
     {
@@ -397,6 +398,20 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
         add_wearable($wearables, $appearance, 'Skirt');
     }
     
+    if (isset($attachments))
+    {
+        $i = 0;
+        
+        foreach ($attachments as $key => $item)
+        {
+            if (substr($key, 0, 4) === '_ap_')
+            {
+                $point = (int)substr($key, 4);
+                $attached[$i++] = array('point' => $point, 'item' => $item);
+            }
+        }
+    }
+    
     $response = webservice_post($regionUrl, array(
     	'agent_id' => $userID,
     	'caps_path' => $capsPath,
@@ -412,7 +427,8 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
         'destination_y' => $scene->MinPosition->Y,
         'destination_name' => $scene->Name,
         'destination_uuid' => $scene->SceneID,
-        'wearables' => $wearables
+        'wearables' => $wearables,
+        'attachments' => $attached
     ), true);
     
     if (!empty($response['success']))
@@ -531,8 +547,8 @@ function process_login($method_name, $params, $user_data)
     
     // Prepare a login to the destination scene
     $seedCapability = NULL;
-    if (!create_opensim_presence($scene, $userID, $circuitCode, $fullname, json_decode($user['LLAppearance'], TRUE),
-        $sessionID, $secureSessionID, $startPosition, $seedCapability))
+    if (!create_opensim_presence($scene, $userID, $circuitCode, $fullname, json_decode($user['LLAppearance'], true),
+        json_decode($user['LLAttachments'], true), $sessionID, $secureSessionID, $startPosition, $seedCapability))
     {
         return array('reason' => 'presence', 'login' => 'false',
         	'message' => "Failed to establish a presence in the destination region. Please try again later.");
