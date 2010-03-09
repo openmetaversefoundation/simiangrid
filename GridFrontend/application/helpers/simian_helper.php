@@ -63,7 +63,7 @@ function create_asset($assetID, $creatorID, $contentType, $filename)
     $curl = new Curl();
     $curl->create($CI->config->item('asset_service'));
     $curl->option(CURLOPT_POST, TRUE);
-    $curl->option(CURLOPT_POSTFIELDS, @$params);
+    $curl->option(CURLOPT_POSTFIELDS, $params);
     $curl->http_method('post');
     $response = json_decode($curl->execute(), TRUE);
 	

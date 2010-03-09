@@ -43,29 +43,29 @@ $openid_identifier = array(
 );
 ?>
 
+<h2>SimianGrid Registration</h2>
+
+<!--
 <fieldset><legend>Register with OpenID</legend>
 <dl>
 
 	<?php echo form_open(site_url('auth/register_openid'))?>
+    <?php echo form_hidden('action', 'verify');?>
     
     <?php if (isset($msg)) { echo "<div class=\"alert\">$msg</div>"; }?>
     <?php if (isset($error)) { echo "<div class=\"error\">$error</div>"; }?>
     
     <dt><?php echo form_label('OpenID', $openid_identifier['id']);?></dt>
 	<dd>
-		<?php echo form_input($openid_identifier)?>
+		<?php echo form_input($openid_identifier)?> <?php echo form_submit('register','Register', 'class="button"');?>
         <?php echo form_error($openid_identifier['name']); ?>
 	</dd>
-    
-    <?php echo form_hidden('action', 'verify');?>
-	
-	<dt></dt>
-	<dd><?php echo form_submit('register','Register', 'class="button"');?></dd>
     
     <?php echo form_close()?>
 
 </dl>
 </fieldset>
+-->
 
 <fieldset><legend>Register</legend>
 <?php echo form_open($this->uri->uri_string())?>
@@ -73,13 +73,13 @@ $openid_identifier = array(
 <?php echo $this->dx_auth->get_auth_error(); ?>
 
 <dl>
-	<dt><?php echo form_label('First Name', $first_name['id']);?></dt>
+	<dt><?php echo form_label('Avatar First Name', $first_name['id']);?></dt>
 	<dd>
 		<?php echo form_input($first_name)?>
         <?php echo form_error($first_name['name']); ?>
 	</dd>
 	
-	<dt><?php echo form_label('Last Name', $last_name['id']);?></dt>
+	<dt><?php echo form_label('Avatar Last Name', $last_name['id']);?></dt>
 	<dd>
 		<?php echo form_input($last_name)?>
         <?php echo form_error($last_name['name']); ?>

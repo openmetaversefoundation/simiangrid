@@ -35,11 +35,11 @@ $confirmation_code = array(
 
 ?>
 
-<fieldset><legend>Login</legend>
+<h2>Login</h2>
+
 <?php echo form_open($this->uri->uri_string())?>
 
 <?php echo $this->dx_auth->get_auth_error(); ?>
-
 
 <dl>
 	<dt><?php echo form_label('First Name', $first_name['id']);?></dt>
@@ -103,4 +103,3 @@ $confirmation_code = array(
 </dl>
 
 <?php echo form_close()?>
-</fieldset>

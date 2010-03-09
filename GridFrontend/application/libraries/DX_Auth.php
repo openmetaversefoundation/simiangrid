@@ -229,8 +229,18 @@ class DX_Auth
 	
 	function _get_user_level($username)
 	{
-		//TODO:
-		return 255;
+	    // TODO: Can we change this function to use $userID instead?
+	    $query = array(
+        	'RequestMethod' => 'GetUser',
+        	'Name' => $username
+        );
+        
+        $response = rest_post($this->ci->config->item('user_service'), $query);
+        
+        if (element('Success', $response) && is_array($response['User']))
+            return (int)element('AccessLevel', $response['User'], 0);
+	    
+		return 0;
 	}
 
 	/* Autologin related function */
@@ -440,7 +450,7 @@ class DX_Auth
 	// Check is user is has admin privilege
 	function is_admin()
 	{
-		return strtolower($this->ci->session->userdata('DX_role_name')) == 'admin';
+		return (int)$this->ci->session->userdata('DX_user_level') >= 200;
 	}
 	
 	// Check if user is logged in

@@ -34,7 +34,7 @@ $config['asset_service'] = 'http://localhost/Grid/?id=';
 | Folder containing the default SimianGrid assets
 |
 */
-$config['default_asset_folder'] = '../default_assets';
+$config['default_asset_folder'] = '../Grid/default_assets';
 
 /*
 |--------------------------------------------------------------------------
