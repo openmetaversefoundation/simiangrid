@@ -547,8 +547,11 @@ function process_login($method_name, $params, $user_data)
     
     // Prepare a login to the destination scene
     $seedCapability = NULL;
-    if (!create_opensim_presence($scene, $userID, $circuitCode, $fullname, json_decode($user['LLAppearance'], true),
-        json_decode($user['LLAttachments'], true), $sessionID, $secureSessionID, $startPosition, $seedCapability))
+    $llappearance = isset($user['LLAppearance']) ? json_decode($user['LLAppearance'], true) : null;
+    $llattachments = isset($user['LLAttachments']) ? json_decode($user['LLAttachments'], true) : null;
+    
+    if (!create_opensim_presence($scene, $userID, $circuitCode, $fullname, $llappearance, $llattachments,
+        $sessionID, $secureSessionID, $startPosition, $seedCapability))
     {
         return array('reason' => 'presence', 'login' => 'false',
         	'message' => "Failed to establish a presence in the destination region. Please try again later.");
