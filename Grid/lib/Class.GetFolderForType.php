@@ -65,7 +65,6 @@ class GetFolderForType implements IGridService
                 $folder->ContentType = $item->ContentType;
                 $folder->Version = $item->Version;
                 $folder->ExtraData = $item->ExtraData;
-                $folder->ChildCount = ((int)$item->RightNode - (int)$item->LeftNode - 1) / 2;
                 
                 header("Content-Type: application/json", true);
                 echo sprintf('{ "Success": true, "Folder": %s }', $folder->toOSD());

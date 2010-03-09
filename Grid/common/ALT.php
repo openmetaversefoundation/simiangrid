@@ -60,7 +60,7 @@ class ALT
         {
             $sql = "INSERT INTO Inventory (ID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, 
             			ExtraData, CreationDate, Type, LeftNode, RightNode)
-                    VALUES (:ID, :ParentID, :OwnerID, :OwnerID, :Name, '', :ContentType, 0, :ExtraData, CURRENT_TIMESTAMP, 
+                    VALUES (:ID, :ParentID, :OwnerID, :OwnerID, :Name, '', :ContentType, 1, :ExtraData, CURRENT_TIMESTAMP, 
                     	'Folder', 0, 0)
                     ON DUPLICATE KEY UPDATE ParentID=VALUES(ParentID), CreatorID=VALUES(CreatorID), Name=VALUES(Name), 
                     	Description=VALUES(Description), ContentType=VALUES(ContentType), Version=Version+1";
@@ -298,7 +298,6 @@ class ALT
             $descendant->ContentType = $item->ContentType;
             $descendant->Version = $item->Version;
             $descendant->ExtraData = $item->ExtraData;
-            $descendant->ChildCount = ((int)$item->RightNode - (int)$item->LeftNode - 1) / 2;
         }
         else
         {

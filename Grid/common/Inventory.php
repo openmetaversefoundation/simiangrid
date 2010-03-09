@@ -37,7 +37,6 @@
 class InventoryFolder extends Inventory implements IOSD
 {
     public $Version = 0;
-    public $ChildCount = 0;
 
     function __construct($id)
     {
@@ -99,7 +98,6 @@ class InventoryFolder extends Inventory implements IOSD
 
     public static function fromOSD($strOSD)
     {
-        $osdObj = json_decode($strOSD, true);
         throw new Exception("Not Implemented");
     }
 }
@@ -171,7 +169,6 @@ class InventoryItem extends Inventory implements IOSD
 
     public static function fromOSD($strOSD)
     {
-        $osdObj = json_decode($strOSD, true);
         throw new Exception("Not Implemented");
     }
 }

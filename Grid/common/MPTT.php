@@ -188,7 +188,6 @@ class MPTT
             $descendant->ContentType = $item->ContentType;
             $descendant->Version = $item->Version;
             $descendant->ExtraData = $item->ExtraData;
-            $descendant->ChildCount = ((int)$item->RightNode - (int)$item->LeftNode - 1) / 2;
         }
         else
         {
