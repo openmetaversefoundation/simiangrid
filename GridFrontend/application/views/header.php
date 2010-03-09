@@ -16,7 +16,7 @@
 <menu>
 <li><a href="{site_url}">Home</a></li>
 <?php if ($this->dx_auth->is_logged_in() && !strpos(uri_string(), 'logout')): ?>
-<li><a href="{site_url}/auth/change_password">Change Password</a></li>
+<li><a href="{site_url}/auth/change_password">Account</a></li>
 <li><a href="{site_url}/auth/logout"><span>Log Out</span></a></li>
 <?php else: ?>
 <li><a href="{site_url}/auth"><span>Login</span></a></li>

@@ -7,8 +7,8 @@ $password = array(
 
 ?>
 
-<fieldset>
-<legend>Cancel Account</legend>
+<h2>Cancel Your Account</h2>
+
 <?php echo form_open($this->uri->uri_string()); ?>
 
 <?php echo $this->dx_auth->get_auth_error(); ?>
@@ -24,4 +24,3 @@ $password = array(
 </dl>
 
 <?php echo form_close(); ?>
-</fieldset>

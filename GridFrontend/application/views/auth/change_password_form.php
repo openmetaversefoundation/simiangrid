@@ -20,8 +20,8 @@ $confirm_new_password = array(
 
 ?>
 
-<fieldset>
-<legend>Change Password</legend>
+<h2>Change Your Password</h2>
+
 <?php echo form_open($this->uri->uri_string()); ?>
 
 <?php echo $this->dx_auth->get_auth_error(); ?>
@@ -50,4 +50,3 @@ $confirm_new_password = array(
 </dl>
 
 <?php echo form_close(); ?>
-</fieldset>

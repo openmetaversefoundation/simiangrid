@@ -3,6 +3,7 @@
 if (!isset($openid_first)) $openid_first = '';
 if (!isset($openid_last)) $openid_last = '';
 if (!isset($openid_email)) $openid_email = '';
+if (!isset($openid_success)) $openid_success = '';
 
 $first_name = array(
 	'name'	=> 'first_name',
@@ -49,7 +50,7 @@ $openid_identifier = array(
 );
 ?>
 
-<fieldset><legend>Register</legend>
+<h2>SimianGrid Registration</h2>
 
 <?php echo form_open($this->uri->uri_string())?>
 
@@ -92,7 +93,6 @@ $openid_identifier = array(
 	</dd>
 		
 <?php if ($this->dx_auth->captcha_registration): ?>
-
 	<dt></dt>
 	<dd>
 		<?php 
@@ -122,5 +122,3 @@ $openid_identifier = array(
 </dl>
 
 <?php echo form_close()?>
-
-</fieldset>

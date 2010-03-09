@@ -10,7 +10,8 @@ $login = array(
 
 ?>
 
-<fieldset><legend accesskey="D" tabindex="1">Forgotten Password</legend>
+<h2>Forgotten Password</h2>
+
 <?php echo form_open($this->uri->uri_string()); ?>
 
 <?php echo $this->dx_auth->get_auth_error(); ?>
@@ -25,4 +26,3 @@ $login = array(
 </dl>
 
 <?php echo form_close()?>
-</fieldset>
