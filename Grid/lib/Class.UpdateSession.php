@@ -102,20 +102,26 @@ class UpdateSession implements IGridService
             
             if ($sth->execute($dbValues))
             {
-                if ($sth->rowCount() > 0)
-                {
-                    header("Content-Type: application/json", true);
-                    echo '{ "Success": true }';
-                    exit();
-                }
-                else
-                {
-                    // FIXME: rowCount() will be 0 if no changes were made. No 
-                    // change should still be reported as a success
-                    header("Content-Type: application/json", true);
-                    echo '{ "Message": "Session does not exist" }';
-                    exit();
-                }
+                // TODO: We don't currently check if a row was actually updated since rowCount() will be zero
+                // if there was no change (false negative).
+                header("Content-Type: application/json", true);
+                echo '{ "Success": true }';
+                exit();
+                
+                //if ($sth->rowCount() > 0)
+                //{
+                //    header("Content-Type: application/json", true);
+                //    echo '{ "Success": true }';
+                //    exit();
+                //}
+                //else
+                //{
+                //    // FIXME: rowCount() will be 0 if no changes were made. No 
+                //    // change should still be reported as a success
+                //    header("Content-Type: application/json", true);
+                //    echo '{ "Message": "Session does not exist" }';
+                //    exit();
+                //}
             }
             else
             {
