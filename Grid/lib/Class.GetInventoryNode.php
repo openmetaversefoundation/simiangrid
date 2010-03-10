@@ -34,6 +34,22 @@
  */
 require_once(BASEPATH . 'common/ALT.php');
 
+function output_results($nodes)
+{
+    header("Content-Type: application/json", true);
+    echo '{ "Success": true, "Items": [';
+    
+    $count = count($nodes);
+    for ($i = 0; $i < $count; $i++)
+    {
+        echo $nodes[$i]->toOSD();
+        if ($i < $count - 1)
+            echo ',';
+    }
+    
+    echo '] }';
+}
+
 class GetInventoryNode implements IGridService
 {
     private $inventory;
@@ -62,8 +78,6 @@ class GetInventoryNode implements IGridService
         
         $this->inventory = new ALT($db);
         
-        $results = array();
-        
         // Optimization for inventory skeleton fetching
         if ($itemID == $ownerID && $fetchFolders && !$fetchItems && !$childrenOnly)
         {
@@ -71,8 +85,8 @@ class GetInventoryNode implements IGridService
             
             if ($library = $this->inventory->FetchSkeleton($ownerID))
             {
-                foreach ($library as $item)
-                    $results[] = $item->toOSD();
+                output_results($library);
+                exit();
             }
             else
             {
@@ -83,10 +97,10 @@ class GetInventoryNode implements IGridService
         }
         else
         {
-            if ($library = $this->inventory->FetchDescendants($itemID, $fetchFolders, $fetchItems, $childrenOnly))
+            if ($nodes = $this->inventory->FetchDescendants($itemID, $fetchFolders, $fetchItems, $childrenOnly))
             {
-                foreach ($library as $item)
-                    $results[] = $item->toOSD();
+                output_results($nodes);
+                exit();
             }
             else
             {
@@ -95,9 +109,5 @@ class GetInventoryNode implements IGridService
                 exit();
             }
         }
-        
-        header("Content-Type: application/json", true);
-        echo '{ "Success": true, "Items": [' . implode(',', $results) . '] }';
-        exit();
     }
 }
