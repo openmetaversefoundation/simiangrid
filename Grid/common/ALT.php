@@ -102,14 +102,19 @@ class ALT
         else if ($inventory instanceof InventoryItem)
         {
             if (isset($inventory->CreatorID))
-                $creatorIDsql = ":CreatorID";
+                $creatorIDSql = ":CreatorID";
             else
-                $creatorIDsql = "(SELECT CreatorID FROM AssetData WHERE ID=:AssetID)";
+                $creatorIDSql = "(SELECT CreatorID FROM AssetData WHERE ID=:AssetID)";
+            
+            if (isset($inventory->ContentType))
+                $contentTypeSql = ":ContentType";
+            else
+                $contentTypeSql = "(SELECT ContentType FROM AssetData WHERE ID=:AssetID)"; 
             
             $sql = "INSERT INTO Inventory (ID, AssetID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, 
             			ExtraData, CreationDate, Type, LeftNode, RightNode)
-                    VALUES (:ID, :AssetID, :ParentID, :OwnerID, " . $creatorIDsql . ", :Name, 
-                    	:Description, (SELECT ContentType FROM AssetData WHERE ID=:AssetID), 0, :ExtraData, CURRENT_TIMESTAMP , 'Item', 0, 0)
+                    VALUES (:ID, :AssetID, :ParentID, :OwnerID, " . $creatorIDSql . ", :Name, 
+                    	:Description, " . $contentTypeSql . ", 0, :ExtraData, CURRENT_TIMESTAMP , 'Item', 0, 0)
                     ON DUPLICATE KEY UPDATE AssetID=VALUES(AssetID), ParentID=VALUES(ParentID), CreatorID=VALUES(CreatorID), 
                     	Name=VALUES(Name), Description=VALUES(Description), ContentType=VALUES(ContentType), Version=Version+1";
             if (!empty($inventory->ExtraData))
@@ -125,6 +130,8 @@ class ALT
                 ':ExtraData' => $inventory->ExtraData);
             if (isset($inventory->CreatorID))
                 $dbValues['CreatorID'] = $inventory->CreatorID;
+            if (isset($inventory->ContentType))
+                $dbValues['ContentType'] = $inventory->ContentType;
             
             $sth = $this->conn->prepare($sql);
             

@@ -60,8 +60,8 @@ class AddInventoryItem implements IGridService
         }
         
         $this->Item->Name = trim($params["Name"]);
-        $this->Item->Description = (isset($params["Description"])) ? trim($params["Description"]) : '';
-        $this->Item->ExtraData = (isset($params["ExtraData"])) ? trim($params["ExtraData"]) : '';
+        $this->Item->Description = (isset($params["Description"])) ? $params["Description"] : '';
+        $this->Item->ExtraData = (isset($params["ExtraData"])) ? $params["ExtraData"] : '';
         
         // If the CreatorID is not set, invalid, or zero, we set CreatorID to NULL so the database
         // layer will fetch CreatorID information based on AssetID 
@@ -72,6 +72,11 @@ class AddInventoryItem implements IGridService
             $this->Item->CreatorID = null;
         }
         
+        // If ContentType is not given the database layer will fetch ContentType information based
+        // on AssetID
+        if (isset($params["ContentType"]))
+            $this->Item->ContentType = $params["ContentType"];
+            
         try
         {
             $result = $this->inventory->InsertNode($this->Item);
