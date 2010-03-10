@@ -428,7 +428,8 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
         'destination_name' => $scene->Name,
         'destination_uuid' => $scene->SceneID,
         'wearables' => $wearables,
-        'attachments' => $attached
+        'attachments' => $attached,
+        'teleport_flags' => 128
     ), true);
     
     if (!empty($response['success']))

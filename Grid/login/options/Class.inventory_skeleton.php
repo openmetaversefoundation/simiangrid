@@ -58,9 +58,9 @@ class inventory_skeleton
             {
                 $type = isset($mimes[$item['ContentType']]) ? $mimes[$item['ContentType']] : -1;
                 $folders[] = array(
-                    'folder_id' => (string)$item['ID'],
+                    'folder_id' => $item['ID'],
                     'name' => $item['Name'],
-                    'parent_id' => (string)$item['ParentID'],
+                    'parent_id' => $item['ParentID'],
                     'version' => (int)$item['Version'],
                     'type_default' => (int)$type
                 );
@@ -69,6 +69,14 @@ class inventory_skeleton
         else
         {
             log_message('error', 'Failed to fetch inventory skeleton for ' . $this->User['UserID']);
+            
+            /*$folders[] = array(
+                'folder_id' => $this->User['UserID'],
+                'name' => 'My Inventory',
+                'parent_id' => '00000000-0000-0000-0000-000000000000',
+                'version' => 1,
+                'type_default' => 8
+            );*/
         }
         
         log_message('debug', 'Returning ' . count($folders) . ' inventory folders in the skeleton');

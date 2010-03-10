@@ -45,31 +45,42 @@ class inventory_skel_lib
 
     public function GetResults()
     {
+        $config =& get_config();
         $mimes =& get_mimes();
-
+        
+        $rootFolderID = NULL;
+        $items = NULL;
+        
         $folders = array();
         
-        // FIXME:
-        return $folders;
+        if (get_inventory($config['library_owner_id'], &$rootFolderID, &$items))
+        {
+            foreach ($items as $item)
+            {
+                $type = isset($mimes[$item['ContentType']]) ? $mimes[$item['ContentType']] : -1;
+                $folders[] = array(
+                    'folder_id' => $item['ID'],
+                    'name' => $item['Name'],
+                    'parent_id' => $item['ParentID'],
+                    'version' => (int)$item['Version'],
+                    'type_default' => (int)$type
+                );
+            }
+        }
+        else
+        {
+            log_message('error', 'Failed to fetch inventory skeleton for library owner ' . $config['library_owner_id']);
+            
+            /*$folders[] = array(
+                'folder_id' => $config['library_owner_id'],
+                'name' => 'Library',
+                'parent_id' => '00000000-0000-0000-0000-000000000000',
+                'version' => 1,
+                'type_default' => 8
+            );*/
+        }
         
-//        $jsonStr = NULL;
-//        if (try_make_service_request(array('RequestMethod' => 'GetInventory' , 'OwnerID' => $this->Config["shared_folder_owner_id"] , 'ItemID' => $this->Config["shared_folder_id"] , 'IncludeFolders' => TRUE , 'IncludeItems' => FALSE , 'ChildrenOnly' => TRUE), $jsonStr))
-//        {
-//            $jsonObj = json_decode($jsonStr, true);
-//            if (json_last_error() == JSON_ERROR_NONE)
-//            {
-//                for ($i = 0; $i < count($jsonObj); $i++)
-//                {
-//                    $type = isset($InventoryMimeMap[$jsonObj[$i]["ContentType"]]) ? $InventoryMimeMap[$jsonObj[$i]["ContentType"]] : -1;
-//                    $folders[] = array('folder_id' => $jsonObj[$i]["ID"] , 'name' => $jsonObj[$i]["Name"] , 'parent_id' => $jsonObj[$i]["ParentID"] , 'version' => $jsonObj[$i]["Version"] , 'type_default' => $type);
-//                }
-//            }
-//            else
-//            {
-//                $logger->err(sprintf("JSON Decode Error: %s. string: '%s'", json_last_error(), $jsonStr));
-//            }
-//        }
-//        
-//        return $folders;
+        log_message('debug', 'Returning ' . count($folders) . ' inventory folders in the library skeleton');
+        return $folders;
     }
 }

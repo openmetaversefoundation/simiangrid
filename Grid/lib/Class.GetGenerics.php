@@ -39,15 +39,31 @@ class GetGenerics implements IGridService
     {
         $ownerID = null;
         
-        if (isset($params["OwnerID"], $params["Type"]))
+        if (isset($params["Type"]))
         {
-            $sql = "SELECT `Key`, `Value` FROM Generic WHERE `OwnerID`=:OwnerID AND `Type`=:Type";
-            $dbValues = array(':OwnerID' => $ownerID, ':Type' => $params["Type"]);
+            $dbValues = array(':Type' => $params["Type"]);
             
-            if (isset($params["Key"]))
+            if (isset($params["OwnerID"]) && UUID::TryParse($params["OwnerID"], $ownerID))
             {
-                $sql .= " AND `Key`=:Key";
+                $sql = "SELECT `OwnerID`, `Key`, `Value` FROM Generic WHERE `OwnerID`=:OwnerID AND `Type`=:Type";
+                $dbValues[':OwnerID'] = $ownerID;
+                
+                if (isset($params["Key"]))
+                {
+                    $sql .= " AND `Key`=:Key";
+                    $dbValues[':Key'] = $params["Key"];
+                }
+            }
+            else if (isset($params["Key"]))
+            {
+                $sql = "SELECT `OwnerID`, `Key`, `Value` FROM Generic WHERE `Key`=:Key AND `Type`=:Type";
                 $dbValues[':Key'] = $params["Key"];
+            }
+            else
+            {
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Invalid parameters" }';
+                exit();
             }
             
             $sth = $db->prepare($sql);
@@ -58,7 +74,7 @@ class GetGenerics implements IGridService
                 
                 while ($obj = $sth->fetchObject())
                 {
-                    $found[] = json_encode(array('Key' => $obj->Key, 'Value' => $obj->Value));
+                    $found[] = json_encode(array('OwnerID' => $obj->OwnerID, 'Key' => $obj->Key, 'Value' => $obj->Value));
                 }
                 
                 header("Content-Type: application/json", true);
@@ -79,6 +95,7 @@ class GetGenerics implements IGridService
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
+            exit();
         }
     }
 }
