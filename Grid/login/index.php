@@ -280,6 +280,70 @@ function get_inventory($userID, &$rootFolderID, &$items)
     return false;
 }
 
+function get_friends($userID)
+{
+    $config =& get_config();
+    $userService = $config['user_service'];
+    
+    $friends = array();
+    
+    // Load the list of friends and their granted permissions
+    $response = webservice_post($userService, array(
+    	'RequestMethod' => 'GetGenerics',
+    	'OwnerID' => $userID,
+        'Type' => 'Friend')
+    );
+    
+    if (!empty($response['Success']) && is_array($response['Entries']))
+    {
+        $friendEntries = $response['Entries'];
+        
+        // Populate the friends array
+        foreach ($friendEntries as $friendEntry)
+        {
+            $friendID = $friendEntry['Key'];
+            $friends[$friendID] = array('buddy_rights_has' => 0, 'buddy_rights_given' => (int)$friendEntry['Value'], 'buddy_id' => $friendID);
+        }
+        
+        // Load the permissions those friends have granted to this user
+        $response = webservice_post($userService, array(
+        	'RequestMethod' => 'GetGenerics',
+        	'Key' => $userID,
+            'Type' => 'Friend')
+        );
+        
+        if (!empty($response['Success']) && is_array($response['Entries']))
+        {
+            $friendedMeEntries = $response['Entries'];
+            
+            foreach ($friendedMeEntries as $friendedMeEntry)
+            {
+                $friendID = $friendedMeEntry['OwnerID'];
+                
+                if (isset($friends[$friendID]))
+                {
+                    $friends[$friendID]['buddy_rights_has'] = $friendedMeEntry['Value'];
+                }
+            }
+        }
+        else
+        {
+            log_message('warn', "Failed to retrieve the reverse friends list for " . $userID . " from " . $userService . ": " . $response['Message']);
+        }
+    }
+    else
+    {
+        log_message('warn', "Failed to retrieve the friends list for " . $userID . " from " . $userService . ": " . $response['Message']);
+    }
+    
+    // Convert the friends associative array into a plain array
+    $ret = array();
+    foreach ($friends as $friend)
+        $ret[] = $friend;
+    
+    return $ret;
+}
+
 function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$startPosition, &$startLookAt)
 {
     $scene = null;

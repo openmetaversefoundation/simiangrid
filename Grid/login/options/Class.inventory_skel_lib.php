@@ -36,12 +36,8 @@
 
 class inventory_skel_lib
 {
-    private $User;
-
     function __construct($user)
-    {
-        $this->User = $user;
-    }
+    {}
 
     public function GetResults()
     {

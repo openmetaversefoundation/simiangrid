@@ -37,8 +37,7 @@
 class global_textures
 {
     function __construct($user)
-    {
-    }
+    {}
 
     public function GetResults()
     {

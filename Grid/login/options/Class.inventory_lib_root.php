@@ -36,11 +36,8 @@
 
 class inventory_lib_root
 {
-    private $Config;
-
     function __construct($user)
-    {
-    }
+    {}
 
     public function GetResults()
     {

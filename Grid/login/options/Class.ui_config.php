@@ -37,8 +37,7 @@
 class ui_config
 {
     function __construct($user)
-    {
-    }
+    {}
 
     public function GetResults()
     {
