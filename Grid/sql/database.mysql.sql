@@ -71,7 +71,7 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Identities` (
   `Credential` VARCHAR(255) NULL ,
   `UserID` CHAR(36) NOT NULL ,
   `Enabled` TINYINT(1) NOT NULL DEFAULT TRUE ,
-  UNIQUE INDEX `identifier_type` (`Identifier` ASC, `Type` ASC) ,
+  PRIMARY KEY (`Identifier`, `Type`) ,
   INDEX `fk_id` (`UserID` ASC) ,
   CONSTRAINT `fk_id`
     FOREIGN KEY (`UserID` )
@@ -102,7 +102,6 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Inventory` (
   `RightNode` INT NOT NULL ,
   `ExtraData` TEXT NULL ,
   PRIMARY KEY (`ID`) ,
-  INDEX `parent` (`ParentID` ASC) ,
   INDEX `owner` (`OwnerID` ASC) ,
   INDEX `asset` (`AssetID` ASC) ,
   INDEX `fk_parent` (`ParentID` ASC) ,
@@ -110,7 +109,7 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Inventory` (
     FOREIGN KEY (`ParentID` )
     REFERENCES `Simian`.`Inventory` (`ID` )
     ON DELETE CASCADE
-    ON UPDATE NO ACTION)
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -151,10 +150,8 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Sessions` (
   `ScenePosition` VARCHAR(45) NULL ,
   `SceneLookAt` VARCHAR(45) NULL ,
   `ExtraData` TEXT NULL ,
-  INDEX `scene` (`SceneID` ASC) ,
-  INDEX `fk_user` (`UserID` ASC) ,
   PRIMARY KEY (`SessionID`) ,
-  UNIQUE INDEX `user` (`UserID` ASC) ,
+  UNIQUE INDEX `fk_user` (`UserID` ASC) ,
   CONSTRAINT `fk_user`
     FOREIGN KEY (`UserID` )
     REFERENCES `Simian`.`Users` (`ID` )
@@ -172,7 +169,7 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`UserData` (
   `ID` CHAR(36) NOT NULL ,
   `Key` VARCHAR(50) NOT NULL ,
   `Value` MEDIUMTEXT NOT NULL ,
-  UNIQUE INDEX `id_key` (`ID` ASC, `Key` ASC) ,
+  PRIMARY KEY (`ID`, `Key`) ,
   INDEX `id` (`ID` ASC) ,
   CONSTRAINT `id`
     FOREIGN KEY (`ID` )
@@ -192,7 +189,7 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Generic` (
   `Type` VARCHAR(45) NOT NULL ,
   `Key` VARCHAR(45) NOT NULL ,
   `Value` MEDIUMTEXT NULL ,
-  UNIQUE INDEX `owner_type_key` (`OwnerID` ASC, `Type` ASC, `Key` ASC) )
+  PRIMARY KEY (`OwnerID`, `Type`, `Key`) )
 ENGINE = InnoDB;
 
 
