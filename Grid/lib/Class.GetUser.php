@@ -90,13 +90,13 @@ class GetUser implements IGridService
                 
                 if ($sth->execute(array(':ID' => $obj->ID)))
                 {
-                    while ($obj = $sth->fetchObject())
-                        $output .= ',"' . $obj->Key . '":"' . $obj->Value . '"';
-                    
-                    $output .= '} }';
-                    
                     header("Content-Type: application/json", true);
                     echo $output;
+                    
+                    while ($obj = $sth->fetchObject())
+                        echo ',"' . $obj->Key . '":"' . $obj->Value . '"';
+                    
+                    echo '} }';
                     exit();
                 }
                 else

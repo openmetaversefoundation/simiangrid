@@ -279,6 +279,7 @@ class ALT
         
         if ($sth->execute(array(':ItemID' => $itemID)))
         {
+            log_message('debug', '[ALT::Remove] Success for ' . $itemID . ', childrenOnly=' . $childrenOnly);
             return TRUE;
         }
         else

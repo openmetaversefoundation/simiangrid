@@ -69,14 +69,9 @@ class inventory_skeleton
         else
         {
             log_message('error', 'Failed to fetch inventory skeleton for ' . $this->User['UserID']);
-            
-            /*$folders[] = array(
-                'folder_id' => $this->User['UserID'],
-                'name' => 'My Inventory',
-                'parent_id' => '00000000-0000-0000-0000-000000000000',
-                'version' => 1,
-                'type_default' => 8
-            );*/
+            // Allowing the viewer to login with an empty inventory skeleton does bad things. Better
+            // to just bail out
+            exit();
         }
         
         log_message('debug', 'Returning ' . count($folders) . ' inventory folders in the skeleton');

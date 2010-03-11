@@ -65,7 +65,7 @@ class inventory_skel_lib
         }
         else
         {
-            log_message('error', 'Failed to fetch inventory skeleton for library owner ' . $config['library_owner_id']);
+            log_message('warn', 'Failed to fetch inventory skeleton for library owner ' . $config['library_owner_id']);
             
             /*$folders[] = array(
                 'folder_id' => $config['library_owner_id'],

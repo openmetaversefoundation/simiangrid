@@ -85,7 +85,7 @@ class SQLAssets
     
     public function GetAsset($assetID)
     {
-        $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
+        $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public, Temporary,
 				LENGTH(Data) as ContentLength, Data FROM AssetData WHERE ID=:ID";
         
         $sth = $this->conn->prepare($sql);

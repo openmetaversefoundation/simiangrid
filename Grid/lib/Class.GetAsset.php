@@ -46,23 +46,25 @@ class GetAsset implements IGridService
         
         if ($headrequest)
         {
-            $asset = $assets->GetAsset($asset->ID);
+            $asset = $assets->GetAssetMetadata($asset->ID);
         }
         else
         {
-            $asset = $assets->GetAssetMetadata($asset->ID);
+            $asset = $assets->GetAsset($asset->ID);
         }
         
         if ($asset)
         {
-            // TODO: Check authentication once we support one or more auth methods
+            // TODO: Enforce this once we support one or more auth methods
+            $asset->Public = true;
+            
             if ($asset->Public)
             {
-                header("ETag: " . $asset->SHA256);
-                header("Last-Modified: " . gmdate(DATE_RFC850, $asset->CreationDate));
-                header("X-Asset-Creator-Id: " . $asset->CreatorID);
-                header("Content-Type: " . $asset->ContentType);
-                header("Content-Length: " . $asset->ContentLength);
+                header("ETag: " . $asset->SHA256, true);
+                header("Last-Modified: " . gmdate(DATE_RFC850, $asset->CreationDate), true);
+                header("X-Asset-Creator-Id: " . $asset->CreatorID, true);
+                header("Content-Type: " . $asset->ContentType, true);
+                header("Content-Length: " . $asset->ContentLength, true);
                 
                 if (!$headrequest)
                     echo $asset->Data;
