@@ -89,6 +89,9 @@ class Users extends Model
 			'banned' 			=> 1,
 			'ban_reason' 	=> $reason
 		);
+		
+		// FIXME: Disable the SimianGrid identities for this user
+		
 		return $this->set_user($user_id, $data);
 	}
 	
@@ -98,6 +101,9 @@ class Users extends Model
 			'banned' 			=> 0,
 			'ban_reason' 	=> NULL
 		);
+		
+		// FIXME: Enable the SimianGrid identities for this user
+		
 		return $this->set_user($user_id, $data);
 	}
 
@@ -119,6 +125,9 @@ class Users extends Model
 	function set_user($user_id, $data)
 	{
 		$this->db->where('id', $user_id);
+		
+		// FIXME: Update the SimianGrid user data
+		
 		return $this->db->update($this->_table, $data);
 	}
 	
@@ -126,6 +135,9 @@ class Users extends Model
 	{
 		$this->db->where('id', $user_id);
 		$this->db->delete($this->_table);
+		
+		// FIXME: Delete all SimianGrid identities associated with this user
+		
 		return $this->db->affected_rows() > 0;
 	}
 	
@@ -150,6 +162,8 @@ class Users extends Model
 		$this->db->where('id', $user_id);
 		$this->db->where('newpass_key', $key);
 		
+		// FIXME: Change the SimianGrid identities for this user
+		
 		return $this->db->update($this->_table);
 	}
 
@@ -169,6 +183,9 @@ class Users extends Model
 	{
 		$this->db->set('password', $new_pass);
 		$this->db->where('id', $user_id);
+		
+		// FIXME: Change the SimianGrid identities for this user
+		
 		return $this->db->update($this->_table);
 	}
 }

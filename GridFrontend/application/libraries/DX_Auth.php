@@ -520,7 +520,7 @@ class DX_Auth
 		$this->ci->load->model('dx_auth/users', 'users');
 		$this->ci->load->model('dx_auth/user_temp', 'user_temp');
 		$this->ci->load->model('dx_auth/login_attempts', 'login_attempts');
-			
+		
 		// Default return value
 		$result = FALSE;
 				
@@ -647,6 +647,7 @@ class DX_Auth
         if (element('Success', $response))
             return true;
         
+        log_message('error', "Failed to create user identity $type for $userID: " . element('Message', $response, 'Unknown error'));
         $this->_auth_error = 'Failed to create a user identity: ' . element('Message', $response, 'Unknown error');
         return false;
 	}
@@ -663,6 +664,7 @@ class DX_Auth
         if (element('Success', $response))
             return true;
         
+        log_message('error', "Failed to create user inventory for $userID: " . element('Message', $response, 'Unknown error'));
         $this->_auth_error = 'Failed to create user inventory: ' . element('Message', $response, 'Unknown error');
         return false;
 	}
@@ -692,12 +694,31 @@ class DX_Auth
     		        // Create an inventory for this user
     		        if ($this->_create_simiangrid_inventory($userid))
     		        {
+    		            log_message('info', "Created SimianGrid user $fullname with ID $userid");
     		            return TRUE;
     		        }
+    		        else
+    		        {
+    		            log_message('error', "Failed to create an inventory for $fullname with ID $userid");
+    		        }
+    		    }
+    		    else
+    		    {
+    		        log_message('error', "Failed to create an a1hash identity for $fullname with ID $userid");
     		    }
     		}
+    		else
+    		{
+    		    log_message('error', "Failed to create an md5 identity for $fullname with ID $userid");
+    		}
     		
-    		// TODO: If some part of the process failed, we should delete the user account
+    		// If some part of the process failed try to delete the user account. This will also
+    		// delete any identities associated with the userid
+    		$query = array(
+    		    'RequestMethod' => 'RemoveUser',
+    		    'UserID' => $userid
+    		);
+    		rest_post($this->ci->config->item('user_service'), $query);
 		}
 		else
 		{
