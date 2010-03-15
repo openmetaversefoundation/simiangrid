@@ -567,16 +567,20 @@ function process_login($method_name, $params, $user_data)
         if (UUID::TryParse($existingSession["SceneID"], $sceneID))
             inform_scene_of_logout($sceneID, $userID);
         
-        if (!remove_session($userID))
+        if (remove_session($userID))
         {
-            log_message('warn', "Failed to remove session for " . $userID);
+            log_message('debug', "Removed existing session for $fullname ($userID)");
+        }
+        else
+        {
+            log_message('warn', "Failed to remove session for $fullname ($userID)");
             return array('reason' => 'presence', 'login' => 'false',
         		'message' => "You are already logged in from another location. Please try again later.");
         }
     }
     else
     {
-        log_message('debug', sprintf("No existing sessions found for %s", $fullname));
+        log_message('debug', "No existing session found for $fullname ($userID)");
     }
     
     // Create a login session
