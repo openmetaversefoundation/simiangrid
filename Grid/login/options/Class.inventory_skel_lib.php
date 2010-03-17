@@ -49,7 +49,7 @@ class inventory_skel_lib
         
         $folders = array();
         
-        if (get_inventory($config['library_owner_id'], &$rootFolderID, &$items))
+        if (get_inventory($config['library_owner_id'], $rootFolderID, $items))
         {
             foreach ($items as $item)
             {

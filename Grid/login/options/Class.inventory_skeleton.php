@@ -52,7 +52,7 @@ class inventory_skeleton
         
         $folders = array();
         
-        if (get_inventory($this->User['UserID'], &$rootFolderID, &$items))
+        if (get_inventory($this->User['UserID'], $rootFolderID, $items))
         {
             foreach ($items as $item)
             {
