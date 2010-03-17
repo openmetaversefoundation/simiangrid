@@ -55,7 +55,7 @@ class AuthorizeIdentity implements IGridService
                 }
                 else
                 {
-                    log_debug('Authentication failed for identifier ' . $params["Identifier"] . ', type ' . $params["Type"]);
+                    log_message('info', 'Authentication failed for identifier ' . $params["Identifier"] . ', type ' . $params["Type"]);
                     
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Missing identity or invalid credentials" }';

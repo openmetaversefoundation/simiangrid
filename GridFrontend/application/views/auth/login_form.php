@@ -33,13 +33,38 @@ $confirmation_code = array(
 	'maxlength'	=> 8
 );
 
+$openid_identifier = array(
+    'name'  => 'openid_identifier',
+    'id'    => 'openid_identifier',
+    'size'  => 40
+);
 ?>
 
 <h2>Login</h2>
 
-<?php echo form_open($this->uri->uri_string())?>
+<p><?php echo $this->dx_auth->get_auth_error(); ?></p>
 
-<?php echo $this->dx_auth->get_auth_error(); ?>
+<?php if ($this->dx_auth->enabled_openid): ?>
+<fieldset><legend>Login with OpenID</legend>
+<dl>
+
+	<?php echo form_open(site_url('auth/login_openid'))?>
+    <?php echo form_hidden('action', 'verify');?>
+    
+    <dt><?php echo form_label('OpenID', $openid_identifier['id']);?></dt>
+	<dd>
+		<?php echo form_input($openid_identifier)?> <?php echo form_submit('login','Login', 'class="button"');?>
+        <?php echo form_error($openid_identifier['name']); ?>
+	</dd>
+    
+    <?php echo form_close()?>
+
+</dl>
+</fieldset>
+<?php endif; ?>
+
+<fieldset><legend>Login</legend>
+<?php echo form_open($this->uri->uri_string())?>
 
 <dl>
 	<dt><?php echo form_label('First Name', $first_name['id']);?></dt>
@@ -99,7 +124,8 @@ $confirmation_code = array(
 	</dd>
 
 	<dt></dt>
-	<dd><?php echo form_submit('login','Login');?></dd>
+	<dd><?php echo form_submit('login','Login', 'class="button"');?></dd>
 </dl>
 
 <?php echo form_close()?>
+</fieldset>

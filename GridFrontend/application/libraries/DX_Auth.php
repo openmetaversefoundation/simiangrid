@@ -30,8 +30,9 @@ class DX_Auth
 		$this->ci->load->library('Session');
 		$this->ci->load->database();
 		
-		// Load DX Auth config
+		// Load DX Auth and OpenID configs
 		$this->ci->load->config('dx_auth');
+		$this->ci->load->config('openid');
 		
 		// Load DX Auth language		
 		$this->ci->lang->load('dx_auth');
@@ -56,6 +57,7 @@ class DX_Auth
 		$this->allow_registration = $this->ci->config->item('DX_allow_registration');
 		$this->captcha_registration = $this->ci->config->item('DX_captcha_registration');
 		
+		$this->enabled_openid = $this->ci->config->item('openid_enabled');
 		$this->captcha_login = $this->ci->config->item('DX_captcha_login');
 		
 		// URIs
@@ -332,7 +334,7 @@ class DX_Auth
 	{
 		// Get role data
 		$userlevel = $this->_get_user_level($data->username);
-	
+	    
 		// Set session data array
 		$user = array(
 			'DX_user_id'					=> $data->id,
@@ -510,10 +512,91 @@ class DX_Auth
 		return $this->_auth_error;
 	}
 	
+	function set_auth_error($error)
+	{
+	    $this->_auth_error = $error;
+	}
+	
 	/* End of Helper function */
 	
 	/* Main function */
 
+	function openid_login($openid, $remember = TRUE)
+	{
+	    // Load Models
+	    $this->ci->load->model('dx_auth/users', 'users');
+	    
+	    // Try to authorize this OpenID with SimianGrid
+	    $query = array(
+    	    'RequestMethod' => 'AuthorizeIdentity',
+		    'Identifier' => $openid,
+		    'Credential' => '',
+		    'Type' => 'openid'
+        );
+        
+        $response = rest_post($this->ci->config->item('user_service'), $query);
+        
+        if (element('Success', $response) AND element('UserID', $response))
+        {
+            // Authorization succeeded
+            $userID = $response['UserID'];
+            
+            // Fetch account data for this user
+            $query = array(
+            	'RequestMethod' => 'GetUser',
+            	'UserID' => $userID
+            );
+            
+            $response = rest_post($this->ci->config->item('user_service'), $query);
+            
+            if (element('Success', $response) && is_array($response['User']))
+            {
+                // Fetch this user from the SimianGridFrontend user table
+                $username = str_replace(' ', '_', $response['User']['Name']);
+                
+                if ($query = $this->ci->users->get_user_by_username($username) AND $query->num_rows() == 1)
+                {
+                    // Get user record
+                	$row = $query->row();
+                	
+                	// Log in user 
+				    $this->_set_session($row);
+				    
+				    if ($remember)
+        			{
+        			    // Create auto login if user want to be remembered
+        				$this->_create_autologin($row->id);
+        			}
+        			
+        			// Set last ip and last login
+        			$this->_set_last_ip_and_last_login($row->id);
+        			// Clear login attempts
+        			$this->_clear_login_attempts();
+        			
+        			// Trigger event
+        			$this->ci->dx_auth_event->user_logged_in($row->id);
+        			
+        			return TRUE;
+                }
+                else
+                {
+                    $this->_auth_error = "Database lookup failed for $username";
+                }
+            }
+            else
+            {
+                $this->_auth_error = "GetUser call failed for user $userID";
+            }
+        }
+        else
+        {
+            $this->_auth_error = "Could not authorize OpenID $openid, do you need to register?";
+        }
+        
+        log_message('error', $this->_auth_error);
+        return FALSE;
+	}
+	
 	function login($first_name, $last_name, $password, $remember = TRUE)
 	{
 		// Load Models
@@ -523,7 +606,7 @@ class DX_Auth
 		
 		// Default return value
 		$result = FALSE;
-				
+		
 		if ( ! empty($first_name) AND ! empty($last_name) AND ! empty($password))
 		{
 		    $login = $first_name . '_' . $last_name;
@@ -536,12 +619,12 @@ class DX_Auth
 			else if ($this->ci->config->item('DX_login_using_email'))
 			{
 				$get_user_function = 'get_user_by_email';
-			}			
+			}
 			else
 			{
 				$get_user_function = 'get_user_by_username';
 			}
-		
+		    
 			// Get user query
 			if ($query = $this->ci->users->$get_user_function($login) AND $query->num_rows() == 1)
 			{
@@ -669,7 +752,7 @@ class DX_Auth
         return false;
 	}
 	
-    function _create_simiangrid_user($first_name, $last_name, $password, $email, $userid)
+    function _create_simiangrid_user($first_name, $last_name, $password, $email, $userid, $openid)
 	{
 	    $fullname = $first_name . ' ' . $last_name;
 	    
@@ -691,25 +774,33 @@ class DX_Auth
     		    // Create a WebDAV identity for this user
     		    if ($this->_create_simiangrid_identity($fullname, md5($fullname . ':Inventory:' . $password), 'a1hash', $userid))
     		    {
-    		        // Create an inventory for this user
-    		        if ($this->_create_simiangrid_inventory($userid))
+    		        // Check if we need to create an OpenID identity
+    		        if (empty($openid) || $this->_create_simiangrid_identity($openid, '', 'openid', $userid))
     		        {
-    		            log_message('info', "Created SimianGrid user $fullname with ID $userid");
-    		            return TRUE;
+        		        // Create an inventory for this user
+        		        if ($this->_create_simiangrid_inventory($userid))
+        		        {
+        		            log_message('info', "Created SimianGrid user $fullname with ID $userid");
+        		            return TRUE;
+        		        }
+        		        else
+        		        {
+        		            $this->_auth_error = "Failed to create an inventory for $fullname with ID $userid";
+        		        }
     		        }
     		        else
     		        {
-    		            log_message('error', "Failed to create an inventory for $fullname with ID $userid");
+    		            $this->_auth_error = "Failed to create an openid identity for $fullname with identifier $openid and ID $userid";
     		        }
     		    }
     		    else
     		    {
-    		        log_message('error', "Failed to create an a1hash identity for $fullname with ID $userid");
+    		        $this->_auth_error = "Failed to create an a1hash identity for $fullname with ID $userid";
     		    }
     		}
     		else
     		{
-    		    log_message('error', "Failed to create an md5 identity for $fullname with ID $userid");
+    		    $this->_auth_error = "Failed to create an md5 identity for $fullname with ID $userid";
     		}
     		
     		// If some part of the process failed try to delete the user account. This will also
@@ -725,10 +816,11 @@ class DX_Auth
 		    $this->_auth_error = 'Failed to contact the user service: ' . element('Message', $response, 'Unknown error');
 		}
 		
+		log_message('error', $this->_auth_error);
 		return FALSE;
 	}
 	
-	function register($first_name, $last_name, $password, $email)
+	function register($first_name, $last_name, $password, $email, $openID = null)
 	{
 	    $username = $first_name . '_' . $last_name;
 	    $userid = random_uuid();
@@ -737,8 +829,8 @@ class DX_Auth
 		$this->ci->load->model('dx_auth/users', 'users');
 		$this->ci->load->model('dx_auth/user_temp', 'user_temp');
 		
-		// Create a user and identity in SimianGrid
-		if (!$this->_create_simiangrid_user($first_name, $last_name, $password, $email, $userid))
+		// Create a user and identities in SimianGrid
+		if (!$this->_create_simiangrid_user($first_name, $last_name, $password, $email, $userid, $openID))
 		    return FALSE;
 		
 		// Default return value

@@ -43,17 +43,16 @@ $openid_identifier = array(
 );
 ?>
 
-<h2>SimianGrid Registration</h2>
+<h2>Registration</h2>
 
-<!--
+<p><?php echo $this->dx_auth->get_auth_error(); ?></p>
+
+<?php if ($this->dx_auth->enabled_openid): ?>
 <fieldset><legend>Register with OpenID</legend>
 <dl>
 
 	<?php echo form_open(site_url('auth/register_openid'))?>
     <?php echo form_hidden('action', 'verify');?>
-    
-    <?php if (isset($msg)) { echo "<div class=\"alert\">$msg</div>"; }?>
-    <?php if (isset($error)) { echo "<div class=\"error\">$error</div>"; }?>
     
     <dt><?php echo form_label('OpenID', $openid_identifier['id']);?></dt>
 	<dd>
@@ -65,12 +64,10 @@ $openid_identifier = array(
 
 </dl>
 </fieldset>
--->
+<?php endif; ?>
 
 <fieldset><legend>Register</legend>
 <?php echo form_open($this->uri->uri_string())?>
-
-<?php echo $this->dx_auth->get_auth_error(); ?>
 
 <dl>
 	<dt><?php echo form_label('Avatar First Name', $first_name['id']);?></dt>

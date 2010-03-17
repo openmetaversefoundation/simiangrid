@@ -68,6 +68,81 @@ class Auth extends Controller
 	
 	/* End of Callback function */
 	
+	function login_openid()
+	{
+	    $data = array();
+	    
+	    if ( ! $this->dx_auth->is_logged_in())
+		{
+    	    if ($this->input->post('action') == 'verify')
+    		{
+    		    // Start the OpenID auth process
+    		    $user_id = $this->input->post('openid_identifier');
+                $pape_policy_uris = $this->input->post('policies');
+                
+                if (!$pape_policy_uris)
+                {
+                  $pape_policy_uris = array();
+                }
+                
+                $this->config->load('openid');
+                $sreg_req = $this->config->item('openid_sreg_required');
+                $sreg_opt = $this->config->item('openid_sreg_optional');
+                $ax_req = $this->config->item('openid_ax_required');
+                $ax_opt = $this->config->item('openid_ax_optional');
+                $policy = site_url($this->config->item('openid_policy'));
+                $request_to = site_url('auth/login_openid');
+                
+                $this->openid->set_request_to($request_to);
+                $this->openid->set_trust_root(base_url());
+                $this->openid->set_args(null);
+                $this->openid->set_sreg(true, $sreg_req, $sreg_opt, $policy);
+                $this->openid->set_ax(true, $ax_req, $ax_opt);
+                $this->openid->set_pape(false, $pape_policy_uris);
+                $this->openid->authenticate($user_id);
+    		}
+    		else if ($this->_check_openid('auth/login_openid', $data))
+    		{
+    		    $openid = $data['openid_success'];
+    		    
+        		if ($this->dx_auth->openid_login($openid))
+    			{
+    				// Redirect to homepage
+    				redirect('', 'location');
+    			}
+    			else
+    			{
+    				// Check if the user is failed logged in because user is banned user or not
+    				if ($this->dx_auth->is_banned())
+    				{
+    					// Redirect to banned uri
+    					$this->dx_auth->deny_access('banned');
+    				}
+    				else
+    				{
+    				    // OpenID auth succeeded but local login failed
+    				    if (!$this->dx_auth->get_auth_error())
+    				        $this->dx_auth->set_auth_error("The OpenID $openid is not registered with this site. Please register first");
+    				    
+    					// Load login page view
+    					$data['show_captcha'] = FALSE;
+    					parse_template($this->dx_auth->login_view, $data);
+    				}
+    			}
+    		}
+    		else
+    		{
+    		    // Load login page view
+    		    $data['show_captcha'] = FALSE;
+		        parse_template($this->dx_auth->login_view, $data);
+    		}
+		}
+		else
+		{
+			$data['auth_message'] = 'You are already logged in.';
+			parse_template($this->dx_auth->logged_in_view, $data);
+		}
+	}
 	
 	function login()
 	{
@@ -192,9 +267,12 @@ class Auth extends Controller
 	{
 	    if ( ! $this->dx_auth->is_logged_in() AND $this->dx_auth->allow_registration)
 		{
-    	    if ($this->input->post('action') == 'verify')
-            {
-                $user_id = $this->input->post('openid_identifier');
+		    $data = array();
+		    
+		    if ($this->input->post('action') == 'verify')
+		    {
+		        // Start the OpenID auth process
+		        $user_id = $this->input->post('openid_identifier');
                 $pape_policy_uris = $this->input->post('policies');
                 
                 if (!$pape_policy_uris)
@@ -202,13 +280,13 @@ class Auth extends Controller
                   $pape_policy_uris = array();
                 }
                 
-                $this->config->load('openid');      
+                $this->config->load('openid');
                 $sreg_req = $this->config->item('openid_sreg_required');
                 $sreg_opt = $this->config->item('openid_sreg_optional');
                 $ax_req = $this->config->item('openid_ax_required');
                 $ax_opt = $this->config->item('openid_ax_optional');
                 $policy = site_url($this->config->item('openid_policy'));
-                $request_to = site_url($this->config->item('openid_request_to'));
+                $request_to = site_url('auth/register_openid');
                 
                 $this->openid->set_request_to($request_to);
                 $this->openid->set_trust_root(base_url());
@@ -217,12 +295,27 @@ class Auth extends Controller
                 $this->openid->set_ax(true, $ax_req, $ax_opt);
                 $this->openid->set_pape(false, $pape_policy_uris);
                 $this->openid->authenticate($user_id);
-            }
-            else
-            {
-                $val = $this->form_validation;
+		    }
+		    else if ($this->session->flashdata('openid_identifier') OR $this->_check_openid('auth/register_openid', $data))
+		    {
+		        $openid = null;
+		        
+		        if ($this->session->flashdata('openid_identifier'))
+		        {
+		            $openid = $this->session->flashdata('openid_identifier');
+		            $data['openid_success'] = $openid;
+		            $this->session->keep_flashdata('openid_identifier');
+		        }
+		        else
+		        {
+		            $openid = $data['openid_success'];
+		            $this->session->set_flashdata('openid_identifier', $openid);
+		        }
+		        
+		        // OpenID authentication succeeded
+		        $val = $this->form_validation;
     			
-    			// Set form validation rules	
+    			// Set form validation rules
     			$val->set_rules('first_name', 'First Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_numeric');
     			$val->set_rules('last_name', 'Last Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_numeric');
     			$val->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->min_password.']|max_length['.$this->max_password.']|matches[confirm_password]');
@@ -237,9 +330,9 @@ class Auth extends Controller
     				// This is because the limitation of reCAPTCHA, not DX Auth library
     				$val->set_rules('recaptcha_response_field', 'Confirmation Code', 'trim|xss_clean|required|callback_recaptcha_check');
     			}
-    
+                
     			// Run form validation and register user if validation succeeds
-    			if ($val->run() AND $this->dx_auth->register($val->set_value('first_name'), $val->set_value('last_name'), $val->set_value('password'), $val->set_value('email')))
+    			if ($val->run() AND $this->dx_auth->register($val->set_value('first_name'), $val->set_value('last_name'), $val->set_value('password'), $val->set_value('email'), $openid))
     			{
     				// Set success message accordingly
     				if ($this->dx_auth->email_activation)
@@ -251,21 +344,19 @@ class Auth extends Controller
     					$data['auth_message'] = 'You have successfully registered. '.anchor(site_url($this->dx_auth->login_uri), 'Login');
     				}
     				
-    				// Load registration success page
-            	    parse_template($this->dx_auth->register_success_view, $data);
+    				// Load OpenID registration success page
+    	            parse_template($this->dx_auth->register_success_view, $data);
     			}
     			else
     			{
-    				// Is registration using captcha
-    				if ($this->dx_auth->captcha_registration)
-    				{
-    					$this->dx_auth->captcha();										
-    				}
-    
-    				// Load OpenID registration page
-            	    parse_template($this->dx_auth->register_openid_view);
+    			    // Load OpenID registration page
+    	            parse_template($this->dx_auth->register_openid_view, $data);
     			}
-            }
+		    }
+		    else
+		    {
+		        redirect('auth/register', 'location');
+		    }
 		}
 	    elseif ( ! $this->dx_auth->allow_registration)
 		{
@@ -279,10 +370,13 @@ class Auth extends Controller
 		}
 	}
 	
-	function check_openid()
+	function _check_openid($returnPath, &$data)
 	{
+	    if (!isset($data))
+	        $data = array();
+	    
 	    $this->config->load('openid');
-	    $request_to = site_url($this->config->item('openid_request_to'));
+	    $request_to = site_url($returnPath);
 	    
 	    $this->openid->set_request_to($request_to);
 	    $response = $this->openid->getResponse();
@@ -290,10 +384,10 @@ class Auth extends Controller
     	switch ($response->status)
         {
         case Auth_OpenID_CANCEL:
-            $data['msg'] = $this->lang->line('openid_cancel');
+            $data['auth_message'] = $this->lang->line('openid_cancel');
             break;
         case Auth_OpenID_FAILURE:
-            $data['error'] = $this->_set_message('openid_failure', $response->message);
+            $data['auth_message'] = $this->_set_message('openid_failure', $response->message);
             break;
         case Auth_OpenID_SUCCESS:
             $openid = $response->getDisplayIdentifier();
@@ -330,12 +424,13 @@ class Auth extends Controller
                 if (isset($ax->data['http://axschema.org/namePerson/last']))
                     $data['openid_last'] = $ax->getSingle('http://axschema.org/namePerson/last');
             }
+            
+            log_message('debug', "OpenID authentication succeeded for $openid");
 
-            register_openid();
-            return;
+            return true;
         }
         
-        parse_template($this->dx_auth->register_view, $data);
+        return false;
 	}
 	
 	function activate()

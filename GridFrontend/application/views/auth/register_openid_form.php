@@ -52,11 +52,12 @@ $openid_identifier = array(
 
 <h2>SimianGrid Registration</h2>
 
-<?php echo form_open($this->uri->uri_string())?>
-
-<?php echo $this->dx_auth->get_auth_error(); ?>
-
+<fieldset><legend>Register with OpenID</legend>
 <dl>
+	<?php echo form_open(site_url("auth/register_openid"))?>
+
+    <?php echo $this->dx_auth->get_auth_error(); ?>
+
 	<dt><?php echo form_label('OpenID', $openid_identifier['id']);?></dt>
     <dd>
         <?php echo form_input($openid_identifier);?>
@@ -119,6 +120,7 @@ $openid_identifier = array(
 
 	<dt></dt>
 	<dd><?php echo form_submit('register','Register', 'class="button"');?></dd>
+	
+	<?php echo form_close()?>
 </dl>
-
-<?php echo form_close()?>
+</fieldset>

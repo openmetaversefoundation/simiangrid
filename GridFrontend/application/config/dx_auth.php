@@ -68,7 +68,7 @@ $config['DX_salt'] = '';
 | 'DX_email_account_details' =  Email account details after registration, only if 'DX_email_activation' is FALSE.
 |
 */
- 
+
 $config['DX_email_activation'] = FALSE; 
 $config['DX_email_activation_expire'] = 60*60*24*2; 
 $config['DX_email_account_details'] = FALSE; 
@@ -103,7 +103,7 @@ $config['DX_login_record_time'] = TRUE;
 |
 */
 
-$config['DX_autologin_cookie_name'] = 'autologin';
+$config['DX_autologin_cookie_name'] = 'sgf_autologin';
 $config['DX_autologin_cookie_life'] = 60*60*24*31*2;
 
 /*

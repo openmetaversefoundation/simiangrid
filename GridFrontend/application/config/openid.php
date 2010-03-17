@@ -1,7 +1,36 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
+/*
+|--------------------------------------------------------------------------
+| OpenID support
+|--------------------------------------------------------------------------
+|
+| 'openid_enabled' = Determine if OpenID registration and logins should be enabled.
+|
+*/
+
+$config['openid_enabled'] = TRUE;
+
+/*
+|--------------------------------------------------------------------------
+| OpenID temporary store
+|--------------------------------------------------------------------------
+|
+| 'openid_storepath' = A relative or absolute filesystem path. This directory must be
+|                      writable by the web server.
+|
+*/
+
 $config['openid_storepath'] = 'tmp';
-$config['openid_request_to'] = 'auth/check_openid';
+
+/*
+|--------------------------------------------------------------------------
+| OpenID constants
+|--------------------------------------------------------------------------
+|
+| Do not modify anything below this line unless you know what you are doing.
+|
+*/
 
 $config['openid_sreg_required'] = array();
 $config['openid_sreg_optional'] = array('fullname', 'email');

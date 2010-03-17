@@ -197,7 +197,20 @@ function remove_session($sessionID)
 
 function inform_scene_of_logout($sceneID, $userID)
 {
-    // FIXME: Implement this
+    if ($sceneID == UUID::Zero)
+        return;
+    
+    $scene = lookup_scene_by_id($sceneID);
+    
+    if (isset($scene))
+    {
+        // FIXME: Implement this
+        log_message('debug', "TODO: Need to contact " . print_r($scene, true) . " with an agent delete");
+    }
+    else
+    {
+        log_message('error', "Cannot inform scene $sceneID of logout, scene lookup failed");
+    }
 }
 
 function lookup_scene_by_id($sceneID)
