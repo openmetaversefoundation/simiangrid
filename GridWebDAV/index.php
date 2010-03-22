@@ -109,5 +109,7 @@ $lockBackend = new Sabre_DAV_Locks_Backend_FS('tmp');
 $lockPlugin = new Sabre_DAV_Locks_Plugin($lockBackend);
 $server->addPlugin($lockPlugin);
 
+log_message('debug', "WebDAV handling " . $_SERVER['REQUEST_METHOD'] . " request for " . $_SERVER['REQUEST_URI']);
+
 // Execute the WebDAV request
 $server->exec();

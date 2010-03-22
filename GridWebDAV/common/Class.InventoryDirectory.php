@@ -60,6 +60,8 @@ class InventoryDirectory extends Sabre_DAV_Directory
         $this->initialize();
         
         $children = array();
+        $dirCount = 0;
+        $fileCount = 0;
         
         if ($this->childNodes)
         {
@@ -68,12 +70,19 @@ class InventoryDirectory extends Sabre_DAV_Directory
                 $curNode = $this->childNodes[$i];
                 
                 if ($curNode['Type'] === 'Folder')
+                {
                     $children[] = new InventoryDirectory($curNode);
+                    ++$dirCount;
+                }
                 else
+                {
                     $children[] = new InventoryFile($curNode);
+                    ++$fileCount;
+                }
             }
         }
         
+        log_message('debug', "InventoryDirectory: Returning $dirCount directories and $fileCount files");
         return $children;
     }
 

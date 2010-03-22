@@ -67,6 +67,7 @@ class RootDirectory extends Sabre_DAV_Directory
             $children[] = new InventoryDirectory($this->childNodes[0]);
         }
         
+        log_message('debug', "RootDirectory: Returning " . count($children) . " children");
         return $children;
     }
 
