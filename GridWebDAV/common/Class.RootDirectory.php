@@ -1,4 +1,4 @@
-<?php
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 /** Simian WebDAV service
  *
  * PHP version 5
@@ -33,82 +33,60 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-require_once 'Sabre.autoload.php';
-class_exists('Curl') || require_once('Class.Curl.php');
-
-class InventoryFile extends Sabre_DAV_File
+class RootDirectory extends Sabre_DAV_Directory
 {
-    private $node;
-    private $size;
-    private $contentType;
-    private $etag;
+    private $userID;
+    private $childNodes;
     private $fetched;
 
-    function __construct($node)
+    function __construct($userID)
     {
-        $this->node = $node;
-        $this->size = 0;
-        $this->contentType = null;
-        $this->etag = null;
+        $this->userID = $userID;
         $this->fetched = false;
     }
-
+    
     function initialize()
     {
         if (!$this->fetched)
         {
-            global $config;
-            $assetUrl = $config['asset_service'] . $this->node['AssetID'];
-            
-            $curl = new Curl();
-            $curl->create($assetUrl);
-            $curl->option(CURLOPT_HEADER, true);
-            $curl->option(CURLOPT_NOBODY, true);
-            
-            $response = $curl->execute();
-            if ($response)
-            {
-                $headers = http_parse_headers($response);
-                
-                $this->size = $headers['Content-Length'];
-                $this->contentType = $headers['Content-Type'];
-                $this->etag = $headers['ETag'];
-            }
-            
+            // Fetch this root directory
+            $this->childNodes = get_node_and_contents($this->userID, $this->userID);
             $this->fetched = true;
+        }
+    }
+
+    function getChildren()
+    {
+        $this->initialize();
+        
+        $children = array();
+
+        // Only one possible child of the root directory, the user's root folder
+        if ($this->childNodes AND count($this->childNodes) > 0)
+        {
+            $children[] = new InventoryDirectory($this->childNodes[0]);
+        }
+        
+        return $children;
+    }
+
+    function getChild($name)
+    {
+        $this->initialize();
+        
+        if ($this->childNodes AND count($this->childNodes) > 0 && $name === $this->childNodes[0]['Name'])
+        {
+            return new InventoryDirectory($this->childNodes[0]);
+        }
+        else
+        {
+            log_message('warn', "RootDirectory: The file with name: $name could not be found");
+            throw new Sabre_DAV_Exception_FileNotFound("The file with name: $name could not be found");
         }
     }
 
     function getName()
     {
-        return $this->node['Name'];
-    }
-
-    function get()
-    {
-        global $config;
-        $assetUrl = $config['asset_service'] . $this->node['AssetID'];
-        
-        // Received a GET for this item. Redirect to the asset service
-        header('Location: ' . $assetUrl);
-        exit();
-    }
-
-    function getSize()
-    {
-        $this->initialize();
-        return $this->size;
-    }
-    
-    function getContentType()
-    {
-        $this->initialize();
-        return $this->contentType;
-    }
-    
-    function getETag()
-    {
-        $this->initialize();
-        return $this->etag;
+        return 'Inventory';
     }
 }

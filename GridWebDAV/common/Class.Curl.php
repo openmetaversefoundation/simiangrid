@@ -1,4 +1,4 @@
-<?php
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 /**
  * @author Philip Sturgeon
  * @created 9 Dec 2008
@@ -8,7 +8,7 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
 {
     if (empty($url))
     {
-        error_log('Canceling web service POST to an empty URL');
+        log_message('error', 'Canceling web service POST to an empty URL');
         return array('Message' => 'Web service address is not configured');
     }
     
@@ -20,7 +20,10 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     $jsonResponse = json_decode($response, TRUE);
     
 	if (empty($jsonResponse))
+	{
+	    log_message('error', "Invalid or missing response from $url");
 	    $jsonResponse = array('Message' => 'Invalid or missing response: ' . $response);
+	}
 	
     return $jsonResponse;
 }
@@ -49,7 +52,7 @@ function http_parse_headers($header)
 
 function get_node_and_contents($nodeID, $userID)
 {
-    global $config;
+    $config =& get_config();
     
     $response = webservice_post($config['inventory_service'], array(
     	'RequestMethod' => 'GetInventoryNode',
@@ -65,7 +68,7 @@ function get_node_and_contents($nodeID, $userID)
         return $response['Items'];
     }
     
-    error_log('Error fetching node ' . $nodeID . ' for user ' . $userID . ': ' . $response['Message']);
+    log_message('error', "Error fetching node $nodeID for user $userID: " . $response['Message']);
     return NULL;
 }
 

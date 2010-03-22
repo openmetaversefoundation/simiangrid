@@ -33,16 +33,22 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-require_once 'Sabre.autoload.php';
-require_once 'Class.InventoryFile.php';
-require_once 'Class.InventoryDirectory.php';
-require_once 'Class.RootDirectory.php';
-require_once 'Class.Curl.php';
-require_once 'config/config.php';
+define('BASEPATH', str_replace("\\", "/", realpath(dirname(__FILE__)) . '/'));
 
+require_once(BASEPATH . 'Sabre.autoload.php');
+require_once(BASEPATH . 'common/Config.php');
+require_once(BASEPATH . 'common/Errors.php');
+require_once(BASEPATH . 'common/Log.php');
+require_once(BASEPATH . 'common/Class.Curl.php');
+require_once(BASEPATH . 'common/Class.InventoryFile.php');
+require_once(BASEPATH . 'common/Class.InventoryDirectory.php');
+require_once(BASEPATH . 'common/Class.RootDirectory.php');
+
+
+// Fetch the "a1hash" identity from SimianGrid for a given username
 function get_a1_hash($userName, &$userID)
 {
-    global $config;
+    $config =& get_config();
     $userID = null;
     
     $response = webservice_post($config['user_service'], array(
@@ -67,12 +73,12 @@ function get_a1_hash($userName, &$userID)
         return null;
     }
     
-    error_log('Error fetching identities for user ' . $userName . ': ' . $response['Message']);
+    log_message('error', "Error fetching identities for user '$userName': " . $response['Message']);
     return null;
 }
 
+// Initialize WebDAV authentication
 $realm = 'Inventory';
-
 $auth = new Sabre_HTTP_DigestAuth();
 $auth->setRealm($realm);
 $auth->init();
@@ -86,22 +92,22 @@ $hash = get_a1_hash($userName, $userID);
 // Check if the lookup was successful and that the credentials match
 if (!$hash || !$auth->validateA1($hash))
 {
-    error_log("WebDAV Authentication failed for " . $userName);
+    log_message('info', "WebDAV Authentication failed for user '$userName' requesting " . $_SERVER['REQUEST_URI']);
     $auth->requireLogin();
     echo "Authentication required\n";
     exit();
 }
 
+// Construct the WebDAV tree and server objects
 $rootDirectory = new RootDirectory($userID);
-
 $tree = new Sabre_DAV_ObjectTree($rootDirectory);
-
 $server = new Sabre_DAV_Server($tree);
-
 $server->setBaseUri('/');
 
+// Setup the WebDAV locking plugin
 $lockBackend = new Sabre_DAV_Locks_Backend_FS('tmp');
 $lockPlugin = new Sabre_DAV_Locks_Plugin($lockBackend);
 $server->addPlugin($lockPlugin);
 
+// Execute the WebDAV request
 $server->exec();

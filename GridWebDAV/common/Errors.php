@@ -1,4 +1,4 @@
-<?php
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 /** Simian WebDAV service
  *
  * PHP version 5
@@ -33,64 +33,43 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-require_once('Sabre.autoload.php');
-class_exists('Curl') || require_once('Class.Curl.php');
-class_exists('InventoryDirectory') || require_once('Class.InventoryDirectory.php');
-class_exists('InventoryFile') || require_once('Class.InventoryFile.php');
-
-class RootDirectory extends Sabre_DAV_Directory
+class ErrorHandler
 {
-    private $userID;
-    private $childNodes;
-    private $fetched;
-
-    function __construct($userID)
+    public static function handle_error($code, $message, $file, $line)
     {
-        $this->userID = $userID;
-        $this->fetched = false;
-    }
-    
-    function initialize()
-    {
-        if (!$this->fetched)
-        {
-            // Fetch this root directory
-            $this->childNodes = get_node_and_contents($this->userID, $this->userID);
-            $this->fetched = true;
-        }
-    }
-
-    function getChildren()
-    {
-        $this->initialize();
+        $priority = 'error';
         
-        $children = array();
-
-        // Only one possible child of the root directory, the user's root folder
-        if ($this->childNodes AND count($this->childNodes) > 0)
+        switch ($code)
         {
-            $children[] = new InventoryDirectory($this->childNodes[0]);
+            case E_ERROR:
+            case E_USER_ERROR:
+                $priority = 'error';
+                break;
+            case E_WARNING:
+            case E_USER_WARNING:
+                $priority = 'warn';
+                break;
+            case E_NOTICE:
+            case E_USER_NOTICE:
+            default:
+                $priotity = 'info';
         }
         
-        return $children;
-    }
-
-    function getChild($name)
-    {
-        $this->initialize();
+        log_message($priority, 'CAUGHT ERROR: ' . $message . ' in ' . $file . ' at line ' . $line);
         
-        if ($this->childNodes AND count($this->childNodes) > 0 && $name === $this->childNodes[0]['Name'])
-        {
-            return new InventoryDirectory($this->childNodes[0]);
-        }
-        else
-        {
-            throw new Sabre_DAV_Exception_FileNotFound('The file with name: ' . $name . ' could not be found');
-        }
-    }
-
-    function getName()
-    {
-        return 'Inventory';
+        if (0 != error_reporting())
+            throw new ErrorException($message, 0, $code, $file, $line);
     }
 }
+
+class ExceptionHandler
+{
+    public static function handle_exception(Exception $e)
+    {
+        log_message('error', sprintf("CAUGHT EXCEPTION: Class: %s Code: %d Message: %s -- %s",
+            get_class($e), $e->getCode(), $e->getMessage(), print_r($e, true)));
+    }
+}
+
+set_error_handler(array("ErrorHandler" , "handle_error"));
+set_exception_handler(array("ExceptionHandler" , "handle_exception"));

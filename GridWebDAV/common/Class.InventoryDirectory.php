@@ -1,4 +1,4 @@
-<?php
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 /** Simian WebDAV service
  *
  * PHP version 5
@@ -32,10 +32,6 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-
-require_once('Sabre.autoload.php');
-class_exists('Curl') || require_once('Class.Curl.php');
-class_exists('InventoryFile') || require_once('Class.InventoryFile.php');
 
 class InventoryDirectory extends Sabre_DAV_Directory
 {
@@ -103,7 +99,8 @@ class InventoryDirectory extends Sabre_DAV_Directory
             }
         }
         
-        throw new Sabre_DAV_Exception_FileNotFound('The file with name: ' . $name . ' could not be found');
+        log_message('warn', "InventoryDirectory: The file with name: $name could not be found");
+        throw new Sabre_DAV_Exception_FileNotFound("The file with name: $name could not be found");
     }
 
     function getName()

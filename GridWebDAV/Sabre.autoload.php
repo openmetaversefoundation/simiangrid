@@ -1,4 +1,4 @@
-<?php
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
  * SabreDAV's PHP autoloader
@@ -25,5 +25,3 @@ function Sabre_DAV_autoload($className) {
 }
 
 spl_autoload_register('Sabre_DAV_autoload');
-
-?>

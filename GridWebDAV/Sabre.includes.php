@@ -1,4 +1,4 @@
-<?php
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
  * Library include file
@@ -109,5 +109,3 @@ include 'Sabre/DAV/Auth/Backend/File.php';
 
 /* DavMount plugin */
 include 'Sabre/DAV/Mount/Plugin.php';
-
-?>
