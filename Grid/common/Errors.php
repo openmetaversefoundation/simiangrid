@@ -38,9 +38,6 @@ class ErrorHandler
 {
     public static function handle_error($code, $message, $file, $line)
     {
-        if (0 == error_reporting())
-            return;
-        
         $priority = 'error';
         
         switch ($code)
@@ -60,7 +57,9 @@ class ErrorHandler
         }
         
         log_message($priority, 'CAUGHT ERROR: ' . $message . ' in ' . $file . ' at line ' . $line);
-        throw new ErrorException($message, 0, $code, $file, $line);
+        
+        if (0 != error_reporting())
+            throw new ErrorException($message, 0, $code, $file, $line);
     }
 }
 

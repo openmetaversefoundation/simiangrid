@@ -32,6 +32,7 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
+require_once(BASEPATH . 'common/Inventory.php');
 
 class GetFolderForType implements IGridService
 {

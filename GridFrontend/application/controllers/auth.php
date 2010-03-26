@@ -151,8 +151,8 @@ class Auth extends Controller
 			$val = $this->form_validation;
 			
 			// Set form validation rules
-			$val->set_rules('first_name', 'First Name', 'trim|required|xss_clean|alpha_numeric');
-			$val->set_rules('last_name', 'Last Name', 'trim|required|xss_clean|alpha_numeric');
+			$val->set_rules('first_name', 'First Name', 'trim|required|xss_clean|alpha_dash');
+			$val->set_rules('last_name', 'Last Name', 'trim|required|xss_clean|alpha_dash');
 			$val->set_rules('password', 'Password', 'trim|required|xss_clean');
 			$val->set_rules('remember', 'Remember me', 'integer');
 
@@ -214,8 +214,8 @@ class Auth extends Controller
 			$val = $this->form_validation;
 			
 			// Set form validation rules	
-			$val->set_rules('first_name', 'First Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_numeric');
-			$val->set_rules('last_name', 'Last Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_numeric');
+			$val->set_rules('first_name', 'First Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_dash');
+			$val->set_rules('last_name', 'Last Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|alpha_dash');
 			$val->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->min_password.']|max_length['.$this->max_password.']|matches[confirm_password]');
 			$val->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean');
 			$val->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email|callback_email_check');

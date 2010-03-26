@@ -211,6 +211,18 @@ $config['log_path'] = '';
 
 /*
 |--------------------------------------------------------------------------
+| Time Zone
+|--------------------------------------------------------------------------
+|
+| You can change this to a PHP-supported timezone to write log files with
+| your local timezone instead of UTC. http://php.net/manual/en/timezones.php
+| has a list of supported timezone names.
+|
+*/
+date_default_timezone_set("UTC");
+
+/*
+|--------------------------------------------------------------------------
 | Date Format for Logs
 |--------------------------------------------------------------------------
 |
