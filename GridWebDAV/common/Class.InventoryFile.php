@@ -69,7 +69,12 @@ class InventoryFile extends Sabre_DAV_File
                 
                 $this->size = $headers['Content-Length'];
                 $this->contentType = $headers['Content-Type'];
-                $this->etag = $headers['ETag'];
+                if (isset($headers['ETag']))
+                    $this->etag = $headers['ETag'];
+                else if (isset($headers['Etag']))
+                    $this->etag = $headers['Etag'];
+                else
+                    $this->etag = '';
             }
             else
             {
