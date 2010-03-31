@@ -31,7 +31,6 @@ class User_Autologin extends Model
 		
 		$this->db->select("$users_table.id");
 		$this->db->select("$users_table.username");
-		$this->db->select("$users_table.role_id");
 		$this->db->from($users_table);		
 		$this->db->join($auto_table, "$auto_table.user_id = $users_table.id");
 		$this->db->where("$users_table.id", $user_id);
