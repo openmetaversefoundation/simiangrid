@@ -242,7 +242,7 @@ function lookup_scene_by_name($name)
     	'MaxNumber' => '1')
     );
     
-    if (!empty($response['Success']) && is_array($response['Scenes']))
+    if (!empty($response['Success']) && is_array($response['Scenes']) && count($response['Scenes']) > 0)
         return Scene::fromOSD($response['Scenes'][0]);
     
     return null;
@@ -359,6 +359,9 @@ function get_friends($userID)
 
 function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$startPosition, &$startLookAt)
 {
+    $config =& get_config();
+    $defaultLocation = $config['default_location'];
+    
     $scene = null;
     
     if (strtolower($start) == "last")
@@ -376,7 +379,8 @@ function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$st
             }
         }
     }
-    else if (strtolower($start) == "home")
+    
+    if (strtolower($start) == "home")
     {
         if (isset($homeLocation))
         {
@@ -391,26 +395,41 @@ function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$st
             }
         }
     }
-    else if (preg_match('/^([a-zA-Z0-9\s]+)\/?(\d+)?\/?(\d+)?\/?(\d+)?$/', $start, $matches))
+    
+    if (preg_match('/^uri:([a-zA-Z0-9\s]+)&(\d+)&(\d+)&(\d+)$/', $start, $matches))
     {
         log_message('debug', sprintf("Finding start location (custom: %s) for '%s'", $start, $matches[1]));
         
         $scene = lookup_scene_by_name($matches[1]);
         if (isset($scene))
         {
-            // FIXME: Parse starting position out of the request
-            $startPosition = new Vector3(
-                ($scene->MinPosition->X + $scene->MaxPosition->X) / 2,
-                ($scene->MinPosition->Y + $scene->MaxPosition->Y) / 2,
-                25);
+            $startPosition = new Vector3($matches[2], $matches[3], $matches[4]);
             $startLookAt = new Vector3(1, 0, 0);
             return true;
         }
     }
     
+    // Check to see if a valid default location has been set
+    if (preg_match('/^([a-zA-Z0-9\s]+)\/(\d+)\/(\d+)\/(\d+)$/', $defaultLocation, $matches))
+    {
+        log_message('debug', sprintf("Finding start location (default: %s) for '%s'", $defaultLocation, $matches[1]));
+        
+        $scene = lookup_scene_by_name($matches[1]);
+        if (isset($scene))
+        {
+            $startPosition = new Vector3($matches[2], $matches[3], $matches[4]);
+            $startLookAt = new Vector3(1, 0, 0);
+            return true;
+        }
+    }
+    else
+    {
+    	log_message('info', 'No valid default_location set');
+    }
+    
     // Last resort lookup
     $position = Vector3::Zero();
-    log_message('debug', sprintf("Finding start location (any) for '%s'", $position));
+    log_message('debug', sprintf("Finding start location (any: %s) for '%s'", $start, $position));
     
     $scene = lookup_scene_by_position($position, true);
     if (isset($scene))

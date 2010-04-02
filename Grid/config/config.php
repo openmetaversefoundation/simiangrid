@@ -127,6 +127,17 @@ $config['message_of_the_day'] = "Welcome to SimianGrid!";
 
 /*
 |--------------------------------------------------------------------------
+| Default Location
+|--------------------------------------------------------------------------
+|
+| Default location where users start if no other valid location is
+| specified
+|
+*/
+$config['default_location'] = "My Simulator/128/128/25";
+
+/*
+|--------------------------------------------------------------------------
 | Library Owner
 |--------------------------------------------------------------------------
 |
