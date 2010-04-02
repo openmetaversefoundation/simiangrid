@@ -200,7 +200,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
     }
     else
     {
-        log_message('error', 'Asset Upload Failed, POST requested but no file or filedata included in request');
+        log_message('error', 'Asset Upload Failed, POST requested but no file or filedata included in request: ' . print_r($_POST, TRUE));
         
         header("Content-Type: application/json", true);
         echo '{ "Message": "Invalid parameters for asset upload" }';
@@ -264,8 +264,15 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
         exit();
     }
     
-    $command = trim($request['RequestMethod']);
-    execute_command($command, $db, $request);
+    if (isset($request['RequestMethod']))
+    {
+        $command = trim($request['RequestMethod']);
+        execute_command($command, $db, $request);
+    }
+    else
+    {
+        log_message('warn', "Request does not contain a RequestMethod: " . print_r($request, true));
+    }
     exit();
 }
 else
