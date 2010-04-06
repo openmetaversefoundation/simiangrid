@@ -76,7 +76,7 @@ class InventoryFolder extends Inventory implements IOSD
                 }
                 else if (is_string($value))
                 {
-                    $out .= sprintf("\"%s\"", $value);
+                    $out .= json_encode($value);
                 }
                 else if (is_bool($value))
                 {
@@ -147,7 +147,7 @@ class InventoryItem extends Inventory implements IOSD
                 }
                 else if (is_string($value))
                 {
-                    $out .= sprintf("\"%s\"", $value);
+                    $out .= json_encode($value);
                 }
                 else if (is_bool($value))
                 {
