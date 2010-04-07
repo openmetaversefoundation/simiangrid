@@ -9,7 +9,6 @@ class Users extends Model
 		// Other stuff
 		$this->_prefix = $this->config->item('DX_table_prefix');
 		$this->_table = $this->_prefix.$this->config->item('DX_users_table');	
-		$this->_roles_table = $this->_prefix.$this->config->item('DX_roles_table');
 	}
 	
 	// General function
@@ -17,13 +16,10 @@ class Users extends Model
 	function get_all($offset = 0, $row_count = 0)
 	{
 		$users_table = $this->_table;
-		$roles_table = $this->_roles_table;
 		
 		if ($offset >= 0 AND $row_count > 0)
 		{
 			$this->db->select("$users_table.*", FALSE);
-			$this->db->select("$roles_table.name AS role_name", FALSE);
-			$this->db->join($roles_table, "$roles_table.id = $users_table.role_id");
 			$this->db->order_by("$users_table.id", "ASC");
 			
 			$query = $this->db->get($this->_table, $row_count, $offset); 

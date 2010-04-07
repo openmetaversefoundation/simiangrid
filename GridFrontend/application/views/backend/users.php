@@ -9,7 +9,7 @@
 		// Show error
 		echo validation_errors();
 		
-		$this->table->set_heading('', 'Username', 'Email', 'Role', 'Banned', 'Last IP', 'Last login', 'Created');
+		$this->table->set_heading('', 'Username', 'Email', 'Banned', 'Last IP', 'Last login', 'Created');
 		
 		foreach ($users as $user) 
 		{
@@ -19,7 +19,6 @@
 				form_checkbox('checkbox_'.$user->id, $user->id),
 				$user->username, 
 				$user->email, 
-				$user->role_name, 			
 				$banned, 
 				$user->last_ip,
 				date('Y-m-d', strtotime($user->last_login)), 
