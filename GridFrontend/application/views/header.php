@@ -22,7 +22,11 @@
 <li><a href="{site_url}/auth"><span>Login</span></a></li>
 <li><a href="{site_url}/auth/register"><span>Join Now</span></a></li>
 <?php endif; ?>
+<?php if ($this->dx_auth->is_admin()): ?>
+<li><a href="{site_url}/backend">Admin</a></li>
+<?php else: ?>
 <li><a href="{site_url}/about">About</a></li>
+<?php endif; ?>
 <li><a href="{site_url}/contact">Contact</a></li>
 </menu>
 

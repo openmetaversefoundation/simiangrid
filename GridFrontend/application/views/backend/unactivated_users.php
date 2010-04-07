@@ -1,6 +1,3 @@
-<html>
-	<head><title>Manage unactivated users</title></head>
-	<body>
 	<?php  				
 		// Show error
 		echo validation_errors();
@@ -31,5 +28,3 @@
 		echo $pagination;
 			
 	?>
-	</body>
-</html>

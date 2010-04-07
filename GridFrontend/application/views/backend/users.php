@@ -1,6 +1,3 @@
-<html>
-	<head><title>Manage users</title></head>
-	<body>
 	<?php  				
 		// Show reset password message if exist
 		if (isset($reset_message))
@@ -8,7 +5,12 @@
 		
 		// Show error
 		echo validation_errors();
-		
+
+		$this->table->set_template(array(
+			'row_start' => '<tr class="trOdd">',
+			'row_alt_start' => '<tr class="trEven">'
+		));
+
 		$this->table->set_heading('', 'Username', 'Email', 'Banned', 'Last IP', 'Last login', 'Created');
 		
 		foreach ($users as $user) 
@@ -31,7 +33,7 @@
 		echo form_submit('unban', 'Unban user');
 		echo form_submit('reset_pass', 'Reset password');
 		
-		echo '<hr/>';
+		echo '<br/><br/>';
 		
 		echo $this->table->generate(); 
 		
@@ -40,5 +42,3 @@
 		echo $pagination;
 			
 	?>
-	</body>
-</html>

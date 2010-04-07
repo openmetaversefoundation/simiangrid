@@ -97,7 +97,7 @@ class Backend extends Controller
 		$data['pagination'] = $this->pagination->create_links();
 		
 		// Load view
-		$this->load->view('backend/users', $data);
+		parse_template('backend/users', $data);
 	}
 	
 	function unactivated_users()

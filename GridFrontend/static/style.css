@@ -187,3 +187,26 @@ padding: 10px;
 form dd {
 padding-bottom: 10px;
 }
+
+table {
+ background-color: #efefef;
+}
+
+th {
+ background-color: #cef763;
+ font-weight: bold;
+ padding: 6px;
+ text-align: left;
+}
+
+td {
+ background-color: #ffffff;
+ padding: 6px;
+}
+
+.trOdd td {
+ background-color: #ffffff;
+}
+.trEven td {
+ background-color: #eeeeee;
+} 
