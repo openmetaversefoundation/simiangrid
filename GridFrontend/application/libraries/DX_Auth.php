@@ -331,7 +331,7 @@ class DX_Auth
 
 	function _set_session($data)
 	{
-		// Get role data
+		// Get user AccessLevel
 		$userlevel = $this->_get_user_level($data->user_id);
 	    
 		// Set session data array
