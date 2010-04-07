@@ -229,12 +229,11 @@ class DX_Auth
 		}
 	}
 	
-	function _get_user_level($username)
+	function _get_user_level($user_id)
 	{
-	    // TODO: Can we change this function to use $userID instead?
 	    $query = array(
         	'RequestMethod' => 'GetUser',
-        	'Name' => $username
+        	'UserID' => $user_id
         );
         
         $response = rest_post($this->ci->config->item('user_service'), $query);
@@ -333,7 +332,7 @@ class DX_Auth
 	function _set_session($data)
 	{
 		// Get role data
-		$userlevel = $this->_get_user_level($data->username);
+		$userlevel = $this->_get_user_level($data->user_id);
 	    
 		// Set session data array
 		$user = array(
