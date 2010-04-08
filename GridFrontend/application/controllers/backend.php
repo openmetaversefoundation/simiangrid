@@ -85,7 +85,7 @@ class Backend extends Controller
 		$data['users'] = $this->users->get_all($offset, $row_count)->result();
 		
 		// Pagination config
-		$p_config['base_url'] = '/backend/users/';
+		$p_config['base_url'] = 'index.php/backend/users/';
 		$p_config['uri_segment'] = 3;
 		$p_config['num_links'] = 2;
 		$p_config['total_rows'] = $this->users->get_all()->num_rows();
