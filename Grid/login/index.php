@@ -715,8 +715,8 @@ function process_login($method_name, $params, $user_data)
     $response["ao_transition"] = 0;
     $response["inventory_host"] = "127.0.0.1";
     
-    log_message('info', sprintf("Login User=%s %s Channel=%s Start=%s Platform=%s Viewer=%s id0=%s Mac=%s",
-        $req["first"], $req["last"], $req["channel"], $req["start"], $req["platform"], $req["version"],
+    log_message('info', sprintf("Login User=%s %s Channel=%s Start=%s Viewer=%s id0=%s Mac=%s",
+        $req["first"], $req["last"], $req["channel"], $req["start"], $req["version"],
         $req["id0"], $req["mac"]));
     
     return $response;
