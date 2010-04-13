@@ -41,7 +41,8 @@ class RemoveUser implements IGridService
     {
         if (isset($params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
         {
-            $sql = "DELETE FROM Users WHERE UserID=:SessionID";
+            $sql = "DELETE FROM Users WHERE ID=:UserID";
+
             
             $sth = $db->prepare($sql);
             

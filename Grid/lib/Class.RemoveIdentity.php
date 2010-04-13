@@ -41,7 +41,7 @@ class RemoveIdentity implements IGridService
     {
         if (isset($params["Identifier"], $params["Type"]))
         {
-            $sql = "DELETE FROM Identities WHERE Identifier=:SessionID AND Type=:Type";
+            $sql = "DELETE FROM Identities WHERE Identifier=:Identifier AND Type=:Type";
             
             $sth = $db->prepare($sql);
             
