@@ -2,15 +2,12 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 
-CREATE SCHEMA IF NOT EXISTS `Simian` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci ;
-USE `Simian`;
-
 -- -----------------------------------------------------
--- Table `Simian`.`AssetData`
+-- Table `AssetData`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Simian`.`AssetData` ;
+DROP TABLE IF EXISTS `AssetData` ;
 
-CREATE  TABLE IF NOT EXISTS `Simian`.`AssetData` (
+CREATE  TABLE IF NOT EXISTS `AssetData` (
   `ID` CHAR(36) NOT NULL ,
   `Data` MEDIUMBLOB NOT NULL ,
   `ContentType` VARCHAR(50) NOT NULL DEFAULT 'application/octet-stream' ,
@@ -28,11 +25,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Simian`.`Capabilities`
+-- Table `Capabilities`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Simian`.`Capabilities` ;
+DROP TABLE IF EXISTS `Capabilities` ;
 
-CREATE  TABLE IF NOT EXISTS `Simian`.`Capabilities` (
+CREATE  TABLE IF NOT EXISTS `Capabilities` (
   `ID` CHAR(36) NOT NULL ,
   `OwnerID` CHAR(36) NOT NULL ,
   `Resource` VARCHAR(255) NOT NULL ,
@@ -45,11 +42,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Simian`.`Users`
+-- Table `Users`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Simian`.`Users` ;
+DROP TABLE IF EXISTS `Users` ;
 
-CREATE  TABLE IF NOT EXISTS `Simian`.`Users` (
+CREATE  TABLE IF NOT EXISTS `Users` (
   `ID` CHAR(36) NOT NULL ,
   `Name` VARCHAR(60) NOT NULL ,
   `Email` VARCHAR(60) NOT NULL ,
@@ -61,11 +58,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Simian`.`Identities`
+-- Table `Identities`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Simian`.`Identities` ;
+DROP TABLE IF EXISTS `Identities` ;
 
-CREATE  TABLE IF NOT EXISTS `Simian`.`Identities` (
+CREATE  TABLE IF NOT EXISTS `Identities` (
   `Identifier` VARCHAR(255) NOT NULL ,
   `Type` VARCHAR(50) NOT NULL ,
   `Credential` VARCHAR(255) NULL ,
@@ -75,18 +72,18 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Identities` (
   INDEX `fk_id` (`UserID` ASC) ,
   CONSTRAINT `fk_id`
     FOREIGN KEY (`UserID` )
-    REFERENCES `Simian`.`Users` (`ID` )
+    REFERENCES `Users` (`ID` )
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Simian`.`Inventory`
+-- Table `Inventory`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Simian`.`Inventory` ;
+DROP TABLE IF EXISTS `Inventory` ;
 
-CREATE  TABLE IF NOT EXISTS `Simian`.`Inventory` (
+CREATE  TABLE IF NOT EXISTS `Inventory` (
   `ID` CHAR(36) NOT NULL ,
   `Name` VARCHAR(255) NOT NULL ,
   `ParentID` CHAR(36) NULL ,
@@ -107,18 +104,18 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Inventory` (
   INDEX `fk_parent` (`ParentID` ASC) ,
   CONSTRAINT `fk_parent`
     FOREIGN KEY (`ParentID` )
-    REFERENCES `Simian`.`Inventory` (`ID` )
+    REFERENCES `Inventory` (`ID` )
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Simian`.`Scenes`
+-- Table `Scenes`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Simian`.`Scenes` ;
+DROP TABLE IF EXISTS `Scenes` ;
 
-CREATE  TABLE IF NOT EXISTS `Simian`.`Scenes` (
+CREATE  TABLE IF NOT EXISTS `Scenes` (
   `ID` CHAR(36) NOT NULL ,
   `Name` VARCHAR(50) NOT NULL ,
   `MinX` DOUBLE NOT NULL ,
@@ -138,11 +135,11 @@ ENGINE = MyISAM;
 
 
 -- -----------------------------------------------------
--- Table `Simian`.`Sessions`
+-- Table `Sessions`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Simian`.`Sessions` ;
+DROP TABLE IF EXISTS `Sessions` ;
 
-CREATE  TABLE IF NOT EXISTS `Simian`.`Sessions` (
+CREATE  TABLE IF NOT EXISTS `Sessions` (
   `SessionID` CHAR(36) NOT NULL ,
   `UserID` CHAR(36) NOT NULL ,
   `SecureSessionID` CHAR(36) NOT NULL ,
@@ -154,18 +151,18 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`Sessions` (
   UNIQUE INDEX `fk_user` (`UserID` ASC) ,
   CONSTRAINT `fk_user`
     FOREIGN KEY (`UserID` )
-    REFERENCES `Simian`.`Users` (`ID` )
+    REFERENCES `Users` (`ID` )
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Simian`.`UserData`
+-- Table `UserData`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Simian`.`UserData` ;
+DROP TABLE IF EXISTS `UserData` ;
 
-CREATE  TABLE IF NOT EXISTS `Simian`.`UserData` (
+CREATE  TABLE IF NOT EXISTS `UserData` (
   `ID` CHAR(36) NOT NULL ,
   `Key` VARCHAR(50) NOT NULL ,
   `Value` MEDIUMTEXT NOT NULL ,
@@ -173,18 +170,18 @@ CREATE  TABLE IF NOT EXISTS `Simian`.`UserData` (
   INDEX `id` (`ID` ASC) ,
   CONSTRAINT `id`
     FOREIGN KEY (`ID` )
-    REFERENCES `Simian`.`Users` (`ID` )
+    REFERENCES `Users` (`ID` )
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Simian`.`Generic`
+-- Table `Generic`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `Simian`.`Generic` ;
+DROP TABLE IF EXISTS `Generic` ;
 
-CREATE  TABLE IF NOT EXISTS `Simian`.`Generic` (
+CREATE  TABLE IF NOT EXISTS `Generic` (
   `OwnerID` CHAR(36) NOT NULL ,
   `Type` VARCHAR(45) NOT NULL ,
   `Key` VARCHAR(45) NOT NULL ,
