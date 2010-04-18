@@ -708,9 +708,9 @@ function process_login($method_name, $params, $user_data)
     }
     
     $response["start_location"] = $req["start"];
-    $response["agent_access"] = 'M';
-    $response["agent_region_access"] = 'M';
-    $response["agent_access_max"] = 'M';
+    $response["agent_access"] = 'A';
+    $response["agent_region_access"] = 'A';
+    $response["agent_access_max"] = 'A';
     $response["agent_flags"] = 0;
     $response["ao_transition"] = 0;
     $response["inventory_host"] = "127.0.0.1";
