@@ -16,6 +16,17 @@
 		foreach ($users as $user) 
 		{
 			$banned = ($user->banned == 1) ? 'Yes' : 'No';
+
+			// if last_login time is the unix epoch, then show
+			// "Never" in the UI instead of 1970-01-01
+			if (date('U', strtotime($user->last_login)) == 0)
+			{
+				$last_login = "Never";
+			}
+			else
+			{
+				$last_login = date('Y-m-d', strtotime($user->last_login));
+			}
 			
 			$this->table->add_row(
 				form_checkbox('checkbox_'.$user->id, $user->id),
@@ -23,7 +34,7 @@
 				$user->email, 
 				$banned, 
 				$user->last_ip,
-				date('Y-m-d', strtotime($user->last_login)), 
+				$last_login,
 				date('Y-m-d', strtotime($user->created)));
 		}
 		
