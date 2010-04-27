@@ -37,7 +37,7 @@
 class UUID
 {
     const Zero = '00000000-0000-0000-0000-000000000000';
-    const strpat = '/^(?<UUID>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/';
+    const strpat = '/^(?P<UUID>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/';
 
     static function Parse($str)
     {
