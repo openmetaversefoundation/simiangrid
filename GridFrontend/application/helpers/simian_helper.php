@@ -127,3 +127,25 @@ function import_asset_folder($folder)
     
     return $i;
 }
+
+function get_user_data_by_grid_id($id)
+{
+	$CI =& get_instance();
+
+	// Fetch account data for this user
+	$query = array(
+		'RequestMethod' => 'GetUser',
+		'UserID' => $id,
+	);
+
+	$response = rest_post($CI->config->item('user_service'), $query);
+
+	if (element('Success', $response) && is_array($response['User']))
+	{ 
+		return $response['User'];
+	}
+	else
+	{
+		return;
+	}
+}
