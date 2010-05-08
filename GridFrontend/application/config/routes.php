@@ -43,6 +43,11 @@
 $route['default_controller'] = "home";
 $route['scaffolding_trigger'] = "";
 
+// DX_Auth has a Users class, so if we follow the controller name ==
+// class name convention we can't call our controller "users".  So
+// instead there's a "gridusers" controller, and we'll just route
+// requests for "users" to it...
+$route['users/(:any)/(:any)'] = 'gridusers/show/$1/$2';
 
 /* End of file routes.php */
 /* Location: ./system/application/config/routes.php */
