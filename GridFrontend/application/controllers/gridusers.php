@@ -24,12 +24,12 @@ class GridUsers extends Controller {
 
 		if(isset($user_data))
 		{
-			$data['user_data']['User ID'] = $user_data['UserID'];
 			$data['user_data']['Name'] = $user_data['Name'];
 
 			// this stuff visible to admins only...
 			if ($this->dx_auth->is_admin())
 			{
+				$data['user_data']['User ID'] = $user_data['UserID'];
 				$data['user_data']['Email'] = $user_data['Email'];
 				$data['user_data']['Access Level'] = $user_data['AccessLevel'];
 			}
