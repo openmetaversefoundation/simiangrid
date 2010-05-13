@@ -1,5 +1,5 @@
 <gridinfo>
-	<login>{user_service}</login>
+	<login>{user_service}login/</login>
 	<register>{base_url}</register>
 	<password>{base_url}</password>
 	<gridname>{grid_name}</gridname>
