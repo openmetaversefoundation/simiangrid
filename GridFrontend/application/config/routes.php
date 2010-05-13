@@ -49,5 +49,10 @@ $route['scaffolding_trigger'] = "";
 // requests for "users" to it...
 $route['users/(:any)/(:any)'] = 'gridusers/show/$1/$2';
 
+// route viewer get_grid_info requests to the gridinfo class.  These
+// are sent as part of the GridInfo, viewer setting pre-population
+// stuff...
+$route['get_grid_info'] = "gridinfo";
+
 /* End of file routes.php */
 /* Location: ./system/application/config/routes.php */

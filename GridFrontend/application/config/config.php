@@ -28,6 +28,28 @@ $config['asset_service'] = 'http://localhost/Grid/?id=';
 
 /*
 |--------------------------------------------------------------------------
+| Grid name
+|--------------------------------------------------------------------------
+|
+| Used for GridInfo requests.  Perhaps other stuff, too.
+|
+| Caveat about GridInfo: GridInfo is the bit that lets you paste a URL
+| (traditionally the URL for the grid login service) into your viewer to
+| populate various config settings for connecting to that grid.  In the
+| Simian world this doesn't make sense, because GridInfo settings such
+| as the URL to create a new account and the URL for a grid's main web
+| site are things the grid services shouldn't have to worry about.
+| But current viewer implementations make some assumptions, e.g.  they
+| commonly ask for a grid's "login URL" when what is really meant is the
+| "GridInfo service URL".  In SimianGrid's case, that's the URL to the
+| grid frontend.  Presently one must include "index.php/" at the end.
+|
+*/
+$config['grid_name'] = 'My Simian Grid';
+$config['grid_name_short'] = 'mygrid';
+
+/*
+|--------------------------------------------------------------------------
 | SimianGrid Default Assets
 |--------------------------------------------------------------------------
 |
