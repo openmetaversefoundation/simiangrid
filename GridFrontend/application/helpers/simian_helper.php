@@ -128,15 +128,29 @@ function import_asset_folder($folder)
     return $i;
 }
 
-function get_user_data_by_grid_id($id)
+function get_grid_user_data($key, $value)
 {
 	$CI =& get_instance();
 
 	// Fetch account data for this user
-	$query = array(
-		'RequestMethod' => 'GetUser',
-		'UserID' => $id,
-	);
+	if ($key == 'id')
+	{
+		$query = array(
+			'RequestMethod' => 'GetUser',
+			'UserID' => $value
+		);
+	}
+	elseif ($key == 'name')
+	{
+		$query = array(
+			'RequestMethod' => 'GetUser',
+			'Name' => $value
+		);
+	}
+	else
+	{
+		return;
+	}
 
 	$response = rest_post($CI->config->item('user_service'), $query);
 

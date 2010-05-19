@@ -15,12 +15,14 @@ class GridUsers extends Controller {
 		$this->load->model('dx_auth/users', 'users');
 
 		$uri_array = $this->uri->ruri_to_assoc(3);
-		if ($user_id = $uri_array['id']) {
-			$user_data = get_user_data_by_grid_id($user_id);
+		if (isset($uri_array['id']))
+		{
+			$user_data = get_grid_user_data('id', $uri_array['id']);
         }
-		//else do something if name submitted (TODO)
-		//{
-		//}
+		elseif (isset($uri_array['name']))
+		{
+			$user_data = get_grid_user_data('name', $uri_array['name']);
+		}
 
 		if(isset($user_data))
 		{
