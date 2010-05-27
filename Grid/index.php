@@ -186,6 +186,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
             else
                 $asset->Public = TRUE;
             
+			log_message('debug', 'Executing AddAsset');
             execute_command('AddAsset', $db, $asset);
             exit();
         }
@@ -216,6 +217,7 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'DELETE') !== FALSE)
         // Asset delete
         $asset = new Asset();
         $asset->ID = $uuid;
+		log_message('debug', 'Executing RemoveAsset');
         execute_command('RemoveAsset', $db, $asset);
         exit();
     }
@@ -267,6 +269,7 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
     if (isset($request['RequestMethod']))
     {
         $command = trim($request['RequestMethod']);
+		log_message('debug', 'Executing ' . $command);
         execute_command($command, $db, $request);
     }
     else
