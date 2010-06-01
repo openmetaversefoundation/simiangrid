@@ -159,9 +159,9 @@ else if ((stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE || (stripos($_SER
 }
 else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'multipart/form-data') !== FALSE)
 {
-    // Asset upload
     if (isset($_FILES['Asset']) && count($_FILES) == 1)
     {
+    	// Asset upload
         $asset = new Asset();
         
         if (!isset($_POST['AssetID']) || !UUID::TryParse($_POST['AssetID'], $asset->ID))
@@ -199,12 +199,42 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
             exit();
         }
     }
+    else if (isset($_FILES['Tile']) && count($_FILES) == 1 &&
+    	$_FILES['Tile']['type'] == "image/png" &&
+    	isset($_POST['X']) && isset($_POST['Y']))
+    {
+    	// Map tile upload
+        $tile = new MapTile();
+        
+        $tile->X = (int)$_POST['X'];
+        $tile->Y = (int)$_POST['Y'];
+        
+    	if (!empty($_FILES['Tile']['tmp_name']))
+        {
+            $tmpName = $_FILES['Tile']['tmp_name'];
+            $fp = fopen($tmpName, 'r');
+            $tile->Data = fread($fp, filesize($tmpName));
+            fclose($fp);
+            
+			log_message('debug', 'Executing AddMapTile');
+            execute_command('AddMapTile', $tile);
+            exit();
+        }
+        else
+        {
+            log_message('error', 'Asset Upload Failed, Asset specified but no filedata included in request: ' . print_r($_FILES, TRUE));
+            
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Missing asset data" }';
+            exit();
+        }
+    }
     else
     {
-        log_message('error', 'Asset Upload Failed, POST requested but no file or filedata included in request: ' . print_r($_POST, TRUE));
+        log_message('error', 'Upload Failed, POST requested but no file or filedata included in request: ' . print_r($_POST, TRUE));
         
         header("Content-Type: application/json", true);
-        echo '{ "Message": "Invalid parameters for asset upload" }';
+        echo '{ "Message": "Invalid parameters for upload" }';
         exit();
     }
 }

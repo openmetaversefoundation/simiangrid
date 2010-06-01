@@ -83,6 +83,17 @@ $config['log_threshold'] = 4;
 
 /*
 |--------------------------------------------------------------------------
+| Map Tile Directory Path
+|--------------------------------------------------------------------------
+|
+| Leave this BLANK unless you would like to set something other than the default
+| map/ folder. Use a full server path with trailing slash.
+|
+*/
+$config["map_path"] = "";
+
+/*
+|--------------------------------------------------------------------------
 | Error Logging Directory Path
 |--------------------------------------------------------------------------
 |

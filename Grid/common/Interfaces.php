@@ -58,6 +58,13 @@ class Asset
     public $Data;
 }
 
+class MapTile
+{
+	public $X;
+	public $Y;
+	public $Data;
+}
+
 class Inventory
 {
     public $ID;
