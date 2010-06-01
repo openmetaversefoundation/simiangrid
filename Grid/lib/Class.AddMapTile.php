@@ -54,8 +54,12 @@ class AddMapTile implements IGridService
 	public function AddTile($tile)
     {
     	$config =& get_config();
+    	
     	$dirpath = ($config['map_path'] != '') ? $config['map_path'] : BASEPATH.'map/';
-    	$filepath = $dirpath . 'map-1-' . $tile->X . '-' . $tile->Y . '-objects.png';
+    	$x = $tile->X / 256;
+    	$y = $tile->Y / 256;
+    	
+    	$filepath = $dirpath . "map-1-$x-$y-objects.png";
     	
     	// Save the full resolution tile
     	if (!$fp = @fopen($filepath, 'w'))
