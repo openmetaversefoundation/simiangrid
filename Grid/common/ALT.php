@@ -184,7 +184,7 @@ class ALT
 
     public function FetchDescendants($rootID, $fetchFolders = TRUE, $fetchItems = TRUE, $childrenOnly = TRUE)
     {
-        if ($fetchFolders && $fetchItems)
+        if (($fetchFolders && $fetchItems) || !$childrenOnly)
             $fetchTypes = "'Folder','Item'";
         else if ($fetchFolders)
             $fetchTypes = "'Folder'";
@@ -212,15 +212,20 @@ class ALT
                     $results[0] = $descendant;
                     $rootFound = TRUE;
                 }
-                else if ($childrenOnly)
+                else if ($childrenOnly || $descendant instanceof InventoryItem)
                 {
-                    $results[] = $descendant;
+                    if (($fetchItems && $descendant instanceof InventoryItem) || ($fetchFolders && $descendant instanceof InventoryFolder))
+                        $results[] = $descendant;
                 }
                 else
                 {
+                    // Recursively fetch folder descendants
                     $childResults = $this->FetchDescendants($descendant->ID, $fetchFolders, $fetchItems, $childrenOnly);
                     foreach ($childResults as $child)
-                        $results[] = $child;
+                    {
+                        if (($fetchItems && $child instanceof InventoryItem) || ($fetchFolders && $child instanceof InventoryFolder))
+                            $results[] = $child;
+                    }
                 }
             }
         }
