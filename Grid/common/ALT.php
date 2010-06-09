@@ -212,9 +212,15 @@ class ALT
                     $results[0] = $descendant;
                     $rootFound = TRUE;
                 }
-                else
+                else if ($childrenOnly)
                 {
                     $results[] = $descendant;
+                }
+                else
+                {
+                    $childResults = $this->FetchDescendants($descendant->ID, $fetchFolders, $fetchItems, $childrenOnly);
+                    foreach ($childResults as $child)
+                        $results[] = $child;
                 }
             }
         }
