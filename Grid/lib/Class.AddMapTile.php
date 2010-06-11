@@ -33,9 +33,15 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
+define("IMAGE_WIDTH", 256);
+define("HALF_WIDTH", 128);
+define("ZOOM_LEVELS", 8);
+
 class AddMapTile implements IGridService
 {
-    public function Execute($tile)
+    private $dirpath;
+    
+    public function Execute($unused, $tile)
     {
         if ($this->AddTile($tile))
         {
@@ -55,11 +61,12 @@ class AddMapTile implements IGridService
     {
     	$config =& get_config();
     	
-    	$dirpath = ($config['map_path'] != '') ? $config['map_path'] : BASEPATH.'map/';
-    	$x = $tile->X / 256;
-    	$y = $tile->Y / 256;
+    	$x = (int)$tile->X;
+    	$y = (int)$tile->Y;
     	
-    	$filepath = $dirpath . "map-1-$x-$y-objects.png";
+    	// Get the file path of the full resolution tile
+    	$this->dirpath = ($config['map_path'] != '') ? $config['map_path'] : BASEPATH.'map/';
+    	$filepath = $this->dirpath . "map-1-$x-$y-objects.png";
     	
     	// Save the full resolution tile
     	if (!$fp = @fopen($filepath, 'w'))
@@ -67,7 +74,6 @@ class AddMapTile implements IGridService
     		log_message('error', "Failed to map tile file " . $filepath . " for writing");
     		return false;
     	}
-    	
     	flock($fp, LOCK_EX);
     	fwrite($fp, $tile->Data);
     	flock($fp, LOCK_UN);
@@ -75,8 +81,103 @@ class AddMapTile implements IGridService
     	
     	// TODO: Also save in JPG format
     	
-    	// TODO: Stitch seven more aggregate tiles together
+    	// Stitch seven more aggregate tiles together
+    	for ($zoomLevel = 2; $zoomLevel <= ZOOM_LEVELS; $zoomLevel++)
+    	{
+    	    // Calculate the width (in full resolution tiles) and bottom-left
+    	    // corner of the current zoom level
+    	    $width = pow(2, $zoomLevel - 1);
+    	    $x1 = $x - ($x % $width);
+    	    $y1 = $y - ($y % $width);
+    	    
+    	    $this->CreateTile($zoomLevel, $x1, $y1);
+    	}
     	
     	return true;
+    }
+    
+    private function OpenInputTile($filename)
+    {
+        if (file_exists($filename))
+            return @imagecreatefrompng($filename);
+        else
+            return FALSE;
+    }
+    
+    private function OpenOutputTile($filename)
+    {
+        $output = NULL;
+        
+        if (file_exists($filename))
+            $output = @imagecreatefrompng($filename);
+        
+        if ($output)
+        {
+            // Return the existing output tile
+            return $output;
+        }
+        else
+        {
+            // Create a new output tile with a transparent background
+            $output = imagecreatetruecolor(IMAGE_WIDTH, IMAGE_WIDTH);
+            $black = imagecolorallocate($output, 0, 0, 0);
+            imagecolortransparent($output, $black);
+            return $output;
+        }
+    }
+    
+    private function GetFilename($zoom, $x, $y)
+    {
+        return $this->dirpath . "map-$zoom-$x-$y-objects.png";
+    }
+    
+    private function CreateTile($zoomLevel, $x, $y)
+    {
+        $prevWidth = pow(2, $zoomLevel - 2);
+        $thisWidth = pow(2, $zoomLevel - 1);
+        
+        // Convert x and y to the bottom left tile for this zoom level
+        $xIn = $x - ($x % $prevWidth);
+        $yIn = $y - ($y % $prevWidth);
+        
+        // Convert x and y to the bottom left tile for the next zoom level
+        $xOut = $x - ($x % $thisWidth);
+        $yOut = $y - ($y % $thisWidth);
+        
+        // Try to open the four input tiles from the previous zoom level
+        $inputBL = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn             , $yIn             ));
+        $inputBR = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn + $prevWidth, $yIn             ));
+        $inputTL = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn             , $yIn + $prevWidth));
+        $inputTR = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn + $prevWidth, $yIn + $prevWidth));
+        
+        // Open the output tile (current zoom level)
+        $outputFile = $this->GetFilename($zoomLevel, $xOut, $yOut);
+        $output = $this->OpenOutputTile($outputFile);
+        
+        // Scale the input tiles into the output tile
+        if ($inputBL)
+        {
+            imagecopyresampled($output, $inputBL, 0, HALF_WIDTH, 0, 0, HALF_WIDTH, HALF_WIDTH, IMAGE_WIDTH, IMAGE_WIDTH);
+            imagedestroy($inputBL);
+        }
+        if ($inputBR)
+        {
+            imagecopyresampled($output, $inputBR, HALF_WIDTH, HALF_WIDTH, 0, 0, HALF_WIDTH, HALF_WIDTH, IMAGE_WIDTH, IMAGE_WIDTH);
+            imagedestroy($inputBR);
+        }
+        if ($inputTL)
+        {
+            imagecopyresampled($output, $inputTL, 0, 0, 0, 0, HALF_WIDTH, HALF_WIDTH, IMAGE_WIDTH, IMAGE_WIDTH);
+            imagedestroy($inputTL);
+        }
+        if ($inputTR)
+        {
+            imagecopyresampled($output, $inputTR, HALF_WIDTH, 0, 0, 0, HALF_WIDTH, HALF_WIDTH, IMAGE_WIDTH, IMAGE_WIDTH);
+            imagedestroy($inputTR);
+        }
+        
+        // Write the modified output
+        imagepng($output, $outputFile);
+        imagedestroy($output);
     }
 }
