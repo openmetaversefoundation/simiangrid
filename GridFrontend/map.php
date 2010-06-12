@@ -34,7 +34,7 @@ EuclideanProjection.prototype.fromPointToLatLng = function(point) {
 };
 
 // Configure options for the map
-var gridMapOptions = {
+var imageMapOptions = {
 	getTileUrl: function(coord, zoom) {
 		var gridZoom = 8 - zoom;
 	    var regions_per_tile_edge = Math.pow(2, gridZoom - 1);
@@ -61,19 +61,22 @@ var gridMapOptions = {
 	isPng: true
 };
 
-var gridMapType = new google.maps.ImageMapType(gridMapOptions);
-gridMapType.projection = new EuclideanProjection();
+var mapOptions = {
+	// This starting lat/long will center us over the region at 1000,1000
+	center: new google.maps.LatLng(-0.1717, 0.1717),
+  	mapTypeControl: false,
+	backgroundColor: "#1D475F",
+	zoom: 4
+}
+
+var imageMapType = new google.maps.ImageMapType(imageMapOptions);
+imageMapType.projection = new EuclideanProjection();
 var map;
 
 function initialize() {
-	map = new google.maps.Map(document.getElementById("map_canvas"), { backgroundColor: "#1D475F" });
-
-	// This starting lat/long will center us over the region at 1000,1000
-	map.setCenter(new google.maps.LatLng(-0.1717, 0.1717));
-	map.setZoom(4);
-
+	map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
 	// Now attach the grid map type to the map's registry
-	map.mapTypes.set('grid', gridMapType);
+	map.mapTypes.set('grid', imageMapType);
 	// We can now set the map to use the 'grid' map type
 	map.setMapTypeId('grid');
 }
