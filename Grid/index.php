@@ -217,7 +217,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
             fclose($fp);
             
 			log_message('debug', 'Executing AddMapTile');
-            execute_command('AddMapTile', $tile);
+            execute_command('AddMapTile', null, $tile);
             exit();
         }
         else
