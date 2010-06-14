@@ -25,6 +25,7 @@ $config['user_service'] = 'http://localhost/Grid/';
 $config['inventory_service'] = 'http://localhost/Grid/';
 $config['grid_service'] = 'http://localhost/Grid/';
 $config['asset_service'] = 'http://localhost/Grid/?id=';
+$config['login_service'] = 'http://localhost/Grid/login/';
 
 /*
 |--------------------------------------------------------------------------
