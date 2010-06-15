@@ -734,10 +734,11 @@ class DX_Auth
         return false;
 	}
 	
-	function _create_simiangrid_inventory($userID)
+	function _create_simiangrid_inventory($userID, $avtype)
 	{
 	    $query = array(
         	'RequestMethod' => 'AddInventory',
+	    	'AvatarType' => $avtype,
         	'OwnerID' => $userID
         );
         
@@ -751,7 +752,7 @@ class DX_Auth
         return false;
 	}
 	
-    function _create_simiangrid_user($first_name, $last_name, $password, $email, $userid, $openid)
+    function _create_simiangrid_user($first_name, $last_name, $password, $email, $avtype, $userid, $openid)
 	{
 	    $fullname = $first_name . ' ' . $last_name;
 	    
@@ -777,7 +778,7 @@ class DX_Auth
     		        if (empty($openid) || $this->_create_simiangrid_identity($openid, '', 'openid', $userid))
     		        {
         		        // Create an inventory for this user
-        		        if ($this->_create_simiangrid_inventory($userid))
+        		        if ($this->_create_simiangrid_inventory($userid, $avtype))
         		        {
         		            log_message('info', "Created SimianGrid user $fullname with ID $userid");
         		            return TRUE;
@@ -819,7 +820,7 @@ class DX_Auth
 		return FALSE;
 	}
 	
-	function register($first_name, $last_name, $password, $email, $openID = null)
+	function register($first_name, $last_name, $password, $email, $avtype, $openID = null)
 	{
 	    $username = $first_name . '_' . $last_name;
 	    $userid = random_uuid();
@@ -829,7 +830,7 @@ class DX_Auth
 		$this->ci->load->model('dx_auth/user_temp', 'user_temp');
 		
 		// Create a user and identities in SimianGrid
-		if (!$this->_create_simiangrid_user($first_name, $last_name, $password, $email, $userid, $openID))
+		if (!$this->_create_simiangrid_user($first_name, $last_name, $password, $email, $avtype, $userid, $openID))
 		    return FALSE;
 		
 		// Default return value

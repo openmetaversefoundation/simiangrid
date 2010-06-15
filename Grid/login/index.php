@@ -96,7 +96,7 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     $curl = new Curl();
     $response = $curl->simple_post($url, $params);
     
-    log_message('debug', sprintf('Response received from %s POST to %s: %s', $requestMethod, $url, $response));
+    //log_message('debug', sprintf('Response received from %s POST to %s: %s', $requestMethod, $url, $response));
     
     // JSON decode the response
     $response = json_decode($response, TRUE);

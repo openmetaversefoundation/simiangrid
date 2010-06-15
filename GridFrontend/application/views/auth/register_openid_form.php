@@ -63,16 +63,28 @@ $openid_identifier = array(
         <?php echo form_input($openid_identifier);?>
     </dd>
 
-	<dt><?php echo form_label('First Name', $first_name['id']);?></dt>
+	<dt><?php echo form_label('Avatar First Name', $first_name['id']);?></dt>
 	<dd>
 		<?php echo form_input($first_name)?>
         <?php echo form_error($first_name['name']); ?>
 	</dd>
 	
-	<dt><?php echo form_label('Last Name', $last_name['id']);?></dt>
+	<dt><?php echo form_label('Avatar Last Name', $last_name['id']);?></dt>
 	<dd>
 		<?php echo form_input($last_name)?>
         <?php echo form_error($last_name['name']); ?>
+	</dd>
+	
+	<dt><?php echo form_label('Starting Appearance', 'avatar_type');?></dt>
+	<dd>
+		<?php
+		    $options = array();
+		    $options['DefaultAvatar'] = 'Default Avatar';
+		    foreach ($this->config->item('extra_avatar_types') as $lbl => $val)
+                $options[$val] = $lbl;
+		?>
+		<?php echo form_dropdown('avatar_type', $options, 'DefaultAvatar', 'id="avatar_type"')?>
+		<?php echo form_error('avatar_type'); ?>
 	</dd>
 
 	<dt><?php echo form_label('Password', $password['id']);?></dt>

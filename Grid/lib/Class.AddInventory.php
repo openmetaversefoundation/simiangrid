@@ -58,11 +58,34 @@ function update_appearance($userID, $appearance)
 	return $response;
 }
 
+function update_attachments($userID, $attachments)
+{
+    $config =& get_config();
+    $url = $config['user_service'];
+    
+    $params = array(
+        'RequestMethod' => 'AddUserData',
+        'UserID' => $userID,
+        'LLAttachments' => json_encode($attachments)
+    );
+    
+    $curl = new Curl();
+    $response = json_decode($curl->simple_post($url, $params), TRUE);
+    
+    if (!isset($response))
+    {
+        log_message('error', "Update attachments call to $url failed");
+	    $response = array('Message' => 'Invalid or missing response');
+    }
+	
+    return $response;
+}
+
 class AddInventory implements IGridService
 {
     private $UserID;
     private $Name;
-    private $inventory;
+    private $Inventory;
 
     public function Execute($db, $params)
     {
@@ -73,48 +96,39 @@ class AddInventory implements IGridService
             exit();
         }
         
-        $this->inventory = new ALT($db);
-        
+        $this->Inventory = new ALT($db);
         $this->Name = 'My Inventory';
-        $RootID = $this->UserID;
         
-        $clothingID = UUID::Random();
-        $outfitID = UUID::Random();
+    	$avtype = "DefaultAvatar";
+    	if (isset($params["AvatarType"]))
+    	    $avtype = $params["AvatarType"];
         
-        $skeleton = array(
-            array('ID' => $RootID, 'ParentID' => UUID::Parse(UUID::Zero), 'Name' => $this->Name, 'PreferredContentType' => 'application/vnd.ll.folder'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Animations', 'PreferredContentType' => 'application/vnd.ll.animation'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Body Parts', 'PreferredContentType' => 'application/vnd.ll.bodypart'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Calling Cards', 'PreferredContentType' => 'application/vnd.ll.callingcard'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Gestures', 'PreferredContentType' => 'application/vnd.ll.gesture'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Landmarks', 'PreferredContentType' => 'application/vnd.ll.landmark'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Lost and Found', 'PreferredContentType' => 'application/vnd.ll.lostandfoundfolder'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Notecards', 'PreferredContentType' => 'application/vnd.ll.notecard'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Objects', 'PreferredContentType' => 'application/vnd.ll.primitive'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Photo Album', 'PreferredContentType' => 'application/vnd.ll.snapshotfolder'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Scripts', 'PreferredContentType' => 'application/vnd.ll.lsltext'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Sounds', 'PreferredContentType' => 'application/ogg'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Textures', 'PreferredContentType' => 'image/x-j2c'),
-            array('ID' => UUID::Random(), 'ParentID' => $RootID, 'Name' => 'Trash', 'PreferredContentType' => 'application/vnd.ll.trashfolder'),
-            array('ID' => $clothingID, 'ParentID' => $RootID, 'Name' => 'Clothing', 'PreferredContentType' => 'application/vnd.ll.clothing'),
-            array('ID' => $outfitID, 'ParentID' => $clothingID, 'Name' => 'Default Outfit', 'PreferredContentType' => 'application/octet-stream')
-        );
+    	log_message('info', "Creating avatar inventory with type $avtype");
         
-        $hairID = UUID::Random();
-        $pantsID = UUID::Random();
-        $shapeID = UUID::Random();
-        $shirtID = UUID::Random();
-        $skinID = UUID::Random();
-        $eyesID = UUID::Random();
-        
-        $items = array(
-            array('ID' => $hairID, 'ParentID' => $outfitID, 'Name' => 'Default Hair', 'AssetID' => 'dc675529-7ba5-4976-b91d-dcb9e5e36188'),
-            array('ID' => $pantsID, 'ParentID' => $outfitID, 'Name' => 'Default Pants', 'AssetID' => '3e8ee2d6-4f21-4a55-832d-77daa505edff'),
-            array('ID' => $shapeID, 'ParentID' => $outfitID, 'Name' => 'Default Shape', 'AssetID' => '530a2614-052e-49a2-af0e-534bb3c05af0'),
-            array('ID' => $shirtID, 'ParentID' => $outfitID, 'Name' => 'Default Shirt', 'AssetID' => '6a714f37-fe53-4230-b46f-8db384465981'),
-            array('ID' => $skinID, 'ParentID' => $outfitID, 'Name' => 'Default Skin', 'AssetID' => '5f787f25-f761-4a35-9764-6418ee4774c4'),
-            array('ID' => $eyesID, 'ParentID' => $outfitID, 'Name' => 'Default Eyes', 'AssetID' => '78d20332-9b07-44a2-bf74-3b368605f4b5')
-        );
+    	try
+	    {
+    	    $avtypehandler = AvatarInventoryFolderFactory::Create($avtype, $this->Name, $this->UserID);
+    	}
+    	catch (Exception $ex)
+    	{
+    	    log_message('error', sprintf("Error occurred in avcreation %s", $ex));
+    	    header("Content-Type: application/json", true);
+    	    echo '{ "Message": "Failed loading avatar template "' . $avtype . ': ' . $ex->getMessage() . ' }';
+    	    exit();
+    	}
+    
+    	if (!$avtypehandler)
+    	{
+    	    // Handle error and return
+    	    log_message('error', "Failed to create handler for avatar with type $avtype");
+            
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Invalid parameters" }';
+            exit();
+    	}
+    	
+    	$skeleton = $avtypehandler->Folders();
+    	$items = $avtypehandler->Items();
         
         $db->beginTransaction();
         
@@ -128,10 +142,10 @@ class AddInventory implements IGridService
                 $Folder->Name = $skeleton[$i]["Name"];
                 $Folder->ContentType = $skeleton[$i]["PreferredContentType"];
                 
-                if (!$this->inventory->InsertNode($Folder))
+                if (!$this->Inventory->InsertNode($Folder))
                 {
                     $db->rollBack();
-                    log_message('error', sprintf("Error occurred during folder creation: %s", $this->inventory->LastError));
+                    log_message('error', sprintf("Error occurred during folder creation: %s", $this->Inventory->LastError));
                     
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Inventory creation error" }';
@@ -156,14 +170,19 @@ class AddInventory implements IGridService
                 $item = new InventoryItem($items[$i]['ID']);
                 $item->ParentID = UUID::Parse($items[$i]['ParentID']);
                 $item->OwnerID = $this->UserID;
-                $item->CreatorID = $this->UserID;
+                
+                $creatorID = $this->UserID;
+                if (array_key_exists('CreatorID', $items[$i]))
+                    $creatorID = UUID::Parse($items[$i]['CreatorID']);
+                $item->CreatorID = $creatorID;
+                
                 $item->Name = $items[$i]['Name'];
                 $item->AssetID = UUID::Parse($items[$i]['AssetID']);
                 
-                if (!$this->inventory->InsertNode($item))
+                if (!$this->Inventory->InsertNode($item))
                 {
                     $db->rollBack();
-                    log_message('error', sprintf("Error occurred during item creation: %s", $this->inventory->LastError));
+                    log_message('error', sprintf("Error occurred during item creation: %s", $this->Inventory->LastError));
                     
                     header("Content-Type: application/json", true);
                     echo '{ "Message": "Inventory creation error" }';
@@ -184,49 +203,39 @@ class AddInventory implements IGridService
         $db->commit();
         
         // Update this users appearance in the user service
-        $appearance = array(
-            'Height' => 1.771488,
-            'ShapeItem' => (string)$shapeID,
-            'ShapeAsset' => '530a2614-052e-49a2-af0e-534bb3c05af0',
-            'EyesItem' => (string)$eyesID,
-            'EyesAsset' => '78d20332-9b07-44a2-bf74-3b368605f4b5',
-            //'GlovesItem' => '',
-            //'GlovesAsset' => '',
-            'HairItem' => (string)$hairID,
-            'HairAsset' => 'dc675529-7ba5-4976-b91d-dcb9e5e36188',
-            //'JacketItem' => '',
-            //'JacketAsset' => '',
-            'PantsItem' => (string)$pantsID,
-            'PantsAsset' => '3e8ee2d6-4f21-4a55-832d-77daa505edff',
-            'ShirtItem' => (string)$shirtID,
-            'ShirtAsset' => '6a714f37-fe53-4230-b46f-8db384465981',
-            //'ShoesItem' => '',
-            //'ShoesAsset' => '',
-            'SkinItem' => (string)$skinID,
-            'SkinAsset' => '5f787f25-f761-4a35-9764-6418ee4774c4'
-            //'SkirtItem' => '',
-            //'SkirtAsset' => '',
-            //'SocksItem' => '',
-            //'SocksAsset' => '',
-            //'UnderpantsItem' => '',
-            //'UnderpantsAsset' => '',
-            //'UndershirtItem' => '',
-            //'UndershirtAsset' => ''
-        );
-        
-        $response = update_appearance($this->UserID, $appearance);
-        
-        if (!empty($response['Success']))
+        $appearance = $avtypehandler->Appearance();
+        if ($appearance)
         {
-            header("Content-Type: application/json", true);
-            echo sprintf('{"Success": true, "FolderID": "%s"}', $RootID);
-            exit();
+            $response = update_appearance($this->UserID, $appearance);
+            
+            if (empty($response['Success']))
+            {
+                header("Content-Type: application/json", true);
+                echo sprintf('{ "Message": "%s" }', $response['Message']);
+                exit();
+            }
         }
-        else
+        
+        // Update this users attachments in the user service
+        $attachments = $avtypehandler->Attachments();
+        if ($attachments)
         {
-            header("Content-Type: application/json", true);
-            echo sprintf('{ "Message": "%s" }', $response['Message']);
-            exit();
+            $response = update_attachments($this->UserID, $attachments);
+            
+            if (empty($response['Success']))
+            {
+                header("Content-Type: application/json", true);
+                echo sprintf('{ "Message": "%s" }', $response['Message']);
+                exit();
+            }
         }
+
+    	// Add any additional customizations
+        $avtypehandler->Configure();
+
+    	// And return success
+        header("Content-Type: application/json", true);
+        echo sprintf('{"Success": true, "FolderID": "%s"}', $this->UserID);
+        exit();
     }
 }

@@ -36,28 +36,13 @@
 define("IMAGE_WIDTH", 256);
 define("HALF_WIDTH", 128);
 define("ZOOM_LEVELS", 8);
+define("JPEG_QUALITY", 90);
 
 class AddMapTile implements IGridService
 {
     private $dirpath;
     
-    public function Execute($unused, $tile)
-    {
-        if ($this->AddTile($tile))
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
-        }
-        else
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Unable to store map tile" }';
-            exit();
-        }
-    }
-    
-	public function AddTile($tile)
+	public function Execute($unused, $tile)
     {
     	$config =& get_config();
     	
@@ -65,21 +50,25 @@ class AddMapTile implements IGridService
     	$y = (int)$tile->Y;
     	
     	// Get the file path of the full resolution tile
-    	$this->dirpath = ($config['map_path'] != '') ? $config['map_path'] : BASEPATH.'map/';
-    	$filepath = $this->dirpath . "map-1-$x-$y-objects.png";
+    	$this->dirpath = (!empty($config['map_path'])) ? $config['map_path'] : BASEPATH . 'map/';
+    	$filepath = $this->GetFilename(1, $x, $y);
     	
     	// Save the full resolution tile
     	if (!$fp = @fopen($filepath, 'w'))
     	{
     		log_message('error', "Failed to map tile file " . $filepath . " for writing");
-    		return false;
+    		
+    		header("Content-Type: application/json", true);
+    		echo '{ "Message": "Unable to store map tile" }';
+            exit();
     	}
     	flock($fp, LOCK_EX);
     	fwrite($fp, $tile->Data);
     	flock($fp, LOCK_UN);
     	fclose($fp);
     	
-    	// TODO: Also save in JPG format
+    	// Also save in JPG format
+    	$this->Png2Jpg($filepath, $this->GetFilename(1, $x, $y, 'jpg'), JPEG_QUALITY);
     	
     	// Stitch seven more aggregate tiles together
     	for ($zoomLevel = 2; $zoomLevel <= ZOOM_LEVELS; $zoomLevel++)
@@ -90,10 +79,17 @@ class AddMapTile implements IGridService
     	    $x1 = $x - ($x % $width);
     	    $y1 = $y - ($y % $width);
     	    
-    	    $this->CreateTile($zoomLevel, $x1, $y1);
+    	    if (!$this->CreateTile($zoomLevel, $x1, $y1))
+    	    {
+    	        header("Content-Type: application/json", true);
+        		echo '{ "Message": "Unable to store zoom level ' . $zoomLevel . '" }';
+                exit();
+    	    }
     	}
     	
-    	return true;
+    	header("Content-Type: application/json", true);
+        echo '{ "Success": true }';
+        exit();
     }
     
     private function OpenInputTile($filename)
@@ -126,9 +122,9 @@ class AddMapTile implements IGridService
         }
     }
     
-    private function GetFilename($zoom, $x, $y)
+    private function GetFilename($zoom, $x, $y, $extension='png')
     {
-        return $this->dirpath . "map-$zoom-$x-$y-objects.png";
+        return $this->dirpath . "map-$zoom-$x-$y-objects.$extension";
     }
     
     private function CreateTile($zoomLevel, $x, $y)
@@ -153,6 +149,9 @@ class AddMapTile implements IGridService
         // Open the output tile (current zoom level)
         $outputFile = $this->GetFilename($zoomLevel, $xOut, $yOut);
         $output = $this->OpenOutputTile($outputFile);
+        
+        if (!$output)
+            return FALSE;
         
         // Scale the input tiles into the output tile
         if ($inputBL)
@@ -179,5 +178,17 @@ class AddMapTile implements IGridService
         // Write the modified output
         imagepng($output, $outputFile);
         imagedestroy($output);
+        
+        // Also save in JPG format
+    	$this->Png2Jpg($outputFile, $this->GetFilename($zoomLevel, $xOut, $yOut, 'jpg'), JPEG_QUALITY);
+        
+        return TRUE;
+    }
+    
+    private function Png2Jpg($originalFile, $outputFile, $quality)
+    {
+        $image = imagecreatefrompng($originalFile);
+        imagejpeg($image, $outputFile, $quality);
+        imagedestroy($image);
     }
 }

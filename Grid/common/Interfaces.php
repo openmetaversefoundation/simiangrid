@@ -76,3 +76,36 @@ class Inventory
     public $CreationDate;
     public $Type;
 }
+
+interface IAvatarInventoryFolder
+{
+    public function Folders();
+    public function Items();
+    public function Appearance();
+    public function Attachments();
+    public function Configure();
+}
+
+class AvatarInventoryFolderFactory
+{
+    public static function Create($type,$name,$userid)
+    {
+        if (class_exists($type))
+            return new $type($name,$userid);
+    
+        $classFile = BASEPATH . 'avatar/Avatar.' . $type . '.php';
+        if (file_exists($classFile))
+        {
+    	    include_once $classFile;
+    	    return new $type($name,$userid);
+        }
+        else
+        {
+            log_message('warn', "requested avatar $type not found, using default");
+    
+        	$classFile = BASEPATH . 'avatar/Avatar.DefaultAvatar.php';
+    	    include_once $classFile;
+    	    return new $type($name,$userid);
+        }
+    }
+}

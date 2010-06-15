@@ -219,6 +219,7 @@ class Auth extends Controller
 			$val->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->min_password.']|max_length['.$this->max_password.']|matches[confirm_password]');
 			$val->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean');
 			$val->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email|callback_email_check');
+			$val->set_rules('avatar_type', 'Avatar Type', 'trim|xss_clean');
 			
     		// Is registration using captcha
 			if ($this->dx_auth->captcha_registration)
@@ -230,7 +231,7 @@ class Auth extends Controller
 			}
 
 			// Run form validation and register user if validation succeeds
-			if ($val->run() AND $this->dx_auth->register($val->set_value('first_name'), $val->set_value('last_name'), $val->set_value('password'), $val->set_value('email')))
+			if ($val->run() AND $this->dx_auth->register($val->set_value('first_name'), $val->set_value('last_name'), $val->set_value('password'), $val->set_value('email'), $val->set_value('avatar_type', 'DefaultAvatar')))
 			{
 				// Set success message accordingly
 				if ($this->dx_auth->email_activation)
@@ -321,6 +322,7 @@ class Auth extends Controller
     			$val->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->min_password.']|max_length['.$this->max_password.']|matches[confirm_password]');
     			$val->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean');
     			$val->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email|callback_email_check');
+    			$val->set_rules('avatar_type', 'Avatar Type', 'trim|xss_clean');
     			
                 // Is registration using captcha
     			if ($this->dx_auth->captcha_registration)
@@ -332,7 +334,7 @@ class Auth extends Controller
     			}
                 
     			// Run form validation and register user if validation succeeds
-    			if ($val->run() AND $this->dx_auth->register($val->set_value('first_name'), $val->set_value('last_name'), $val->set_value('password'), $val->set_value('email'), $openid))
+    			if ($val->run() AND $this->dx_auth->register($val->set_value('first_name'), $val->set_value('last_name'), $val->set_value('password'), $val->set_value('email'), $val->set_value('avatar_type', 'DefaultAvatar'), $openid))
     			{
     				// Set success message accordingly
     				if ($this->dx_auth->email_activation)
