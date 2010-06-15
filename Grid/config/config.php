@@ -28,6 +28,7 @@ $config['user_service'] = "http://localhost/Grid/";
 $config['grid_service'] = "http://localhost/Grid/";
 $config['asset_service'] = "http://localhost/Grid/?id=";
 $config['inventory_service'] = "http://localhost/Grid/";
+$config['map_service'] = "http://localhost/Grid/map/";
 
 /*
 |--------------------------------------------------------------------------
@@ -87,7 +88,8 @@ $config['log_threshold'] = 4;
 |--------------------------------------------------------------------------
 |
 | Leave this BLANK unless you would like to set something other than the default
-| map/ folder. Use a full server path with trailing slash.
+| map/ folder. Use a full server path with trailing slash. This directory should
+| map to the URL specified in $config['map_service'] above
 |
 */
 $config["map_path"] = "";
@@ -145,7 +147,7 @@ $config['message_of_the_day'] = "Welcome to SimianGrid!";
 | specified
 |
 */
-$config['default_location'] = "My Simulator/128/128/25";
+$config['default_location'] = "OpenSim Test/128/128/25";
 
 /*
 |--------------------------------------------------------------------------
