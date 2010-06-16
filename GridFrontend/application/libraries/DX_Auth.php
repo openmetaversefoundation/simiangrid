@@ -768,40 +768,52 @@ class DX_Auth
 		
 		if (element('Success', $response))
 		{
-		    // Create an identity so this user can login with an SL-compatible viewer
-		    if ($this->_create_simiangrid_identity($fullname, '$1$' . md5($password), 'md5hash', $userid))
-    		{
-    		    // Create a WebDAV identity for this user
-    		    if ($this->_create_simiangrid_identity($fullname, md5($fullname . ':Inventory:' . $password), 'a1hash', $userid))
-    		    {
-    		        // Check if we need to create an OpenID identity
-    		        if (empty($openid) || $this->_create_simiangrid_identity($openid, '', 'openid', $userid))
+            // We've created the account.  Now suspend it.  We might
+            // want to wait for successful email activation or
+            // perhaps some out-of-band account verification process
+            // before letting this user on the grid.  So we'll suspend
+            // it before the identities are created.
+            if (_suspend_simiangrid_user($userid))
+            {
+    		    // Create an identity so this user can login with an SL-compatible viewer
+	    	    if ($this->_create_simiangrid_identity($fullname, '$1$' . md5($password), 'md5hash', $userid))
+    	    	{
+    		        // Create a WebDAV identity for this user
+    		        if ($this->_create_simiangrid_identity($fullname, md5($fullname . ':Inventory:' . $password), 'a1hash', $userid))
     		        {
-        		        // Create an inventory for this user
-        		        if ($this->_create_simiangrid_inventory($userid, $avtype))
-        		        {
-        		            log_message('info', "Created SimianGrid user $fullname with ID $userid");
-        		            return TRUE;
-        		        }
-        		        else
-        		        {
-        		            $this->_auth_error = "Failed to create an inventory for $fullname with ID $userid";
-        		        }
+    		            // Check if we need to create an OpenID identity
+    		            if (empty($openid) || $this->_create_simiangrid_identity($openid, '', 'openid', $userid))
+    		            {
+        		            // Create an inventory for this user
+        		            if ($this->_create_simiangrid_inventory($userid, $avtype))
+        		            {
+        		                log_message('info', "Created SimianGrid user $fullname with ID $userid");
+        		                return TRUE;
+        		            }
+        		            else
+        		            {
+        		                $this->_auth_error = "Failed to create an inventory for $fullname with ID $userid";
+        		            }
+    		            }
+    		            else
+    		            {
+    		                $this->_auth_error = "Failed to create an openid identity for $fullname with identifier $openid and ID $userid";
+    		            }
     		        }
     		        else
     		        {
-    		            $this->_auth_error = "Failed to create an openid identity for $fullname with identifier $openid and ID $userid";
+    		            $this->_auth_error = "Failed to create an a1hash identity for $fullname with ID $userid";
     		        }
     		    }
     		    else
     		    {
-    		        $this->_auth_error = "Failed to create an a1hash identity for $fullname with ID $userid";
+    		        $this->_auth_error = "Failed to create an md5 identity for $fullname with ID $userid";
     		    }
-    		}
-    		else
-    		{
-    		    $this->_auth_error = "Failed to create an md5 identity for $fullname with ID $userid";
-    		}
+            }
+            else
+            {
+                $this->_auth_error = "Failed to suspend new, unactivated account for $fullname with ID $userid";
+            }
     		
     		// If some part of the process failed try to delete the user account. This will also
     		// delete any identities associated with the userid

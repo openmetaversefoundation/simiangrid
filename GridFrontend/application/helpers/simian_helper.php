@@ -163,3 +163,39 @@ function get_grid_user_data($key, $value)
 		return;
 	}
 }
+
+function _suspend_simiangrid_user($userID)
+{   
+    $CI =& get_instance();
+
+    $query = array(
+        'RequestMethod' => 'AddUserData',
+        'UserID' => $userID,
+        'Suspended' => 1
+    );
+
+    $response = rest_post($CI->config->item('user_service'), $query);
+
+    if (element('Success', $response))
+        return true;
+    log_message('error', "Failed to suspend user $userID: " .  element('Message', $response, 'Unknown error'));
+    return false;
+}
+
+function _unsuspend_simiangrid_user($userID)
+{       
+    $CI =& get_instance();
+
+    $query = array(
+        'RequestMethod' => 'RemoveUserData',
+        'UserID' => $userID,
+        'Key' => 'Suspended'
+    );
+
+    $response = rest_post($CI->config->item('user_service'), $query);
+
+    if (element('Success', $response))
+        return true;
+    log_message('error', "Failed to unsuspend user $userID: " .  element('Message', $response, 'Unknown error'));
+    return false;
+}

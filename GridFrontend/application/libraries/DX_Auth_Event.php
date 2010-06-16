@@ -20,10 +20,13 @@ class DX_Auth_Event
 	function user_activated($user_id)
 	{
 		// Load models
-		$this->ci->load->model('dx_auth/user_profile', 'user_profile');
+		$this->ci->load->model('dx_auth/users', 'users');
 		
-		// Create user profile
-		//$this->ci->user_profile->create_profile($user_id);
+		// New grid user accounts are suspended immediately after
+		// creation to wait for verification, if applicable.  So now
+		// we're ready to unsuspend.  We have to do a DX_Auth user
+		// ID -> SimianGrid user ID lookup here, too.
+		_unsuspend_simiangrid_user($this->ci->users->get_user_field($user_id, 'user_id')->row()->user_id);
 	}
 	
 	// This event occurs right after user login
