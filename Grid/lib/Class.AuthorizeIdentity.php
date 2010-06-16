@@ -39,6 +39,42 @@ class AuthorizeIdentity implements IGridService
     {
         if (isset($params["Identifier"], $params["Credential"], $params["Type"]))
         {
+            // HACK: Special handling for salted md5hash passwords
+            if ($params["Type"] == 'md5hash')
+            {
+                $sql = "SELECT UserID,Credential FROM Identities WHERE Identifier=:Identifier AND Type='md5hash'";
+                $sth = $db->prepare($sql);
+                
+                if ($sth->execute(array(':Identifier' => $params["Identifier"])) && $sth->rowCount() > 0)
+                {
+                    $obj = $sth->fetchObject();
+                    $credential = $obj->Credential;
+                    
+                    // The presence of a colon in the md5hash credential indicates a salt is appended
+                    $idx = stripos($credential, ':');
+                    if ($idx)
+                    {
+                        $finalhash = substr($credential, 0, $idx);
+                        $salt = substr($credential, $idx + 1);
+                        
+                        if (md5($params["Credential"] . ':' . $salt) == $finalhash)
+                        {
+                            header("Content-Type: application/json", true);
+                            echo '{ "Success":true, "UserID":"' . $obj->UserID . '" }';
+                            exit();
+                        }
+                        else
+                        {
+                            log_message('info', 'Authentication failed for identifier ' . $params["Identifier"] . ', type md5hash (salted)');
+                            
+                            header("Content-Type: application/json", true);
+                            echo '{ "Message": "Missing identity or invalid credentials" }';
+                            exit();
+                        }
+                    }
+                }
+            }
+            
             $sql = "SELECT UserID FROM Identities WHERE Identifier=:Identifier AND Credential=:Credential AND Type=:Type";
             
             $sth = $db->prepare($sql);
