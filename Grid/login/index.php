@@ -576,6 +576,10 @@ function process_login($method_name, $params, $user_data)
         return array('reason' => 'key', 'login' => 'false', 'message' =>
         	"Sorry! We couldn't log you in. User account information could not be retrieved. If this problem persists, please contact the grid operator.");
     }
+
+    if (!empty($user['Suspended']))
+        return array('reason' => 'key', 'login' => 'false', 'message' =>
+            "Sorry!  We couldn't log you in.  User account has been suspended or is not yet activated.  If this problem persists, please contact the grid operator.");
     
     $lastLocation = null;
     if (isset($user['LastLocation']))
