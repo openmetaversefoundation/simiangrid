@@ -42,7 +42,7 @@ class AuthorizeIdentity implements IGridService
             // HACK: Special handling for salted md5hash passwords
             if ($params["Type"] == 'md5hash')
             {
-                $sql = "SELECT UserID,Credential FROM Identities WHERE Identifier=:Identifier AND Type='md5hash'";
+                $sql = "SELECT UserID,Credential FROM Identities WHERE Identifier=:Identifier AND Type='md5hash' AND Enabled=true";
                 $sth = $db->prepare($sql);
                 
                 if ($sth->execute(array(':Identifier' => $params["Identifier"])) && $sth->rowCount() > 0)
@@ -75,7 +75,7 @@ class AuthorizeIdentity implements IGridService
                 }
             }
             
-            $sql = "SELECT UserID FROM Identities WHERE Identifier=:Identifier AND Credential=:Credential AND Type=:Type";
+            $sql = "SELECT UserID FROM Identities WHERE Identifier=:Identifier AND Credential=:Credential AND Type=:Type and Enabled=true";
             
             $sth = $db->prepare($sql);
             
