@@ -35,7 +35,7 @@
 require_once(BASEPATH . 'common/SQLAssets.php');
 //require_once(BASEPATH . 'common/MongoAssets.php');
 
-class AssetDelete implements IGridService
+class RemoveAsset implements IGridService
 {
     public function Execute($db, $asset)
     {
