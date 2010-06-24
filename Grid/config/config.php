@@ -157,7 +157,7 @@ $config['default_location'] = "OpenSim Test/128/128/25";
 | UUID of the user account that owns the grid-wide inventory
 |
 */
-$config['library_owner_id'] = "11111111-1111-0000-0000-000100bba000";
+$config['library_owner_id'] = "ba2a564a-f0f1-4b82-9c61-b7520bfcd09f";
 
 /*
 |--------------------------------------------------------------------------
