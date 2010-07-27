@@ -439,7 +439,7 @@ class DX_Auth
 	
 	function get_name()
 	{
-	    return str_replace('_', ' ', $this->ci->session->userdata('DX_username'));
+	    return str_replace('_', ' ', $this->get_username());
 	}
 	
 	// Get user SimianGrid UUID
@@ -640,14 +640,10 @@ class DX_Auth
 				}
 				// If it's not a banned user then try to login
 				else
-				{					
-					$password = $this->_encode($password);
-					$stored_hash = $row->password;
-
-					// Is password matched with hash in database ?
-					if (crypt($password, $stored_hash) === $stored_hash)
-					{
-						// Log in user 
+				{
+				    if ($this->_check_simiangrid_auth($first_name . ' ' . $last_name, $password))
+				    {
+				        // Log in user 
 						$this->_set_session($row);
 						
 						if ($row->newpass)
@@ -672,7 +668,7 @@ class DX_Auth
 
 						// Set return value
 						$result = TRUE;
-					}
+				    }
 					else						
 					{
 						// Increase login attempts
@@ -703,7 +699,7 @@ class DX_Auth
 	function logout()
 	{
 		// Trigger event
-		$this->ci->dx_auth_event->user_logging_out($this->ci->session->userdata('DX_user_id'));
+		$this->ci->dx_auth_event->user_logging_out($this->get_user_id());
 	
 		// Delete auto login
 		if ($this->ci->input->cookie($this->ci->config->item('DX_autologin_cookie_name'))) {
@@ -712,26 +708,6 @@ class DX_Auth
 		
 		// Destroy session
 		$this->ci->session->sess_destroy();		
-	}
-	
-	function _create_simiangrid_identity($identifier, $credential, $type, $userID)
-	{
-	    $query = array(
-    	    'RequestMethod' => 'AddIdentity',
-		    'Identifier' => $identifier,
-		    'Credential' => $credential,
-		    'Type' => $type,
-    	    'UserID' => $userID
-        );
-        
-        $response = rest_post($this->ci->config->item('user_service'), $query);
-        
-        if (element('Success', $response))
-            return true;
-        
-        log_message('error', "Failed to create user identity $type for $userID: " . element('Message', $response, 'Unknown error'));
-        $this->_auth_error = 'Failed to create a user identity: ' . element('Message', $response, 'Unknown error');
-        return false;
 	}
 	
 	function _create_simiangrid_inventory($userID, $avtype)
@@ -768,52 +744,23 @@ class DX_Auth
 		
 		if (element('Success', $response))
 		{
-            // We've created the account.  Now suspend it.  We might
-            // want to wait for successful email activation or
-            // perhaps some out-of-band account verification process
-            // before letting this user on the grid.  So we'll suspend
-            // it before the identities are created.
-            if (_suspend_simiangrid_user($userid))
-            {
-    		    // Create an identity so this user can login with an SL-compatible viewer
-	    	    if ($this->_create_simiangrid_identity($fullname, '$1$' . md5($password), 'md5hash', $userid))
-    	    	{
-    		        // Create a WebDAV identity for this user
-    		        if ($this->_create_simiangrid_identity($fullname, md5($fullname . ':Inventory:' . $password), 'a1hash', $userid))
-    		        {
-    		            // Check if we need to create an OpenID identity
-    		            if (empty($openid) || $this->_create_simiangrid_identity($openid, '', 'openid', $userid))
-    		            {
-        		            // Create an inventory for this user
-        		            if ($this->_create_simiangrid_inventory($userid, $avtype))
-        		            {
-        		                log_message('info', "Created SimianGrid user $fullname with ID $userid");
-        		                return TRUE;
-        		            }
-        		            else
-        		            {
-        		                $this->_auth_error = "Failed to create an inventory for $fullname with ID $userid";
-        		            }
-    		            }
-    		            else
-    		            {
-    		                $this->_auth_error = "Failed to create an openid identity for $fullname with identifier $openid and ID $userid";
-    		            }
-    		        }
-    		        else
-    		        {
-    		            $this->_auth_error = "Failed to create an a1hash identity for $fullname with ID $userid";
-    		        }
-    		    }
-    		    else
-    		    {
-    		        $this->_auth_error = "Failed to create an md5 identity for $fullname with ID $userid";
-    		    }
-            }
-            else
-            {
-                $this->_auth_error = "Failed to suspend new, unactivated account for $fullname with ID $userid";
-            }
+		    if ($this->ci->users->create_simiangrid_identities($fullname, $userid, $password, $openid))
+		    {
+		        // Create an inventory for this user
+        		if ($this->_create_simiangrid_inventory($userid, $avtype))
+        		{
+        		    log_message('info', "Created SimianGrid user $fullname with ID $userid");
+        		    return TRUE;
+        		}
+        		else
+        		{
+        		    $this->_auth_error = "Failed to create an inventory for $fullname with ID $userid";
+        		}
+		    }
+		    else
+		    {
+		        $this->_auth_error = "Failed to create login identities for $fullname with ID $userid";
+		    }
     		
     		// If some part of the process failed try to delete the user account. This will also
     		// delete any identities associated with the userid
@@ -830,6 +777,20 @@ class DX_Auth
 		
 		log_message('error', $this->_auth_error);
 		return FALSE;
+	}
+	
+    function _check_simiangrid_auth($username, $password)
+	{
+	    $query = array(
+        	'RequestMethod'  => 'AuthorizeIdentity',
+        	'Identifier'     => $username,
+	        'Credential'     => '$1$' . md5($password),
+	        'Type'           => 'md5hash'
+        );
+        
+        $response = rest_post($this->ci->config->item('user_service'), $query);
+        
+        return element('Success', $response, false);
 	}
 	
 	function register($first_name, $last_name, $password, $email, $avtype, $openID = null)
@@ -943,15 +904,12 @@ class DX_Auth
 				{
 					// Appearantly there is no password created yet for this login, so we create new password
 					$data['password'] = $this->_gen_pass();
-					
-					// Encode & Crypt password
-					$encode = crypt($this->_encode($data['password'])); 
 
 					// Create key
 					$data['key'] = md5(rand().microtime());
 
 					// Create new password (but it haven't activated yet)
-					$this->ci->users->newpass($row->id, $encode, $data['key']);
+					$this->ci->users->newpass($row->id, $data['password'], $data['key']);
 
 					// Create reset password link to be included in email
 					$data['reset_password_uri'] = site_url($this->ci->config->item('DX_reset_password_uri')."{$row->username}/{$data['key']}");
@@ -998,10 +956,11 @@ class DX_Auth
 		// Get user id
 		if ($query = $this->ci->users->get_user_by_username($username) AND $query->num_rows() == 1)
 		{
+		    $fullname = str_replace('_', ' ', $username);
 			$user_id = $query->row()->id;
 			
 			// Try to activate new password
-			if ( ! empty($username) AND ! empty($key) AND $this->ci->users->activate_newpass($user_id, $key) AND $this->ci->db->affected_rows() > 0 )
+			if ( ! empty($username) AND ! empty($key) AND $this->ci->users->activate_newpass($fullname, $user_id, $key) AND $this->ci->db->affected_rows() > 0 )
 			{
 				// Clear previously setup new password and keys
 				$this->ci->user_autologin->clear_keys($user_id);
@@ -1047,7 +1006,7 @@ class DX_Auth
 				
 				// Delete user from temp
 				$this->ci->user_temp->delete_user($del);		
-								
+				
 				$result = TRUE;
 			}
 		}
@@ -1062,33 +1021,26 @@ class DX_Auth
 		
 		// Default return value
 		$result = FAlSE;
-
-		// Search current logged in user in database
-		if ($query = $this->ci->users->get_user_by_id($this->ci->session->userdata('DX_user_id')) AND $query->num_rows() > 0)
+		
+		// Check the old password
+		if ($this->_check_simiangrid_auth($this->get_name(), $old_pass))
 		{
-			// Get current logged in user
-			$row = $query->row();
-
-			$pass = $this->_encode($old_pass);
-
-			// Check if old password correct
-			if (crypt($pass, $row->password) === $row->password)
-			{
-				// Crypt and encode new password
-				$new_pass = crypt($this->_encode($new_pass));
-				
-				// Replace old password with new password
-				$this->ci->users->change_password($this->ci->session->userdata('DX_user_id'), $new_pass);
-				
-				// Trigger event
-				$this->ci->dx_auth_event->user_changed_password($this->ci->session->userdata('DX_user_id'), $new_pass);
-				
-				$result = TRUE;
-			}
-			else 
-			{
-				$this->_auth_error = $this->ci->lang->line('auth_incorrect_old_password');
-			}
+		    // Replace old password with new password
+		    if ($this->ci->users->create_simiangrid_identities($this->get_name(), $this->get_simiangrid_id(), $new_pass, NULL))
+		    {
+    		    // Trigger event
+    			$this->ci->dx_auth_event->user_changed_password($this->get_user_id(), $new_pass);
+    			
+    			$result = TRUE;
+		    }
+		    else
+		    {
+		        $this->_auth_error = "Error communicating with the identity service";
+		    }
+		}
+		else
+		{
+		    $this->_auth_error = $this->ci->lang->line('auth_incorrect_old_password');
 		}
 		
 		return $result;
@@ -1102,30 +1054,21 @@ class DX_Auth
 		// Default return value
 		$result = FAlSE;
 		
-		// Search current logged in user in database
-		if ($query = $this->ci->users->get_user_by_id($this->ci->session->userdata('DX_user_id')) AND $query->num_rows() > 0)
+		// Check password
+		if ($this->_check_simiangrid_auth($this->get_name(), $password))
 		{
-			// Get current logged in user
-			$row = $query->row();
+		    // Trigger event
+			$this->ci->dx_auth_event->user_canceling_account($this->get_user_id());
 
-			$pass = $this->_encode($password);
-
-			// Check if password correct
-			if (crypt($pass, $row->password) === $row->password)
-			{
-				// Trigger event
-				$this->ci->dx_auth_event->user_canceling_account($this->ci->session->userdata('DX_user_id'));
-
-				// Delete user
-				$result = $this->ci->users->delete_user($this->ci->session->userdata('DX_user_id'));
-				
-				// Force logout
-				$this->logout();
-			}
-			else
-			{
-				$this->_auth_error = $this->ci->lang->line('auth_incorrect_password');
-			}
+			// Delete user
+			$result = $this->ci->users->delete_user($this->get_user_id());
+			
+			// Force logout
+			$this->logout();
+		}
+	    else
+		{
+		    $this->_auth_error = $this->ci->lang->line('auth_incorrect_password');
 		}
 		
 		return $result;

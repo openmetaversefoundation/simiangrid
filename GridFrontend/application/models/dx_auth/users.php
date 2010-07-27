@@ -31,6 +31,43 @@ class Users extends Model
 		
 		return $query;
 	}
+	
+	function sync_user_with_simiangrid($response)
+	{
+        if (element('Success', $response) && is_array($response['User']))
+        {
+            $user_id = element('UserID', $response['User'], '');
+            $username = str_replace(' ', '_', element('Name', $response['User'], ''));
+            $email =  element('Email', $response['User'], '');
+            
+            // Try to fetch this user
+            $this->db->where('user_id', $user_id);
+		    $existing = $this->db->get($this->_table);
+		    
+		    if (empty($existing))
+		    {
+		        // Create this account
+                $user = array(
+        		    'user_id'	=> $user_id,
+        			'username'	=> $username,
+        			'email'		=> $email
+        		);
+        		
+        		$this->create_user($user);
+		    }
+            else
+    		{
+    		    // Update this account
+    		    $user = array(
+        			'username'	=> $username,
+        			'email'		=> $email
+        		);
+        		
+    		    $this->db->where('user_id', $user_id);
+		        $this->db->update($this->_table, $user);
+    		}
+        }
+	}
 
 	function get_user_by_id($user_id)
 	{
@@ -40,21 +77,42 @@ class Users extends Model
 
 	function get_user_by_username($username)
 	{
+	    // Fetch the SimianGrid user account
+	    $query = array(
+        	'RequestMethod' => 'GetUser',
+        	'Name' => str_replace('_', ' ', $username)
+        );
+	    $response = rest_post($this->config->item('user_service'), $query);
+	    
+	    // Lazy synchronization of SimianGrid to SimianGridFrontend
+	    $this->sync_user_with_simiangrid($response);
+	    
 		$this->db->where('username', $username);
 		return $this->db->get($this->_table);
 	}
 	
 	function get_user_by_email($email)
 	{
+	    // Fetch the SimianGrid user account
+	    $query = array(
+        	'RequestMethod' => 'GetUser',
+        	'Email' => $email
+        );
+	    $response = rest_post($this->config->item('user_service'), $query);
+	    
+	    // Lazy synchronization of SimianGrid to SimianGridFrontend
+	    $this->sync_user_with_simiangrid($response);
+	    
 		$this->db->where('email', $email);
 		return $this->db->get($this->_table);
 	}
 	
 	function get_login($login)
 	{
-		$this->db->where('username', $login);
-		$this->db->or_where('email', $login);
-		return $this->db->get($this->_table);
+	    if (strpos($login, '@') === FALSE)
+	        return $this->get_user_by_username($login);
+	    else
+	        return $this->get_user_by_email($login);
 	}
 	
 	function check_ban($user_id)
@@ -67,6 +125,16 @@ class Users extends Model
 	
 	function check_username($username)
 	{
+	    // Fetch the SimianGrid user account
+	    $query = array(
+        	'RequestMethod' => 'GetUser',
+        	'Name' => str_replace('_', ' ', $username)
+        );
+	    $response = rest_post($this->config->item('user_service'), $query);
+	    
+	    // Lazy synchronization of SimianGrid to SimianGridFrontend
+	    $this->sync_user_with_simiangrid($response);
+	    
 		$this->db->select('1', FALSE);
 		$this->db->where('LOWER(username)=', strtolower($username));
 		return $this->db->get($this->_table);
@@ -74,11 +142,21 @@ class Users extends Model
 
 	function check_email($email)
 	{
+	    // Fetch the SimianGrid user account
+	    $query = array(
+        	'RequestMethod' => 'GetUser',
+        	'Email' => $email
+        );
+	    $response = rest_post($this->config->item('user_service'), $query);
+	    
+	    // Lazy synchronization of SimianGrid to SimianGridFrontend
+	    $this->sync_user_with_simiangrid($response);
+	    
 		$this->db->select('1', FALSE);
 		$this->db->where('LOWER(email)=', strtolower($email));
 		return $this->db->get($this->_table);
 	}
-		
+	
 	function ban_user($user_id, $reason = NULL)
 	{
 		$data = array(
@@ -121,9 +199,6 @@ class Users extends Model
 	function set_user($user_id, $data)
 	{
 		$this->db->where('id', $user_id);
-		
-		// FIXME: Update the SimianGrid user data
-		
 		return $this->db->update($this->_table, $data);
 	}
 	
@@ -142,23 +217,26 @@ class Users extends Model
 	function newpass($user_id, $pass, $key)
 	{
 		$data = array(
-			'newpass' 			=> $pass,
+			'newpass' 		=> $pass,
 			'newpass_key' 	=> $key,
 			'newpass_time' 	=> date('Y-m-d h:i:s', time() + $this->config->item('DX_forgot_password_expire'))
 		);
 		return $this->set_user($user_id, $data);
 	}
 
-	function activate_newpass($user_id, $key)
+	function activate_newpass($fullname, $user_id, $key)
 	{
-		$this->db->set('password', 'newpass', FALSE);
+	    $user = $this->get_user_by_username($fullname);
+	    $simiangrid_id = $user->user_id;
+	    $password = $user->newpass;
+	    
+	    $this->create_simiangrid_identities($fullname, $simiangrid_id, $password, NULL);
+	    
 		$this->db->set('newpass', NULL);
 		$this->db->set('newpass_key', NULL);
 		$this->db->set('newpass_time', NULL);
 		$this->db->where('id', $user_id);
 		$this->db->where('newpass_key', $key);
-		
-		// FIXME: Change the SimianGrid identities for this user
 		
 		return $this->db->update($this->_table);
 	}
@@ -166,22 +244,41 @@ class Users extends Model
 	function clear_newpass($user_id)
 	{
 		$data = array(
-			'newpass' 			=> NULL,
+			'newpass' 		=> NULL,
 			'newpass_key' 	=> NULL,
 			'newpass_time' 	=> NULL
 		);
 		return $this->set_user($user_id, $data);
 	}
 	
-	// Change password function
-
-	function change_password($user_id, $new_pass)
+    function create_simiangrid_identity($identifier, $credential, $type, $user_id)
 	{
-		$this->db->set('password', $new_pass);
-		$this->db->where('id', $user_id);
-		
-		// FIXME: Change the SimianGrid identities for this user
-		
-		return $this->db->update($this->_table);
+	    $query = array(
+    	    'RequestMethod' => 'AddIdentity',
+		    'Identifier' => $identifier,
+		    'Credential' => $credential,
+		    'Type' => $type,
+    	    'UserID' => $user_id
+        );
+        
+        $response = rest_post($this->config->item('user_service'), $query);
+        
+        if (element('Success', $response))
+            return true;
+        
+        log_message('error', "Failed to create user identity $type for $user_id: " . element('Message', $response, 'Unknown error'));
+        return false;
+	}
+	
+	function create_simiangrid_identities($fullname, $userid, $password, $openid)
+	{
+	    $success =
+	        $this->create_simiangrid_identity($fullname, '$1$' . md5($password), 'md5hash', $userid) &&
+	        $this->create_simiangrid_identity($fullname, md5($fullname . ':Inventory:' . $password), 'a1hash', $userid);
+	    
+	    if (!empty($openid))
+	        $success = $success && $this->create_simiangrid_identity($openid, '', 'openid', $userid);
+	    
+	    return $success;
 	}
 }
