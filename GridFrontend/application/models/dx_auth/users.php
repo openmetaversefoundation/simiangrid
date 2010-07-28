@@ -44,7 +44,7 @@ class Users extends Model
             $this->db->where('user_id', $user_id);
 		    $existing = $this->db->get($this->_table);
 		    
-		    if (empty($existing))
+		    if ($existing->num_rows() === 0)
 		    {
 		        // Create this account
                 $user = array(
