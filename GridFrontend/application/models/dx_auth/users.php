@@ -226,9 +226,10 @@ class Users extends Model
 
 	function activate_newpass($fullname, $user_id, $key)
 	{
-	    $user = $this->get_user_by_username($fullname);
-	    $simiangrid_id = $user->user_id;
-	    $password = $user->newpass;
+	    $query = $this->get_user_by_username($fullname);
+	    $row = $query->row();
+	    $simiangrid_id = $row->user_id;
+	    $password = $row->newpass;
 	    
 	    $this->create_simiangrid_identities($fullname, $simiangrid_id, $password, NULL);
 	    
