@@ -37,7 +37,7 @@ class Users extends Model
         if (element('Success', $response) && is_array($response['User']))
         {
             $user_id = element('UserID', $response['User'], '');
-            $username = str_replace(' ', '_', element('Name', $response['User'], ''));
+            $username = element('Name', $response['User'], '');
             $email =  element('Email', $response['User'], '');
             
             // Try to fetch this user
@@ -80,7 +80,7 @@ class Users extends Model
 	    // Fetch the SimianGrid user account
 	    $query = array(
         	'RequestMethod' => 'GetUser',
-        	'Name' => str_replace('_', ' ', $username)
+        	'Name' => $username
         );
 	    $response = rest_post($this->config->item('user_service'), $query);
 	    
@@ -128,7 +128,7 @@ class Users extends Model
 	    // Fetch the SimianGrid user account
 	    $query = array(
         	'RequestMethod' => 'GetUser',
-        	'Name' => str_replace('_', ' ', $username)
+        	'Name' => $username
         );
 	    $response = rest_post($this->config->item('user_service'), $query);
 	    

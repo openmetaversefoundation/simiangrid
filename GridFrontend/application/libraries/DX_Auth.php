@@ -439,7 +439,7 @@ class DX_Auth
 	
 	function get_name()
 	{
-	    return str_replace('_', ' ', $this->get_username());
+	    return $this->ci->session->userdata('DX_username');
 	}
 	
 	// Get user SimianGrid UUID
@@ -551,7 +551,7 @@ class DX_Auth
             if (element('Success', $response) && is_array($response['User']))
             {
                 // Fetch this user from the SimianGridFrontend user table
-                $username = str_replace(' ', '_', $response['User']['Name']);
+                $username = $response['User']['Name'];
                 
                 if ($query = $this->ci->users->get_user_by_username($username) AND $query->num_rows() == 1)
                 {
@@ -608,7 +608,7 @@ class DX_Auth
 		
 		if ( ! empty($first_name) AND ! empty($last_name) AND ! empty($password))
 		{
-		    $login = $first_name . '_' . $last_name;
+		    $login = $first_name . ' ' . $last_name;
 		    
 			// Get which function to use based on config
 			if ($this->ci->config->item('DX_login_using_username') AND $this->ci->config->item('DX_login_using_email'))
@@ -795,7 +795,7 @@ class DX_Auth
 	
 	function register($first_name, $last_name, $password, $email, $avtype, $openID = null)
 	{
-	    $username = $first_name . '_' . $last_name;
+	    $username = $first_name . ' ' . $last_name;
 	    $userid = random_uuid();
 	    
 		// Load Models
@@ -812,8 +812,7 @@ class DX_Auth
 		// New user array
 		$new_user = array(
 		    'user_id'				=> $userid,
-			'username'				=> $username,			
-			'password'				=> crypt($this->_encode($password)),
+			'username'				=> $username,
 			'email'					=> $email,
 			'last_ip'				=> $this->ci->input->ip_address()
 		);
@@ -956,7 +955,7 @@ class DX_Auth
 		// Get user id
 		if ($query = $this->ci->users->get_user_by_username($username) AND $query->num_rows() == 1)
 		{
-		    $fullname = str_replace('_', ' ', $username);
+		    $fullname = $username;
 			$user_id = $query->row()->id;
 			
 			// Try to activate new password
