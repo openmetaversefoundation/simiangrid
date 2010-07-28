@@ -8,10 +8,10 @@
 | The settings needed to access your database
 |
 */
-$config['db_hostname'] = "127.0.0.1";
-$config['db_username'] = "root";
-$config['db_password'] = "";
-$config['db_database'] = "Simian";
+$config['db_hostname'] = "@@DB_HOST@@";
+$config['db_username'] = "@@DB_USER@@";
+$config['db_password'] = "@@DB_PASSWORD@@";
+$config['db_database'] = "@@DB_NAME@@";
 $config['db_driver'] = "mysql";
 $config['db_prefix'] = "";
 $config['db_persistent'] = TRUE;
@@ -24,11 +24,11 @@ $config['db_persistent'] = TRUE;
 | Enter the URL of each SimianGrid service below
 |
 */
-$config['user_service'] = "http://racketberries.eghetto.ca/Grid";
-$config['grid_service'] = "http://racketberries.eghetto.ca/Grid";
-$config['asset_service'] = "http://racketberries.eghetto.ca/Grid/?id=";
-$config['inventory_service'] = "http://racketberries.eghetto.ca/Grid";
-$config['map_service'] = "http://racketberries.eghetto.ca/Grid";
+$config['user_service'] = "@@USER_SERVICE@@";
+$config['grid_service'] = "@@GRID_SERVICE@@";
+$config['asset_service'] = "@@ASSET_SERVICE@@";
+$config['inventory_service'] = "@@INVENTORY_SERVICE@@";
+$config['map_service'] = "@@MAP_SERVICE@@";
 
 /*
 |--------------------------------------------------------------------------
@@ -136,7 +136,7 @@ $config['log_date_format'] = 'Y-m-d H:i:s';
 | The message to return to clients on successful login
 |
 */
-$config['message_of_the_day'] = "i\'m a kitty";
+$config['message_of_the_day'] = "@@MOTD@@";
 
 /*
 |--------------------------------------------------------------------------

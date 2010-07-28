@@ -21,7 +21,6 @@ all: $(TARGETFILE)
 
 $(TARGETFILE): data.tar.b64
 	{ cat Jijawi/Loader.php ; \
-	  echo "\n" ; \
 	  awk '/-----BEGIN BOOTSTRAP-----/,/-----END BOOTSTRAP-----/' bootstrap.php | tail -n+2 | head -n-1 | \
 	  sed -e '/\/\* -----BEGIN DATA----- \*\/.*\/\* -----END DATA----- \*\// {r data.tar.b64' -e 'd;}' ; \
 	} > $@
