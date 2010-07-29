@@ -83,7 +83,6 @@ CREATE TABLE IF NOT EXISTS `sgf_user_temp` (
   `id` int(11) NOT NULL auto_increment,
   `user_id` char(36) collate utf8_bin NOT NULL,
   `username` varchar(255) collate utf8_bin NOT NULL,
-  `password` varchar(34) collate utf8_bin NOT NULL,
   `email` varchar(100) collate utf8_bin NOT NULL,
   `activation_key` varchar(50) collate utf8_bin NOT NULL,
   `last_ip` varchar(40) collate utf8_bin NOT NULL,

@@ -998,6 +998,7 @@ class DX_Auth
 			// Unset any unwanted fields
 			unset($row['id']); // We don't want to copy the id across
 			unset($row['activation_key']);
+			unset($row['password']);
 
 			// Create user
 			if ($this->ci->users->create_user($row))
