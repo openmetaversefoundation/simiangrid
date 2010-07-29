@@ -11,7 +11,7 @@
 |	http://example.com/
 |
 */
-$config['base_url']	= "http://racketberries.eghetto.ca/simian/GridFrontend/";
+$config['base_url']	= "http://localhost/GridFrontend/";
 
 /*
 |--------------------------------------------------------------------------
@@ -21,10 +21,10 @@ $config['base_url']	= "http://racketberries.eghetto.ca/simian/GridFrontend/";
 | Enter the URL of each SimianGrid service below
 |
 */
-$config['user_service'] = 'http://racketberries.eghetto.ca/simian/Grid/';
-$config['inventory_service'] = 'http://racketberries.eghetto.ca/simian/Grid/';
-$config['grid_service'] = 'http://racketberries.eghetto.ca/simian/Grid/';
-$config['asset_service'] = 'http://racketberries.eghetto.ca/simian/Grid/?id=';
+$config['user_service'] = 'http://localhost/Grid/';
+$config['inventory_service'] = 'http://localhost/Grid/';
+$config['grid_service'] = 'http://localhost/Grid/';
+$config['asset_service'] = 'http://localhost/Grid/?id=';
 $config['login_service'] = 'http://localhost/Grid/login/';
 
 /*
