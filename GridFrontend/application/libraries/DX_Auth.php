@@ -892,7 +892,7 @@ class DX_Auth
 			// Load Helper
 			$this->ci->load->helper('url');
 
-			// Get login and check if it's exist 
+			// Get login and check if it exists 
 			if ($query = $this->ci->users->get_login($login) AND $query->num_rows() == 1)
 			{
 				// Get User data
@@ -901,17 +901,18 @@ class DX_Auth
 				// Check if there is already new password created but waiting to be activated for this login
 				if ( ! $row->newpass_key)
 				{
-					// Appearantly there is no password created yet for this login, so we create new password
+					// Appearantly there is no password created yet for this login, so we generate a new password
 					$data['password'] = $this->_gen_pass();
 
 					// Create key
 					$data['key'] = md5(rand().microtime());
 
-					// Create new password (but it haven't activated yet)
+					// Set new password (but it haven't activated yet)
 					$this->ci->users->newpass($row->id, $data['password'], $data['key']);
 
 					// Create reset password link to be included in email
-					$data['reset_password_uri'] = site_url($this->ci->config->item('DX_reset_password_uri')."{$row->username}/{$data['key']}");
+					$escaped_username = urlencode($row->username);
+					$data['reset_password_uri'] = site_url($this->ci->config->item('DX_reset_password_uri')."{$escaped_username}/{$data['key']}");
 					
 					// Create email
 					$from = $this->ci->config->item('DX_webmaster_email');
