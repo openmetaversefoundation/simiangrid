@@ -912,7 +912,7 @@ class DX_Auth
 					$this->ci->users->newpass($row->id, $data['password'], $data['key']);
 
 					// Create reset password link to be included in email
-					$escaped_username = urlencode($row->username);
+					$escaped_username = rawurlencode($row->username);
 					$data['reset_password_uri'] = site_url($this->ci->config->item('DX_reset_password_uri')."{$escaped_username}/{$data['key']}");
 					
 					// Create email
