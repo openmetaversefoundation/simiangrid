@@ -11,7 +11,7 @@
 |	http://example.com/
 |
 */
-$config['base_url']	= "http://racketberries.eghetto.ca/simian/GridFrontend/";
+$config['base_url']	= "@@BASE_URL@@";
 
 /*
 |--------------------------------------------------------------------------

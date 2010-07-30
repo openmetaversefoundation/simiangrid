@@ -24,13 +24,13 @@
     
     $configOptions['user_service']['name'] = "User Server";
     $configOptions['user_service']['description'] = "The URL of the User Server";
-    $configOptions['user_service']['default'] = "http://localhost/Grid";
+    $configOptions['user_service']['default'] = "http://localhost/Grid/";
     $configOptions['user_service']['string'] = "@@USER_SERVICE@@";
     $configOptions['user_service']['file'] = "config/config.php";
     
     $configOptions['grid_service']['name'] = "Grid Server";
     $configOptions['grid_service']['description'] = "The URL of the Grod Server";
-    $configOptions['grid_service']['default'] = "http://localhost/Grid";
+    $configOptions['grid_service']['default'] = "http://localhost/Grid/";
     $configOptions['grid_service']['string'] = "@@GRID_SERVICE@@";
     $configOptions['grid_service']['file'] = "config/config.php";
     
@@ -42,13 +42,13 @@
     
     $configOptions['inventory_service']['name'] = "Inventory Server";
     $configOptions['inventory_service']['description'] = "The URL of the Inventory Server";
-    $configOptions['inventory_service']['default'] = "http://localhost/Grid";
+    $configOptions['inventory_service']['default'] = "http://localhost/Grid/";
     $configOptions['inventory_service']['string'] = "@@INVENTORY_SERVICE@@";
     $configOptions['inventory_service']['file'] = "config/config.php";
     
     $configOptions['map_service']['name'] = "Map Server";
     $configOptions['map_service']['description'] = "The URL of the Map Server";
-    $configOptions['map_service']['default'] = "http://localhost/Grid";
+    $configOptions['map_service']['default'] = "http://localhost/Grid/";
     $configOptions['map_service']['string'] = "@@MAP_SERVICE@@";
     $configOptions['map_service']['file'] = "config/config.php";
     
