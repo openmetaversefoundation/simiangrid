@@ -55,6 +55,12 @@
         }
         $result['config'] = configWrite();
         $result['db'] = dbWrite();
+        if ( $result['config'] && $result['db'] ) {
+            transitionNextStep();
+            redirectSelf();
+        }
+    } else if ( installerStep() === STEP_DONE ) { 
+        #do nothing
     } else {
         installerStepSet(STEP_PHP_REQUIREMENTS);
         redirectSelf();
@@ -76,6 +82,8 @@
         require "tpl/permission.tpl.php";
     } else if ( installerStep() === STEP_WRITE ) {
         require "tpl/write.tpl.php";
+    } else if ( installerStep() === STEP_DONE ) {
+        require "tpl/done.tpl.php";
     }
 
 ?>

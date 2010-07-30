@@ -55,6 +55,9 @@
                 array_push($writableFiles, $options['file']);
             }
         }
+        if ( defined("DB_CONFIG_FILE") ) {
+            array_push($writableFiles, DB_CONFIG_FILE);
+        }
         return $writableFiles;
     }
     

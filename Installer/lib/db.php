@@ -83,6 +83,7 @@
         $_SESSION['db_config'] = $result;
         return $result;
     }
+
 	function dbRequirementsMet()
 	{
 		if ( $_SESSION['db_version']['check'] === TRUE && $_SESSION['db_version']['db_check'] === TRUE ) {
@@ -146,11 +147,26 @@
 	    $schema = $_SESSION['db_config']['db'];
 	    $check = mysqli_select_db($db, $schema);
 	    if ( $check === FALSE ) {
-            userMessage("warn", "Problem selecting database " . $schema . " - " . mysqli_error($db));
+            userMessage("error", "Problem selecting database " . $schema . " - " . mysqli_error($db));
             return FALSE;
         } else {
-            return TRUE;
+            return dbEmpty($db);
         }
+	}
+	
+	function dbEmpty($db)
+	{
+	    $result = mysqli_query($db, "SHOW TABLES");
+	    if ( ! $result ) {
+	        userMessage("error", "Problem scanning database " . $schema . " - " . mysqli_error($db));
+	    }
+	    $tables = mysqli_fetch_assoc($result);
+	    if ( count($tables) == 0 ) {
+	        return TRUE;
+	    } else {
+	        userMessage("error", "Database not empty");
+	        return FALSE;
+	    }
 	}
 
     function dbFlush($db) {
