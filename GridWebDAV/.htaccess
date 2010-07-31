@@ -8,5 +8,7 @@ Options -Indexes -MultiViews +FollowSymLinks
 </Files>
 
 RewriteEngine On
-RewriteCond %{REQUEST_URI} !^/index.php$
-RewriteRule ^(.*)$ /index.php [L]
+
+RewriteCond %{REQUEST_URI} !^/~rewt/omfgrid/Simian/GridWebDAV/index.php$
+RewriteCond %{REQUEST_URI} !^/~rewt/omfgrid/Simian/GridWebDAV/install.php
+RewriteRule ^(.*)$ /~rewt/omfgrid/Simian/GridWebDAV/index.php [L]
