@@ -50,7 +50,7 @@
     $configOptions['login_service']['name'] = "Login Server";
     $configOptions['login_service']['description'] = "The URL of the Login Server";
     $configOptions['login_service']['default'] = "http://localhost/Grid/login/";
-    $configOptions['login_service']['string'] = "@LOGIN_SERVICE@@";
+    $configOptions['login_service']['string'] = "@@LOGIN_SERVICE@@";
     $configOptions['login_service']['file'] = "application/config/config.php";
     
     $configOptions['grid_name']['name'] = "Grid Name";
