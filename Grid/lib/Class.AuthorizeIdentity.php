@@ -39,7 +39,8 @@ class AuthorizeIdentity implements IGridService
     {
         if (isset($params["Identifier"], $params["Credential"], $params["Type"]))
         {
-            // HACK: Special handling for salted md5hash passwords
+            // HACK: Special handling for md5hash passwords. This includes salted, unsalted, and 
+            // old OpenSim 0.6.9 passwords that are only salted with the ":" delimiter
             if ($params["Type"] == 'md5hash')
             {
                 $sql = "SELECT UserID,Credential FROM Identities WHERE Identifier=:Identifier AND Type='md5hash' AND Enabled=true";
@@ -50,11 +51,13 @@ class AuthorizeIdentity implements IGridService
                     $obj = $sth->fetchObject();
                     $credential = $obj->Credential;
                     
+                    $input = str_replace('$1$', '', $params["Credential"]);
+                    
                     // The presence of a colon in the md5hash credential indicates a salt is appended
                     $idx = stripos($credential, ':');
                     if ($idx !== false)
                     {
-                        $input = str_replace('$1$', '', $params["Credential"]);
+                        // We're storing a salted md5 hash
                         $finalhash = substr($credential, 0, $idx);
                         $salt = substr($credential, $idx + 1);
                         
@@ -73,8 +76,29 @@ class AuthorizeIdentity implements IGridService
                             exit();
                         }
                     }
+                    else
+                    {
+                        // We're storing an unsalted md5 hash. Test a straight comparison, and if 
+                        // that fails test md5(input + ":"), a crufty leftover from OpenSim 0.6.9
+                        if ('$1$' . $input == $credential || '$1$' . md5($input . ':') == $credential)
+                        {
+                            header("Content-Type: application/json", true);
+                            echo '{ "Success":true, "UserID":"' . $obj->UserID . '" }';
+                            exit();
+                        }
+                        else
+                        {
+                            log_message('info', 'Authentication failed for identifier ' . $params["Identifier"] . ', type md5hash (unsalted)');
+                            
+                            header("Content-Type: application/json", true);
+                            echo '{ "Message": "Missing identity or invalid credentials" }';
+                            exit();
+                        }
+                    }
                 }
             }
+            // END HACK
+            ///////////
             
             $sql = "SELECT UserID FROM Identities WHERE Identifier=:Identifier AND Credential=:Credential AND Type=:Type and Enabled=true";
             
