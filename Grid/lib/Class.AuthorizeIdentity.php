@@ -52,12 +52,13 @@ class AuthorizeIdentity implements IGridService
                     
                     // The presence of a colon in the md5hash credential indicates a salt is appended
                     $idx = stripos($credential, ':');
-                    if ($idx)
+                    if ($idx !== false)
                     {
+                        $input = str_replace('$1$', '', $params["Credential"]);
                         $finalhash = substr($credential, 0, $idx);
                         $salt = substr($credential, $idx + 1);
                         
-                        if (md5($params["Credential"] . ':' . $salt) == $finalhash)
+                        if ('$1$' . md5($input . ':' . $salt) == $finalhash)
                         {
                             header("Content-Type: application/json", true);
                             echo '{ "Success":true, "UserID":"' . $obj->UserID . '" }';
