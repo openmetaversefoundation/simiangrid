@@ -34,6 +34,50 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
+function js_escape_string($s)
+{
+    return '"' . str_replace(array('\\', '"'), array('\\\\', '\\"'), $s) . '"';
+}
+
+function osd_val($key, $value)
+{
+  $nums = array("Version", "LeftNode", "RightNode");
+  $out = "";
+  if (is_null($value))
+    {
+      $out .= "\"\"";
+    }
+  else if (is_array($value))
+    {
+
+    }
+  else if (is_numeric($value))
+    {
+      if (in_array($value, $nums))
+	$out .= $value;
+      else
+	$out .= js_escape_string($value);
+    }
+  else if ($key == "ExtraData")
+    {
+      $out .= (!empty($value)) ? $value : '{}';
+    }
+  else if (is_string($value))
+    {
+      $out .= js_escape_string($value);
+    }
+  else if (is_bool($value))
+    {
+      $out .= ($value) ? "true" : "false";
+    }
+  else
+    {
+      $out .= sprintf("?%s?", js_escape_string($value));
+    }
+  return $out;
+		
+}
+
 class InventoryFolder extends Inventory implements IOSD
 {
     public $Version = 0;
@@ -58,34 +102,7 @@ class InventoryFolder extends Inventory implements IOSD
             }
             else
             {
-                if (is_null($value))
-                {
-                    $out .= "\"\"";
-                }
-                else if (is_array($value))
-                {
-
-                }
-                else if (is_numeric($value))
-                {
-                    $out .= $value;
-                }
-                else if ($key == "ExtraData")
-                {
-                    $out .= (!empty($value)) ? $value : '{}';
-                }
-                else if (is_string($value))
-                {
-                    $out .= json_encode($value);
-                }
-                else if (is_bool($value))
-                {
-                    $out .= ($value) ? "true" : "false";
-                }
-                else
-                {
-                    $out .= sprintf("?\"%s\"?", $value);
-                }
+	      $out.= osd_val($key, $value);
             }
             
             $out .= ',' . "";
@@ -129,34 +146,7 @@ class InventoryItem extends Inventory implements IOSD
             }
             else
             {
-                if (is_null($value))
-                {
-                    $out .= "\"\"";
-                }
-                else if (is_array($value))
-                {
-
-                }
-                else if (is_numeric($value))
-                {
-                    $out .= $value;
-                }
-                else if ($key == "ExtraData")
-                {
-                    $out .= (!empty($value)) ? $value : '{}';
-                }
-                else if (is_string($value))
-                {
-                    $out .= json_encode($value);
-                }
-                else if (is_bool($value))
-                {
-                    $out .= ($value) ? "true" : "false";
-                }
-                else
-                {
-                    $out .= sprintf("?\"%s\"?", $value);
-                }
+	      $out .= osd_val($key, $value);
             }
             
             $out .= ',' . "";
