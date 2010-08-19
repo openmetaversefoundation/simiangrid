@@ -10,7 +10,8 @@
     $requiredModules = array(
         'curl',
         'mysql',
-        'hash'
+        'hash',
+        'gd'
     );
     
     $defaultDB['user'] = 'root';
