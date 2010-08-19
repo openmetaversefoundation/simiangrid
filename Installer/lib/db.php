@@ -132,7 +132,7 @@
 			$result['db_check'] = dbSelect($db);
 			mysqli_close($db);
         }
-		$_SESSION['db_version'] = $result;
+		$_SESSION['db_version'] = array_merge($_SESSION['db_version'], $result);
 		return $result;
 	}
 	
@@ -154,18 +154,60 @@
         }
 	}
 	
+	function dbListRelevantTables($db)
+	{
+		global $dbCheckTables;
+	    $result = mysqli_query($db, "SHOW TABLES");
+		if ( ! $result ) {
+			return null;
+		}
+		$table_list = array();
+		$schema  = $_SESSION['db_config']['db'];
+		$table_key = "Tables_in_$schema";
+		while ( $table = mysqli_fetch_assoc($result) ) {
+			if ( array_search($table[$table_key], $dbCheckTables) !== FALSE ) {
+				array_push($table_list, $table[$table_key]);
+			}
+		}
+		return $table_list;
+
+	}
+
+	function dbComplete($tables)
+	{
+		global $dbCheckTables;
+		$count = 0;
+		foreach ( $tables as $table ) {
+			if ( array_search($table, $dbCheckTables) !== FALSE ) {
+				$count++;
+			}
+		}
+		if ( $count == count($dbCheckTables) ) {
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	}
+		
 	function dbEmpty($db)
 	{
-	    $result = mysqli_query($db, "SHOW TABLES");
-	    if ( ! $result ) {
-	        userMessage("error", "Problem scanning database " . $schema . " - " . mysqli_error($db));
-	    }
-	    $tables = mysqli_fetch_assoc($result);
+		$_SESSION['db_version']['skip_schema'] = FALSE;
+		$tables = dbListRelevantTables($db);
+		if ( $tables === null ) {
+			userMessage("error", "Problem scanning database - " . mysqli_error($db) );
+			return FALSE;
+		}
 	    if ( count($tables) == 0 ) {
 	        return TRUE;
 	    } else {
-	        userMessage("error", "Database not empty");
-	        return FALSE;
+			if ( dbComplete($tables) ) {
+				userMessage("warn", "Database already populated");
+				$_SESSION['db_version']['skip_schema'] = TRUE;
+				return TRUE;
+			} else {
+		        userMessage("error", "Database not empty");
+		        return FALSE;
+			}
 	    }
 	}
 
@@ -207,8 +249,13 @@
         }
         
     }
+
     function dbWrite()
     {
+		if ( $_SESSION['db_version']['skip_schema'] === TRUE ) {
+			userMessage("warn", "Skipped loading of schema and fixtures");
+			return TRUE;
+		}
         global $dbSchemas, $dbFixtures;
 		$db = dbHandle();
 		if ( ! dbSelect($db) ) {

@@ -12,6 +12,14 @@
         'curl',
         'mysql'
     );
+
+	$dbCheckTables = array(
+		'sgf_login_attempts',
+		'sgf_sessions',
+		'sgf_user_autologin',
+		'sgf_user_temp',
+		'sgf_users'
+	);
     
     $defaultDB['user'] = 'root';
     $defaultDB['host'] = '127.0.0.1';
