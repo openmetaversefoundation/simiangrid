@@ -11,7 +11,7 @@
 |	http://example.com/
 |
 */
-$config['base_url']	= "http://localhost/GridFrontend/";
+$config['base_url']	= "http://racketberries.eghetto.intra/~rewt/omfgrid/Simian/GridFrontend/";
 
 /*
 |--------------------------------------------------------------------------
@@ -21,11 +21,13 @@ $config['base_url']	= "http://localhost/GridFrontend/";
 | Enter the URL of each SimianGrid service below
 |
 */
-$config['user_service'] = 'http://localhost/Grid/';
-$config['inventory_service'] = 'http://localhost/Grid/';
-$config['grid_service'] = 'http://localhost/Grid/';
-$config['asset_service'] = 'http://localhost/Grid/?id=';
-$config['login_service'] = 'http://localhost/Grid/login/';
+$config['user_service'] = 'http://racketberries.eghetto.intra/~rewt/omfgrid/Simian/Grid/';
+$config['inventory_service'] = 'http://racketberries.eghetto.intra/~rewt/omfgrid/Simian/Grid/';
+$config['grid_service'] = 'http://racketberries.eghetto.intra/~rewt/omfgrid/Simian/Grid/';
+$config['asset_service'] = 'http://racketberries.eghetto.intra/~rewt/omfgrid/Simian/Grid/?id=';
+$config['login_service'] = 'http://racketberries.eghetto.intra/~rewt/omfgrid/Simian/Grid/login/';
+
+$config['tile_host'] = "http://racketberries.eghetto.intra/~rewt/omfgrid/Simian/Grid/map/";
 
 /*
 |--------------------------------------------------------------------------
@@ -46,8 +48,8 @@ $config['login_service'] = 'http://localhost/Grid/login/';
 | grid frontend.  Presently one must include "index.php/" at the end.
 |
 */
-$config['grid_name'] = 'My Simian Grid';
-$config['grid_name_short'] = 'mygrid';
+$config['grid_name'] = 'berry grid wooo';
+$config['grid_name_short'] = 'berrygrid';
 
 /*
 |--------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 
+<?php if ( ! isset($this->simple_page) || ! $this->simple_page ):?>
 </div>
 
 </div>
@@ -16,3 +17,5 @@
 </div>
 </body>
 </html>
+
+<? endif; ?>

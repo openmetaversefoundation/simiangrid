@@ -5,12 +5,51 @@ function ends_with($str, $sub)
    return (substr($str, strlen($str) - strlen($sub)) == $sub);
 }
 
+function decode_recursive_json($json)
+{   
+    if ( is_string($json) ) {
+        $response = json_decode($json, TRUE);
+    } else if ( is_array($json) ) {
+        $response = $json;
+    } else {
+        return $json;
+    }
+    if ( $response == null ) {
+        return $json;
+    }
+    foreach ( $response as $key => $value ) {
+        $response[$key] = decode_recursive_json($value);
+    }
+    return $response;
+}
+
+function get_texture_jpg($uuid)
+{
+    $CI =& get_instance();
+    $CI->load->library('Curl');
+    
+    $image = $CI->curl->simple_get($CI->config->item('asset_service') . $uuid);
+    
+    if ( $image == null ) {
+        return null;
+    }
+    
+    $im = new imagick();
+    $im->readImageBlob($image);
+    
+    $im->setImageFormat("jpeg");
+    $im->scaleImage(200, 200, true);
+    return $im;
+}
+
 function rest_post($url, $params)
 {
     $CI =& get_instance();
     $CI->load->library('Curl');
     
-	$response = json_decode($CI->curl->simple_post($url, $params), TRUE);
+	$response = $CI->curl->simple_post($url, $params);
+	
+	$response = decode_recursive_json($response);
 	
 	if (!isset($response))
 	    $response = array('Message' => 'Invalid or missing response');
@@ -126,6 +165,81 @@ function import_asset_folder($folder)
     }
     
     return $i;
+}
+
+function get_identities($uuid)
+{
+    $CI =& get_instance();
+    
+    $query = array(
+        'RequestMethod' => 'GetIdentities',
+        'UserID' => $uuid
+    );
+    
+    $response = rest_post($CI->config->item('grid_service'), $query);
+	if (element('Success', $response) && is_array($response['Identities'])) {
+	    return $response['Identities'];
+	} else {
+		return;
+	}
+}
+
+function get_scene_info($request, $thing)
+{
+    $CI =& get_instance();
+    
+    if ( $request == "id" ) {
+        $query = array(
+            'RequestMethod' => 'GetScene',
+            'SceneID' => $thing
+        );
+    } else if ( $request == "pos" ) {
+        $query = array(
+            'RequestMethod' => 'GetScene',
+            'Position' => $thing
+        );
+    } else if ( $request == "name" ) {
+        $query = array(
+            'RequestMethod' => 'GetScene',
+            'Name' => $thing
+        );
+    } else {
+        return null;
+    }
+    
+    $response = rest_post($CI->config->item('grid_service'), $query);
+	if (element('Success', $response) ) {
+		return $response;
+	} else {
+		return;
+	}
+}
+
+function region_search($request, $thing)
+{
+    $CI =& get_instance();
+    
+    if ( $request == "name" ) {
+        $query = array(
+            'RequestMethod' => 'GetScenes',
+            'NameQuery' => $thing
+        );
+    } else {
+        return null;
+    }
+    $response = rest_post($CI->config->item('grid_service'), $query);
+    if ( is_array($response['Scenes']) ) {
+        $result = array();
+        foreach ( $response['Scenes'] as $scene ) {
+            $this_result = array(
+                'name' => $scene['Name'],
+                'id' => $scene['SceneID']
+            );
+            array_push($result, $this_result);
+        }
+        return $result;
+    }
+    return null;
 }
 
 function get_grid_user_data($key, $value)

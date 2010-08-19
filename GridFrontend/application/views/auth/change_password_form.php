@@ -20,6 +20,12 @@ $confirm_new_password = array(
 
 ?>
 
+<div>
+    <a href="{site_url}/account/identities">Identities</a>
+    <a href="{site_url}/auth/change_password">Change Password</a>
+    <a href="{site_url}/account/info">Account Info</a>
+</div>
+
 <h2>Change Your Password</h2>
 
 <?php echo form_open($this->uri->uri_string()); ?>

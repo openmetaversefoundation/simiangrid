@@ -63,10 +63,26 @@ var imageMapOptions = {
 
 var mapOptions = {
 	// This starting lat/long will center us over the region at 1000,1000
-	center: new google.maps.LatLng(-0.1717, 0.1717),
-  	mapTypeControl: false,
+<?php
+    $scale = 90.0 / 1048576;
+    $x = 0.1717;
+    $y = 0.1717;
+    
+    if ( isset($_GET['x']) && isset($_GET['y']) ) {
+        $x = ( $_GET['x'] * 2 ) * $scale;
+        $y = ( $_GET['y'] * 2 ) * $scale;
+    }
+    echo "center: new google.maps.LatLng(-$x, $y),";
+?>
+    mapTypeControl: false,
 	backgroundColor: "#1D475F",
-	zoom: 4
+<?php
+    $zoom = 4;
+    if ( isset($_GET['zoom']) ) {
+        $zoom = $_GET['zoom'];
+    }
+	echo "zoom: $zoom";
+?>
 }
 
 var imageMapType = new google.maps.ImageMapType(imageMapOptions);

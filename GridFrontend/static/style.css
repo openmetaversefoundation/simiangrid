@@ -212,3 +212,7 @@ td {
 .trEven td {
  background-color: #eeeeee;
 } 
+
+.ui-tabs .ui-tabs-hide {
+     display: none;
+}
