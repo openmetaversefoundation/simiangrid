@@ -116,8 +116,8 @@ class AddMapTile implements IGridService
         {
             // Create a new output tile with a transparent background
             $output = imagecreatetruecolor(IMAGE_WIDTH, IMAGE_WIDTH);
-            $black = imagecolorallocate($output, 0, 0, 0);
-            imagecolortransparent($output, $black);
+#            $black = imagecolorallocate($output, 0, 0, 0);
+#            imagecolortransparent($output, $black);
             return $output;
         }
     }
@@ -152,7 +152,8 @@ class AddMapTile implements IGridService
         
         if (!$output)
             return FALSE;
-        
+		$watercolor = imagecolorallocate($output, 29, 71, 95); #1D475F used by frontend map.js
+        imagefill($output, 0, 0 , $watercolor);
         // Scale the input tiles into the output tile
         if ($inputBL)
         {
