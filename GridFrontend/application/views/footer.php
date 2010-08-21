@@ -18,4 +18,4 @@
 </body>
 </html>
 
-<? endif; ?>
+<?php endif; ?>
