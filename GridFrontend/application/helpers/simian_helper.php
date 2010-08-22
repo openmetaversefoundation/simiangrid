@@ -114,13 +114,14 @@ function create_asset($assetID, $creatorID, $contentType, $filename)
 
 function import_asset_folder($folder)
 {
-    $uuidRegex = '/^([\w+\d+\s]+)\-([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})\.(\w+)$/';
+    $uuidRegex = '/^([\w+\d+\s]+\-\s*?)??([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})\.(\w+)$/';
     $mimeMap = array(
     	'bodypart' => 'application/vnd.ll.bodypart',
 		'ogg' => 'application/ogg',
 		'j2c' => 'image/x-j2c',
 		'animation' => 'application/vnd.ll.animation',
-		'clothing' => 'application/vnd.ll.clothing'
+		'clothing' => 'application/vnd.ll.clothing',
+		'lsl' => 'application/vnd.ll.lsltext'
     );
     
     if (!ends_with($folder, '/'))
