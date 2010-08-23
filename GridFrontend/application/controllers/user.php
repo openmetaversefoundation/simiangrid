@@ -42,16 +42,20 @@ class User extends Controller {
 
     function profile_pic($uuid)
     {
-        $grid_user = get_grid_user_data('id', $uuid);
-        if ( isset($grid_user['LLAbout']) && isset($grid_user['LLAbout']['Image']) ) {
-            $image = get_texture_jpg($grid_user['LLAbout']['Image']);
-            if ( $image == null ){
-                return show_404($uuid);
-            } else {
-                header('Content-type: image/jpg');
-                echo $image;
-            }
-        }
+		if ( $this->config->item('use_imagick') && extension_loaded('imagick') ) {
+	        $grid_user = get_grid_user_data('id', $uuid);
+	        if ( isset($grid_user['LLAbout']) && isset($grid_user['LLAbout']['Image']) ) {
+	            $image = get_texture_jpg($grid_user['LLAbout']['Image']);
+	            if ( $image == null ){
+	                return show_404($uuid);
+	            } else {
+	                header('Content-type: image/jpg');
+    	            echo $image;
+	            }
+        	}
+		} else {
+			return show_404($uuid);
+		}
     }
 
 	function profile($uuid)
@@ -72,12 +76,14 @@ class User extends Controller {
 	        'name' => $grid_user['Name'],
 	        'email' => $grid_user['Email']
 	    );
-	    if ( isset($grid_user['LLAbout'] ) ) {
-	        $this->user_info['about'] = $grid_user['LLAbout']['About'];
-	        if ( isset($grid_user['LLAbout']['Image']) ) {
-	            $this->avatar_image = $uuid;
-	        }
-	    }
+		if ( $this->config->item('use_imagick') && extension_loaded('imagick') ) {
+		    if ( isset($grid_user['LLAbout'] ) ) {
+		        $this->user_info['about'] = $grid_user['LLAbout']['About'];
+		        if ( isset($grid_user['LLAbout']['Image']) ) {
+		            $this->avatar_image = $uuid;
+		        }
+		    }
+		}
 	    $this->simple_page = true;  
 	    parse_template('user/profile');
 	}

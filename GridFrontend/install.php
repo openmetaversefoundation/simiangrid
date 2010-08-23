@@ -10,8 +10,7 @@
     $requiredMysqlVersion = "5.0";
     $requiredModules = array(
         'curl',
-        'mysql',
-		'imagick'
+        'mysql'
     );
 
 	$dbCheckTables = array(
