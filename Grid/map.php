@@ -28,7 +28,7 @@
  *
  *
  * @package    SimianGrid
- * @author     John Hurliman <http://software.intel.com/en-us/blogs/author/john-hurliman/>
+ * @author     Jonathan Freedman <jef@openmetaverse.org>
  * @copyright  Open Metaverse Foundation
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
