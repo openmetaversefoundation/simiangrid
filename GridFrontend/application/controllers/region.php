@@ -8,6 +8,7 @@ class Region extends Controller {
 		$this->load->library('DX_Auth');
 		$this->load->helper('form');
 		$this->load->library('table');
+		$this->load->helper('simian_view_helper');
 	}
 
 	function search()
@@ -58,19 +59,25 @@ class Region extends Controller {
 	    if ( $this->config->item('tile_host') ) {
 	        $this->tile_host = $this->config->item('tile_host');
 	    } else {
-	        $this->tile_host = "/Grid/map/";
+	        $this->tile_host = "/Grid/map.php/";
 	    }
 	    parse_template('region/index');
 	}
 	
-	function info($uuid)
+	function info($uuid, $extra=null)
 	{
 	    $this->uuid = $uuid;
 	    $this->scene_data = get_scene_info('id', $uuid);
 	    $this->_scene_extra_info($uuid);
-	    $this->simple_page = true;
-		if ( $this->input->post('is_search') !== null ) {
-			$this->center_map = TRUE;
+	    
+		if ( $extra == "inline" ) {
+			if ( $this->input->post('is_search') !== null ) {
+				$this->center_map = TRUE;
+			}
+			$this->simple_page = true;
+		} else {
+			$this->title = $this->scene_data['Name'];
+			$this->simple_page = false;
 		}
 	    parse_template('region/info');
 	}
