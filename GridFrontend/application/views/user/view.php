@@ -1,5 +1,8 @@
 <h2>User View</h2>
-    
+
+<?php
+	generateLikeButton(base_url() . "index.php/user/view/" . $this->uuid);
+?>
 <div id="user_menu">
      <ul>
          <li><?php echo anchor('user/profile/' . $this->uuid, 'Profile'); ?></li>

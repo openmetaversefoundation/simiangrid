@@ -75,9 +75,9 @@ function handle_click(event)
     var y = event.latLng.c;
     var real_x = 0 - Math.ceil(( x / scale) / 2);
     var real_y = Math.floor(( y / scale) / 2);
-    console.log("handle_click " + x + ", " + y + " -> " + real_x + ", " + real_y);
     CLICK_HANDLER(real_x, real_y);
 }
+
 function sample_handler(x, y)
 {
     alert('X : ' + x + " Y : " + y);
@@ -101,4 +101,14 @@ function initialize_map(tile_host, x, y, zoom, click_handler) {
 	map.setMapTypeId('grid');
 	
 	google.maps.event.addListener(map, 'click', handle_click);
+}
+
+function center_map(x, y, zoom)
+{
+	if ( zoom == undefined ) {
+		zoom = 7;
+	}
+	
+	map.panTo(convert_grid_pos(x, y));
+	map.setZoom(zoom);
 }

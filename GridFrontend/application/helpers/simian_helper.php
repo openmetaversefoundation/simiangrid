@@ -234,7 +234,32 @@ function region_search($request, $thing)
         foreach ( $response['Scenes'] as $scene ) {
             $this_result = array(
                 'name' => $scene['Name'],
-                'id' => $scene['SceneID']
+                'id' => $scene['SceneID'],
+				'x' => $scene['MinPosition'][0] / 256,
+				'y' => $scene['MinPosition'][1] / 256
+            );
+            array_push($result, $this_result);
+        }
+        return $result;
+    }
+    return null;
+}
+
+function user_search($thing)
+{
+    $CI =& get_instance();
+    
+	$query = array(
+	    'RequestMethod' => 'GetUsers',
+	    'NameQuery' => $thing
+	);
+    $response = rest_post($CI->config->item('grid_service'), $query);
+    if ( is_array($response['Users']) ) {
+        $result = array();
+        foreach ( $response['Users'] as $user ) {
+            $this_result = array(
+                'name' => $user['Name'],
+                'id' => $user['UserID']
             );
             array_push($result, $this_result);
         }

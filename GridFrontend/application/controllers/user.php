@@ -7,6 +7,7 @@ class User extends Controller {
 		parent::Controller();
 		$this->load->library('DX_Auth');
 		$this->load->helper('form');
+		$this->load->helper('simian_view_helper');
 	}
 	
 	function getMyUUID()
@@ -32,12 +33,7 @@ class User extends Controller {
 
 	function index()
 	{
-        if ( $this->dx_auth->is_logged_in() ) {
-            $uuid = $this->getMyUUID();
-            return redirect(base_url() . "index.php/user/view/$uuid", 'location');
-        } else {
-            redirect(base_url() . 'index.php/user/search');
-        }
+		parse_template('user/index');
 	}
 
     function profile_pic($uuid)
@@ -87,34 +83,63 @@ class User extends Controller {
 	    $this->simple_page = true;  
 	    parse_template('user/profile');
 	}
-	
-	function search()
-	{
-	    if ( $this->input->post('search') ) {
-	        $name = $this->input->post('name');
-	        $grid_user = get_grid_user_data('name', $name);
-	        if ( $grid_user != null ) {
-	            $uuid = $grid_user['UserID'];
-	            if ( $this->dx_auth->is_admin() ) {
-	                return redirect(base_url() . "index.php/user/view/$uuid", 'location');
-	            }
-	            if ( isset($grid_user['LLAbout']) && isset($grid_user['LLAbout']['AllowPublish']) ) {
-	                if ( $grid_user['LLAbout']['AllowPublish'] ) {
-	                    return redirect(base_url() . "index.php/user/view/$uuid", 'location');
-	                }
+
+	function _is_searchable($user_id) {
+		$result = false;
+		$user = get_grid_user_data('id', $user_id);
+		
+		if ( $user != null ) {
+			$uuid = $user['UserID'];
+			$result = false;
+	        if ( $this->dx_auth->is_admin() ) {
+				$result = true;
+			} else if ( isset($user['LLAbout']) && isset($user['LLAbout']['AllowPublish']) ) {
+	            if ( $user['LLAbout']['AllowPublish'] ) {
+					$result = true;
 	            }
 	        }
-	        return redirect(base_url() . "index.php/user/search", 'location');
-	    } else {
-	        parse_template('user/search');
+		}
+		return $result;
+	}
+
+	function search()
+	{
+	    $this->simple_page = true;
+	   	$this->user_list = array();
+	    if ( $this->input->post('name') ) {
+	        $name = $this->input->post('name');
+	        $user_results = user_search($name);
+			if ( $user_results != null ) {
+				foreach ( $user_results as $user ) {
+					if ( $this->_is_searchable($user['id']) ) {
+						array_push($this->user_list, $user);
+					}
+				}
+			}
 	    }
+		return parse_template('user/search_results');
 	}
 	
-	function view($uuid)
+	function self()
+	{
+		$uuid = $this->getMyUUID();
+		if ( $uuid == null ) {
+			return redirect('user/search/' . $uuid, 'location');
+		} else {
+			return redirect('user/view/' . $uuid, 'location');
+		}
+	}
+
+	function view($uuid, $extra=null)
 	{
 	    $this->uuid = $uuid;
 	    $this->my_uuid = $this->getMyUUID();
-	    parse_template('user/view');
+		if ( $extra == "inline" ) {
+			$this->simple_page = true;
+	    }
+		$user = get_grid_user_data('id', $uuid);
+		$this->title = $user['Name'];
+		parse_template('user/view');
 	}
 	
 	function raw($uuid)
@@ -123,5 +148,5 @@ class User extends Controller {
 	    $this->simple_page = true;
 	    parse_template('user/raw');
 	}
-	
+
 }

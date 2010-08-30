@@ -69,6 +69,9 @@ class Region extends Controller {
 	    $this->scene_data = get_scene_info('id', $uuid);
 	    $this->_scene_extra_info($uuid);
 	    $this->simple_page = true;
+		if ( $this->input->post('is_search') !== null ) {
+			$this->center_map = TRUE;
+		}
 	    parse_template('region/info');
 	}
 	
