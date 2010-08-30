@@ -38,7 +38,7 @@
 		var data = {
 			'is_search' : true
 		};
-        load_via_post("index.php/region/info/" + scene_id, "#region_info", data);
+        load_via_post("index.php/region/info/" + scene_id + "/inline", "#region_info", data);
 		$("#region_info").dialog('open');
     }
    
