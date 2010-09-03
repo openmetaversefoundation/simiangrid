@@ -34,7 +34,7 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-define('BASEPATH', str_replace("\\", "/", realpath(dirname(__FILE__) . '/..') . '/'));
+define('BASEPATH', str_replace("\\", "/", realpath(dirname(__FILE__)) . '/'));
 
 require_once(BASEPATH . 'common/Config.php');
 require_once(BASEPATH . 'common/Errors.php');
@@ -176,6 +176,59 @@ function remove_session($sessionID)
     return false;
 }
 
+function lookup_scene_by_id($sceneID)
+{
+    $config =& get_config();
+    $gridService = $config['grid_service'];
+    
+    $response = webservice_post($gridService, array(
+    	'RequestMethod' => 'GetScene',
+    	'SceneID' => $sceneID,
+    	'Enabled' => '1')
+    );
+    
+    if (!empty($response['Success']))
+        return Scene::fromOSD($response);
+    
+    return null;
+}
+
+function lookup_scene_by_name($name)
+{
+    $config =& get_config();
+    $gridService = $config['grid_service'];
+    
+    $response = webservice_post($gridService, array(
+    	'RequestMethod' => 'GetScenes',
+    	'NameQuery' => $name,
+    	'Enabled' => '1',
+    	'MaxNumber' => '1')
+    );
+    
+    if (!empty($response['Success']) && is_array($response['Scenes']) && count($response['Scenes']) > 0)
+        return Scene::fromOSD($response['Scenes'][0]);
+    
+    return null;
+}
+
+function lookup_scene_by_position($position, $findClosest = false)
+{
+    $config =& get_config();
+    $gridService = $config['grid_service'];
+    
+    $response = webservice_post($gridService, array(
+    	'RequestMethod' => 'GetScene',
+    	'Position' => $position,
+        'FindClosest' => ($findClosest ? '1' : '0'),
+    	'Enabled' => '1')
+    );
+    
+    if (!empty($response['Success']))
+        return Scene::fromOSD($response);
+    
+    return null;
+}
+
 function add_wearable(&$wearables, $appearance, $wearableName)
 {
     $uuid = null;
@@ -298,30 +351,120 @@ function foreignagent_handler()
 
 function get_home_region($method_name, $params, $user_data)
 {
-    log_message('info', "$method_name called");
+    $response = array();
     
-    $response["blah"] = 'blah';
+    $req = $params[0];
+    $userID = $req['userID'];
+    
+    $response = array();
+    
+    log_message('info', "get_home_region called with UserID $userID");
+    
+    // Fetch the user
+    $user = get_user($userID);
+    if (empty($user))
+    {
+        log_message('warn', "Unknown UserID $userID");
+        $response['result'] = 'false';
+        return $response;
+    }
+    
+    $homeLocation = null;
+    
+    if (isset($user['HomeLocation']))
+        $homeLocation = SceneLocation::fromOSD($user['HomeLocation']);
+    
+    log_message('debug', "User retrieval success for $userID, HomeLocation is $homeLocation");
+    
+    $scene = null;
+    $position = null;
+    $lookat = null;
+    
+    // If the user's home is set, try to grab info for that scene
+    if (isset($homeLocation))
+    {
+        log_message('debug', sprintf("Looking up scene '%s'", $homeLocation->SceneID));
+        $scene = lookup_scene_by_id($homeLocation->SceneID);
+        
+        if (isset($scene))
+        {
+            $position = $homeLocation->Position;
+            $lookat = $homeLocation->LookAt;
+        }
+    }
+    
+    // No home set, last resort lookup for *any* scene in the grid
+    if (!isset($scene))
+    {
+        $position = Vector3::Zero();
+        log_message('debug', "Looking up scene closest to '$position'");
+        $scene = lookup_scene_by_position($position, true);
+        
+        if (isset($scene))
+        {
+            $position = new Vector3(
+                (($scene->MinPosition->X + $scene->MaxPosition->X) / 2) - $scene->MinPosition->X,
+                (($scene->MinPosition->Y + $scene->MaxPosition->Y) / 2) - $scene->MinPosition->Y,
+                25);
+            $lookat = new Vector3(1, 0, 0);
+        }
+    }
+    
+    if (isset($scene))
+    {
+        $response['result'] = 'true';
+        $response['uuid'] = $scene->SceneID;
+        $response['x'] = $scene->MinPosition->X;
+        $response['y'] = $scene->MinPosition->Y;
+        $response['region_name'] = $scene->Name;
+        $response['hostname'] = $scene->ExtraData['ExternalAddress'];
+        $response['http_port'] = $scene->ExtraData['ExternalPort'];
+        $response['internal_port'] = $scene->ExtraData['InternalPort'];
+        $response['position'] = (string)$position;
+        $response['lookAt'] = (string)$lookat;
+        
+        log_message('debug', "Returning successful home lookup for $userID");
+    }
+    else
+    {
+        $response['result'] = 'false';
+        log_message('warn', "Failed to find a valid home scene for $userID, returning failure");
+    }
+    
     return $response;
 }
 
 function verify_client($method_name, $params, $user_data)
 {
-    log_message('info', "$method_name called");
+    $response = array();
     
-    $response["blah"] = 'blah';
+    $req = $params[0];
+    $sessionID = $req['sessionID'];
+    $token = $req['token'];
+    
+    log_message('info', "verify_client called with SessionID $sessionID and Token $token");
+    
+    $response['result'] = 'true';
     return $response;
 }
 
 function verify_agent($method_name, $params, $user_data)
 {
-    log_message('info', "$method_name called");
+    $response = array();
     
-    $response["blah"] = 'blah';
+    $req = $params[0];
+    $sessionID = $req['sessionID'];
+    $token = $req['token'];
+    
+    log_message('info', "verify_agent called with SessionID $sessionID and Token $token");
+    
+    $response['result'] = 'true';
     return $response;
 }
 
 function logout_agent($method_name, $params, $user_data)
 {
+    $response = array();
     log_message('info', "$method_name called");
     
     $response["blah"] = 'blah';
@@ -330,6 +473,7 @@ function logout_agent($method_name, $params, $user_data)
 
 function agent_is_coming_home($method_name, $params, $user_data)
 {
+    $response = array();
     log_message('info', "$method_name called");
     
     $response["blah"] = 'blah';
