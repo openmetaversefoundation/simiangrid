@@ -76,6 +76,24 @@ function ends_with($str, $sub)
    return (substr($str, strlen($str) - strlen($sub)) == $sub);
 }
 
+function decode_recursive_json($json)
+{   
+    if ( is_string($json) ) {
+        $response = json_decode($json, TRUE);
+    } else if ( is_array($json) ) {
+        $response = $json;
+    } else {
+        return $json;
+    }
+    if ( $response == null ) {
+        return $json;
+    }
+    foreach ( $response as $key => $value ) {
+        $response[$key] = decode_recursive_json($value);
+    }
+    return $response;
+}
+
 function webservice_post($url, $params, $jsonRequest = FALSE)
 {
     // Parse the RequestMethod out of the request for debugging purposes
@@ -100,7 +118,7 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     //log_message('debug', sprintf('Response received from %s POST to %s: %s', $requestMethod, $url, $response));
     
     // JSON decode the response
-    $response = json_decode($response, TRUE);
+    $response = decode_recursive_json($response);
 	
 	if (!isset($response))
 	    $response = array('Message' => 'Invalid or missing response');
@@ -329,7 +347,26 @@ function link_region($method_name, $params, $user_data)
 {
     log_message('info', "$method_name called");
     
-    $response["blah"] = 'blah';
+    $req = $params[0];
+
+    $region_name = $req['region_name'];
+    
+    $scene = lookup_scene_by_name($region_name);
+    
+    $response = array();
+
+    if ( $scene == null ) {
+        $response['result'] = 'false';
+    } else {
+        $x = (int) $scene['MinPosition'][0];
+        $y = (int) $scene['MinPosition'][1];
+        $response['result'] = 'true';
+        $response['uuid'] = $scene['SceneID'];
+        $response['handle'] = $x << 32 | $y;
+        $response['region_image'] = "http://" . $scene['ExtraData']['ExternalAddress'] . ":" . $scene['ExtraData']['ExternalPort'] . "/index.php?method=" . str_replace('-', '', $scene['SceneID']);
+        $response['external_name'] = '';
+    }
+    
     return $response;
 }
 
@@ -337,7 +374,26 @@ function get_region($method_name, $params, $user_data)
 {
     log_message('info', "$method_name called");
     
-    $response["blah"] = 'blah';
+    $req = $params[0];
+    $regionid = $req['region_uuid'];
+    
+    $scene = lookup_scene_by_id($regionid);
+    
+    $response = array();
+    
+    if ( $scene == null ) {
+        $response['result'] = "false";
+    } else {
+        $response['result'] = "true";
+        $response['uuid'] = $regionid;
+        $response['x'] = $scene['MinPosition'][0];
+        $response['y'] = $scene['MinPosition'][1];
+        $response['region_name'] = $scene['Name'];
+        $response['hostname'] = $scene['Address'];
+        $response['http_port'] = $scene['ExternalData']['ExternalPort'];
+        $response['internal_port'] = $scene['ExternalData']['InternalPort'];
+    }
+
     return $response;
 }
 
