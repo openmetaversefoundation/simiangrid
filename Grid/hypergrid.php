@@ -47,17 +47,34 @@ require_once(BASEPATH . 'common/Scene.php');
 require_once(BASEPATH . 'common/SceneLocation.php');
 require_once(BASEPATH . 'common/Session.php');
 
+if ( $_SERVER['REQUEST_METHOD'] != 'POST' ) {
+    header("HTTP/1.1 400 Bad Request");
+    exit();
+}
+
+if ( isset($_SERVER['PATH_INFO'] ) ) {
+    $path_bits = explode('/', $_SERVER['PATH_INFO']);
+    if ( count($path_bits) > 0 ) {
+        $data = file_get_contents("php://input");
+        if ( $path_bits[1] == "foreignagent" ) {
+            foreignagent_handler(array_slice($path_bits, 2), $data);
+        } else if ( $path_bits[1] == "homeagent" ) {
+            homeagent_handler(array_slice($path_bits, 2), $data);
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // XML-RPC Server
 
 $xmlrpc_server = xmlrpc_server_create();
-xmlrpc_server_register_method($xmlrpc_server, "login_to_simulator", "link_region");
-xmlrpc_server_register_method($xmlrpc_server, "login_to_simulator", "get_region");
-xmlrpc_server_register_method($xmlrpc_server, "login_to_simulator", "get_home_region");
-xmlrpc_server_register_method($xmlrpc_server, "login_to_simulator", "verify_client");
-xmlrpc_server_register_method($xmlrpc_server, "login_to_simulator", "verify_agent");
-xmlrpc_server_register_method($xmlrpc_server, "login_to_simulator", "logout_agent");
-xmlrpc_server_register_method($xmlrpc_server, "login_to_simulator", "agent_is_coming_home");
+xmlrpc_server_register_method($xmlrpc_server, "link_region", "link_region");
+xmlrpc_server_register_method($xmlrpc_server, "get_region", "get_region");
+xmlrpc_server_register_method($xmlrpc_server, "get_home_region", "get_home_region");
+xmlrpc_server_register_method($xmlrpc_server, "verify_client", "verify_client");
+xmlrpc_server_register_method($xmlrpc_server, "verify_agent", "verify_agent");
+xmlrpc_server_register_method($xmlrpc_server, "logout_agent", "logout_agent");
+xmlrpc_server_register_method($xmlrpc_server, "agent_is_coming_home", "agent_is_coming_home");
 
 $request_xml = file_get_contents("php://input");
 
@@ -265,7 +282,7 @@ function add_wearable(&$wearables, $appearance, $wearableName)
 }
 
 function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appearance, $attachments,
-    $sessionID, $secureSessionID, $startPosition, &$seedCapability)
+    $sessionID, $secureSessionID, $startPosition, $capsPath)
 {
     $regionBaseUrl = $scene->Address;
     if (!ends_with($regionBaseUrl, '/'))
@@ -273,42 +290,7 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
     $regionUrl = $regionBaseUrl . 'agent/' . $userID . '/';
     
     list($firstName, $lastName) = explode(' ', $fullName);
-    $capsPath = UUID::Random();
-    
-    $wearables = array();
-    $attached = array();
-    
-    if (isset($appearance))
-    {
-        add_wearable($wearables, $appearance, 'Shape');
-        add_wearable($wearables, $appearance, 'Skin');
-        add_wearable($wearables, $appearance, 'Hair');
-        add_wearable($wearables, $appearance, 'Eyes');
-        add_wearable($wearables, $appearance, 'Shirt');
-        add_wearable($wearables, $appearance, 'Pants');
-        add_wearable($wearables, $appearance, 'Shoes');
-        add_wearable($wearables, $appearance, 'Socks');
-        add_wearable($wearables, $appearance, 'Jacket');
-        add_wearable($wearables, $appearance, 'Gloves');
-        add_wearable($wearables, $appearance, 'Undershirt');
-        add_wearable($wearables, $appearance, 'Underpants');
-        add_wearable($wearables, $appearance, 'Skirt');
-    }
-    
-    if (isset($attachments))
-    {
-        $i = 0;
-        
-        foreach ($attachments as $key => $item)
-        {
-            if (substr($key, 0, 4) === '_ap_')
-            {
-                $point = (int)substr($key, 4);
-                $attached[$i++] = array('point' => $point, 'item' => $item);
-            }
-        }
-    }
-    
+
     $response = webservice_post($regionUrl, array(
     	'agent_id' => $userID,
     	'caps_path' => $capsPath,
@@ -536,7 +518,51 @@ function agent_is_coming_home($method_name, $params, $user_data)
     return $response;
 }
 
-function homeagent_handler($method_name, $params, $user_data)
+function homeagent_handler($path_tail, $data)
 {
-    // FIXME: How do we handle this?
+    $userid = $path_tail[0];
+    $osd = decode_recursive_json($data);
+    
+    $gatekeeper_host = $osd['gatekeeper_host'];
+    $gatekeeper_port = $osd['gatekeeper_port'];
+    
+    $dest_x = $osd['destination_x'];
+    $dest_y = $osd['destination_y'];
+    
+    if ( $dest_x == null ) {
+        $dest_x = 0;
+    }
+    if ( $dest_y == null ) {
+        $dest_y = 0;
+    }
+    
+    $dest_uuid = $osd['destination_uuid'];
+    #$dest_name = $osd['destination_name'];
+    
+    $scene = get_scene($dest_uuid);
+    
+    
+    if ( $dest_uuid == null || $dest_name == null ) {
+        header("HTTP/1.1 400 Bad Request");
+        echo "missing destination_name and/or destination_uuid";
+        exit();
+    }
+    
+    #$agent_id = $osd['agent_id'];
+    $base_folder = $osd['base_folder'];
+    $caps_path = $osd['caps_path'];
+    $username = $osd['first_name'] . ' ' . $osd['last_name'];
+    $circuit_code = $osd['circuit_code'];
+    $session_id = $osd['session_id'];
+    $secure_session_id = $osd['secure_session_id'];
+    $start_pos = $osd['start_pos'];
+    $appearance = $osd['wearables'];
+    $attachments = $osd['attachments'];
+    
+    $result = create_opensim_presence($scene, $userid, $circuit_code, $username, $appearance, $attachments,
+    $session_id, $secure_session_id, $start_pos, $caps_path);
+    
+    echo "{'success': $result, 'reason': 'no reason set lol'}";
+    exit();
+
 }
