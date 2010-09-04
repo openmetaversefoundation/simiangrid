@@ -322,12 +322,65 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
     return false;
 }
 
+function bin2int($str)
+{
+    $result = '0';
+
+    $n = strlen($str);
+    do
+    {
+        $result = bcadd(bcmul($result, '256'), ord($str{--$n}));
+    } while ($n > 0);
+
+    return $result;
+}
+
+function int2bin($num)
+{
+    $result = '';
+
+    do
+    {
+        $result .= chr(bcmod($num, '256'));
+        $num = bcdiv($num, '256');
+    } while (bccomp($num, '0'));
+
+    return $result;
+}
+
+function bitOr($num1, $num2, $start_pos)
+{
+    $start_byte = intval($start_pos / 8);
+    $start_bit = $start_pos % 8;
+    $tmp1 = int2bin($num1);
+
+    $num2 = bcmul($num2, 1 << $start_bit);
+    $tmp2 = int2bin($num2);
+
+    if ($start_byte < strlen($tmp1))
+    {
+        $tmp2 |= substr($tmp1, $start_byte);
+        $tmp1 = substr($tmp1, 0, $start_byte) . $tmp2;
+    }
+    else
+    {
+        $tmp1 = str_pad($tmp1, $start_byte, "\0") . $tmp2;
+    }
+
+    return bin2int($tmp1);
+}
+
+function bitShift($num1, $bits)
+{
+    return bcmul($num1, bcpow(2, $bits));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GateKeeper Service
 
 function link_region($method_name, $params, $user_data)
 {
-    log_message('info', "$method_name called");
+    log_message('info', "link_region called");
     
     $req = $params[0];
 
@@ -340,12 +393,17 @@ function link_region($method_name, $params, $user_data)
     if ( $scene == null ) {
         $response['result'] = 'false';
     } else {
-        $x = (int) $scene['MinPosition'][0];
-        $y = (int) $scene['MinPosition'][1];
         $response['result'] = 'true';
-        $response['uuid'] = $scene['SceneID'];
-        $response['handle'] = $x << 32 | $y;
-        $response['region_image'] = "http://" . $scene['ExtraData']['ExternalAddress'] . ":" . $scene['ExtraData']['ExternalPort'] . "/index.php?method=" . str_replace('-', '', $scene['SceneID']);
+        $response['uuid'] = $scene->SceneID;
+        
+        // Yay for 64-bit integer bitmath in PHP
+        $x = $scene->MinPosition->X;
+        $y = $scene->MinPosition->Y;
+        $handle = bitShift($x, 32);
+        $handle = bitOr($handle, (string)$y, 0);
+        $response['handle'] = (string)$handle;
+        
+        $response['region_image'] = "http://" . $scene->ExtraData['ExternalAddress'] . ":" . $scene->ExtraData['ExternalPort'] . "/index.php?method=" . str_replace('-', '', $scene->SceneID);
         $response['external_name'] = '';
     }
     
@@ -367,13 +425,13 @@ function get_region($method_name, $params, $user_data)
         $response['result'] = "false";
     } else {
         $response['result'] = "true";
-        $response['uuid'] = $regionid;
-        $response['x'] = $scene['MinPosition'][0];
-        $response['y'] = $scene['MinPosition'][1];
-        $response['region_name'] = $scene['Name'];
-        $response['hostname'] = $scene['Address'];
-        $response['http_port'] = $scene['ExternalData']['ExternalPort'];
-        $response['internal_port'] = $scene['ExternalData']['InternalPort'];
+        $response['uuid'] = $scene->SceneID;
+        $response['x'] = $scene->MinPosition->X;
+        $response['y'] = $scene->MinPosition->Y;
+        $response['region_name'] = $scene->Name;
+        $response['hostname'] = $scene->Address;
+        $response['http_port'] = $scene->ExternalData['ExternalPort'];
+        $response['internal_port'] = $scene->ExternalData['InternalPort'];
     }
 
     return $response;
@@ -455,7 +513,7 @@ function get_home_region($method_name, $params, $user_data)
         $response['x'] = $scene->MinPosition->X;
         $response['y'] = $scene->MinPosition->Y;
         $response['region_name'] = $scene->Name;
-        $response['hostname'] = $scene->ExtraData['ExternalAddress'];
+        $response['hostname'] = $scene->Address;
         $response['http_port'] = $scene->ExtraData['ExternalPort'];
         $response['internal_port'] = $scene->ExtraData['InternalPort'];
         $response['position'] = (string)$position;
