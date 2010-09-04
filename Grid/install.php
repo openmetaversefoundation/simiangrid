@@ -11,7 +11,8 @@
         'curl',
         'mysql',
         'hash',
-        'gd'
+        'gd',
+        'bcmath'
     );
     
     $defaultDB['user'] = 'root';
