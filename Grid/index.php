@@ -34,6 +34,9 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
+$gStartTime = microtime(true);
+$gMethodName = "(Unknown)";
+
 define('BASEPATH', str_replace("\\", "/", realpath(dirname(__FILE__)) . '/'));
 
 require_once(BASEPATH . 'common/Config.php');
@@ -46,6 +49,16 @@ require_once(BASEPATH . 'common/UUID.php');
 require_once(BASEPATH . 'common/Vector3.php');
 require_once(BASEPATH . 'common/Curl.php');
 
+// Performance profiling/logging
+function shutdown()
+{
+    global $gStartTime, $gMethodName;
+    $elapsed = microtime(true) - $gStartTime;
+    log_message('debug', "Executed $gMethodName in $elapsed seconds");
+}
+register_shutdown_function('shutdown');
+
+// Configuration loading
 $config =& get_config();
 
 // Disable magic quotes
@@ -152,7 +165,7 @@ else if ((stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE || (stripos($_SER
     else
     {
         // Regular GET request
-        log_message('debug', "Ignoring GET request without a valid id parameter");
+        $gMethodName = '(Webpage)';
         echo 'SimianGrid';
         exit();
     }
@@ -186,7 +199,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
             else
                 $asset->Public = TRUE;
             
-			log_message('debug', 'Executing AddAsset');
+			$gMethodName = 'AddAsset';
             execute_command('AddAsset', $db, $asset);
             exit();
         }
@@ -216,7 +229,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
             $tile->Data = fread($fp, filesize($tmpName));
             fclose($fp);
             
-			log_message('debug', 'Executing AddMapTile');
+			$gMethodName = 'AddMapTile';
             execute_command('AddMapTile', null, $tile);
             exit();
         }
@@ -247,7 +260,7 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'DELETE') !== FALSE)
         // Asset delete
         $asset = new Asset();
         $asset->ID = $uuid;
-		log_message('debug', 'Executing RemoveAsset');
+		$gMethodName = 'RemoveAsset';
         execute_command('RemoveAsset', $db, $asset);
         exit();
     }
@@ -281,6 +294,7 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
         {
             log_message('warn', "Error decoding JSON request");
             log_message('debug', "Invalid JSON request data: " . $data);
+            $gMethodName = 'Invalid JSON';
             
             header("Content-Type: application/json", true);
             echo '{"Message":"Error decoding JSON request"}';
@@ -299,7 +313,7 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
     if (isset($request['RequestMethod']))
     {
         $command = trim($request['RequestMethod']);
-		log_message('debug', 'Executing ' . $command);
+        $gMethodName = $command;
         execute_command($command, $db, $request);
     }
     else
