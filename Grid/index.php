@@ -314,6 +314,8 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
     {
         $command = trim($request['RequestMethod']);
         $gMethodName = $command;
+        if ($gMethodName == 'GetGenerics')
+            $gMethodName .= ' (' . $request['Type'] . ')';
         execute_command($command, $db, $request);
     }
     else
