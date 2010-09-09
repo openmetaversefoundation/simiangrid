@@ -1,0 +1,16 @@
+[Desktop Entry]
+Comment=VWRAP Launcher
+Encoding=UTF-8
+Exec=mono VWRAPLauncher.exe
+GenericName=VWRAP Launcher
+Icon=/usr/share/icons/hicolor/32x32/apps/%(icon_32)s
+MimeType=
+Name=VWRAPLauncher
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-StartupNotify=true
+Categories=Network;VirtualWorlds;
