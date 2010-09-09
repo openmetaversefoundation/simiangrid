@@ -47,20 +47,11 @@ class Database extends PDO
         $db = $config['db_database'];
         
         $dsn = "$driver:host=$host;dbname=$db";
-        parent::__construct($dsn, $user, $pass);
-        $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('DBStatement', array($this)));
         
+        $options = array();
         if ($config['db_persistent'])
-            $this->setAttribute(PDO::ATTR_PERSISTENT, true);
-    }
-}
-
-class DBStatement extends PDOStatement
-{
-    public $dbh;
-
-    protected function __construct($dbh)
-    {
-        $this->dbh = $dbh;
+            $options[PDO::ATTR_PERSISTENT] = true;
+        
+        parent::__construct($dsn, $user, $pass, $options);
     }
 }
