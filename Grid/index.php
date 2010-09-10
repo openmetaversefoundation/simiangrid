@@ -157,6 +157,7 @@ else if ((stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE || (stripos($_SER
     if (isset($_GET['id']) && UUID::TryParse(ltrim($_GET['id'], '/'), $uuid))
     {
         // Asset download
+        $gMethodName = 'AssetGet';
         $asset = new Asset();
         $asset->ID = $uuid;
         execute_command('GetAsset', $db, $asset);
