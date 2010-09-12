@@ -1,19 +1,19 @@
-<h3>Info</h3>
+<h3><?php echo lang('sg_user_profile'); ?> </h3>
 
 <div>
 
 <table>
     <tr>
-        <th>Name</th><td><?php echo $this->user_info['name']; ?></td>
+        <th><Name><?php echo lang('sg_name'); ?></th><td><?php echo $this->user_info['name']; ?></td>
     </tr>
-<?php if ( $this->user_id == $this->my_uuid || $this->dx_auth->is_admin() ): ?>
+<?php if ( $this->user_id == $this->my_uuid || $this->sg_auth->is_admin() ): ?>
     <tr>
-        <th>Email</th><td><?php echo $this->user_info['email']; ?></td>
+        <th><?php echo lang('sg_email'); ?></th><td><?php echo $this->user_info['email']; ?></td>
     </tr>
 <?php endif; ?>
-<?php if ( $this->dx_auth->is_admin() ): ?>
+<?php if ( $this->sg_auth->is_admin() ): ?>
     <tr>
-        <th>Last Location</th><td>
+        <th><?php echo lang('sg_user_last_location'); ?></th><td>
         <?php 
             if ( isset($this->last_scene) ) {
                 echo $this->last_scene['Name']; 
@@ -23,7 +23,7 @@
     </tr>
 <?php endif; ?>
     <tr>
-        <th>About</th><td>
+        <th><?php echo lang('sg_user_about'); ?></th><td>
         <?php
             if ( isset($this->user_info['about']) ) {
                 echo $this->user_info['about']; 
@@ -35,7 +35,7 @@
         <td colspan="2">
 <?php 
     if ( isset($this->avatar_image) ) {
-        echo "<img src=\"" . base_url() . "index.php/user/profile_pic/" . $this->avatar_image . "\"/>";
+        echo "<img src=\"" . get_base_url() . "index.php/user/profile_pic/" . $this->avatar_image . "\"/>";
     }
 ?>
         </td>

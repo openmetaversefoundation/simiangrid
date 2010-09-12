@@ -6,7 +6,7 @@
 
 <?php
 	echo form_input(array('name'=>'name', 'id'=>'region_name'));
-	echo anchor("#", "Search", array('id' => 'search_button'));
+	echo anchor("#", lang('sg_search'), array('id' => 'search_button'));
 ?>
 	</div>
 
@@ -19,7 +19,7 @@
 
 	function load_via_post(url_suffix, destination, data)
 	{
-		return real_load_via_post(<?php echo "\"" . base_url() . "\"" ;?> + url_suffix, destination, data);
+		return real_load_via_post(<?php echo "\"" . get_base_url() . "index.php/\"" ;?> + url_suffix, destination, data);
 	}
     
     function load_region_by_pos(x, y)
@@ -28,7 +28,7 @@
             'x' : x,
             'y' : y
         };
-        load_via_post("index.php/region/view_coord", "#region_info", data);
+        load_via_post("region/view_coord", "#region_info", data);
 		$("#search_results").dialog('close');
 		$("#region_info").dialog('open');
     }
@@ -38,7 +38,7 @@
 		var data = {
 			'is_search' : true
 		};
-        load_via_post("index.php/region/info/" + scene_id + "/inline", "#region_info", data);
+        load_via_post("region/info/" + scene_id + "/inline", "#region_info", data);
 		$("#region_info").dialog('open');
     }
    
@@ -48,7 +48,7 @@
         var data = {
             'name' : search_name
         };
-        load_via_post("index.php/region/search", "#search_results", data, false);
+        load_via_post("region/search", "#search_results", data, false);
 		$("#search_results").dialog('open');
         return false;
     }

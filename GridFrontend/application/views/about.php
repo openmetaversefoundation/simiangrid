@@ -2,4 +2,9 @@
 <h2>About</h2>
 
 <p><a href="http://code.google.com/p/openmetaverse/wiki/SimianGrid">SimianGrid</a>
-is a set of PHP web services that provide the backend for a virtual world.</p>
+<?php echo lang('sg_about_blurb'); ?>
+</p>
+
+<?php
+	generate_site_stream();
+?>

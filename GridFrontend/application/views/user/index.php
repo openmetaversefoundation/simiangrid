@@ -2,7 +2,7 @@
 	<div id="search_form">
 <?php
 	echo form_input(array('name'=>'name', 'id'=>'user_name'));
-	echo anchor("#", "Search", array('id' => 'search_button'));
+	echo anchor("#", lang('sg_search'), array('id' => 'search_button'));
 ?>
 	</div>
 	<div id="search_results"></div>
@@ -11,7 +11,7 @@
 
     function load_via_post(url_suffix, destination, data)
     {
-		return real_load_via_post(<?php echo "\"" . base_url() . "\"" ; ?> + url_suffix, destination, data);
+		return real_load_via_post(<?php echo "\"" . get_base_url() . "\"" ; ?> + url_suffix, destination, data);
 	}
    
     function do_search()
@@ -20,7 +20,7 @@
         var data = {
             'name' : search_name
         };
-        load_via_post("index.php/user/search", "#search_results", data);
+        load_via_post("user/search", "#search_results", data);
         return false;
     }
 

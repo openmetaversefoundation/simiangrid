@@ -1,19 +1,17 @@
 <h2>User View</h2>
 
 <?php
-	generateLikeButton(base_url() . "index.php/user/view/" . $this->uuid);
+	$my_url = get_base_url() . "user/view/" . $this->uuid;
+	generate_like_button($my_url);
+	generate_tweet_button($my_url);
 ?>
 <div id="user_menu">
      <ul>
-         <li><?php echo anchor('user/profile/' . $this->uuid, 'Profile'); ?></li>
-<?php if ( $this->dx_auth->is_logged_in() ): ?>
-    <?php if ( $this->uuid == $this->my_uuid || $this->dx_auth->is_admin() ): ?>
-         <li><?php echo anchor('user/password/' . $this->uuid, 'Password'); ?></li>
-         <li><?php echo anchor('user/identities/' . $this->uuid, 'Identities'); ?></li>
-    <?php endif; ?>
-    <?php if ( $this->dx_auth->is_admin() ): ?>
-        <li><?php echo anchor('user/actions/' . $this->uuid, 'Actions'); ?></li>
-        <li><?php echo anchor('user/raw/' . $this->uuid, 'Raw'); ?></li>
+         <li><?php echo anchor(get_base_url() . 'index.php/user/profile/' . $this->uuid, lang('sg_user_profile') ); ?></li>
+<?php if ( $this->sg_auth->is_logged_in() ): ?>
+    <?php if ( $this->uuid == $this->my_uuid || $this->sg_auth->is_admin() ): ?>
+         <li><?php echo anchor(get_base_url() . 'index.php/user/identities/' . $this->uuid, lang('sg_user_identities')); ?></li>
+        <li><?php echo anchor(get_base_url() . 'index.php/user/actions/' . $this->uuid, lang('sg_actions')); ?></li>
     <?php endif ; ?>
 <?php endif ; ?>
      </ul>

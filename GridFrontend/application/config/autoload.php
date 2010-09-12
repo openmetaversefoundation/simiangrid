@@ -39,7 +39,7 @@
 |	$autoload['libraries'] = array('database', 'session', 'xmlrpc');
 */
 
-$autoload['libraries'] = array('parser', 'DX_Auth');
+$autoload['libraries'] = array('parser', 'SimianGrid', 'SG_Auth');
 
 
 /*
@@ -51,7 +51,7 @@ $autoload['libraries'] = array('parser', 'DX_Auth');
 |	$autoload['helper'] = array('url', 'file');
 */
 
-$autoload['helper'] = array('array', 'url', 'simian');
+$autoload['helper'] = array('array', 'url', 'language', 'simian', 'simian_view');
 
 
 /*
@@ -95,7 +95,7 @@ $autoload['config'] = array();
 |
 */
 
-$autoload['language'] = array();
+$autoload['language'] = array('simian_grid');
 
 
 /*
@@ -108,7 +108,7 @@ $autoload['language'] = array();
 |
 */
 
-$autoload['model'] = array();
+$autoload['model'] = array('sg_auth/user_settings');
 
 
 

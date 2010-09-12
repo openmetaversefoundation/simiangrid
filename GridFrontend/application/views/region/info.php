@@ -5,16 +5,18 @@
 	$x = $this->scene_data['MinPosition'][0] / 256;
 	$y = $this->scene_data['MinPosition'][1] / 256;
 
+	$my_url = get_base_url() . "index.php/region/info/" . $this->scene_data['SceneID'];
 	if ( $this->simple_page ) {
-		echo anchor(base_url() . "index.php/region/info/" . $this->scene_data['SceneID'], "Direct Link");
+		echo anchor($my_url, lang('sg_direct_link') );
 	} else {
-		generateLikeButton(base_url() . "index.php/region/info/" . $this->scene_data['SceneID']);
+		generate_like_button($my_url);
+		generate_tweet_button($my_url);
 	}
 ?>
 <br/>
-Name : <?php echo $this->scene_data['Name']; ?> <br/>
-Position : <?php echo $x . "," . $y; ?> <br/>
-Owner : <?php echo $this->owner_name ?><br/>
+<?php echo lang('sg_name') . " : " . $this->scene_data['Name']; ?> <br/>
+<?php echo lang('sg_region_position') . " : " .  $x . "," . $y; ?> <br/>
+<?php echo lang('sg_region_owner') . " : " . $this->owner_name ?><br/>
 <?php 
 	if ( ! $this->simple_page ) {
 		$image_url = $this->config->item('tile_host') . "map-1-$x-$y-objects.png";
@@ -29,5 +31,5 @@ Owner : <?php echo $this->owner_name ?><br/>
 </script>
 <?php endif; ?>
 <?php else: ?>
-Unknown Region
+<?php echo lang('sg_region_unknown') ;?>
 <?php endif; ?>

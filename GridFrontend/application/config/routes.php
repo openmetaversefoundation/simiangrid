@@ -40,14 +40,8 @@
 |
 */
 
-$route['default_controller'] = "home";
+$route['default_controller'] = "about";
 $route['scaffolding_trigger'] = "";
-
-// DX_Auth has a Users class, so if we follow the controller name ==
-// class name convention we can't call our controller "users".  So
-// instead there's a "gridusers" controller, and we'll just route
-// requests for "users" to it...
-$route['users/(:any)/(:any)'] = 'gridusers/show/$1/$2';
 
 // route viewer get_grid_info requests to the gridinfo class.  These
 // are sent as part of the GridInfo, viewer setting pre-population

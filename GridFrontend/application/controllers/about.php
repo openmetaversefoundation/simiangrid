@@ -4,7 +4,9 @@ class About extends Controller {
 
 	function About()
 	{
-		parent::Controller();	
+		parent::Controller();
+		$this->load->helper('simian_view_helper');
+		$this->load->helper('simian_facebook_helper');	
 	}
 	
 	function index()

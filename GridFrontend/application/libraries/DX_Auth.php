@@ -707,7 +707,7 @@ class DX_Auth
 		}
 		
 		// Destroy session
-		$this->ci->session->sess_destroy();		
+		$this->ci->session->sess_destroy();
 	}
 	
 	function _create_simiangrid_inventory($userID, $avtype)

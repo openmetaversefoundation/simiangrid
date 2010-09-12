@@ -6,9 +6,12 @@ class Region extends Controller {
 	{
 		parent::Controller();
 		$this->load->library('DX_Auth');
-		$this->load->helper('form');
 		$this->load->library('table');
+		$this->load->library('SimianGrid');
+
+		$this->load->helper('form');
 		$this->load->helper('simian_view_helper');
+		$this->load->helper('simian_facebook_helper');
 	}
 
 	function search()
@@ -16,7 +19,7 @@ class Region extends Controller {
 	    $this->simple_page = true;
 	    if ( $this->input->post('name') ) {
 	        $name = $this->input->post('name');
-	        $this->scene_list = region_search("name", $name);
+	        $this->scene_list = $this->simiangrid->search_scene($name);
 	    } else {
 	        $this->scene_list = array();
 	    }
@@ -29,7 +32,7 @@ class Region extends Controller {
 	    if ( $this->input->post('x') && $this->input->post('y') ) {
     	    $this->x = ($this->input->post('x') * 256) + 1;
     	    $this->y = ($this->input->post('y') * 256) + 1;
-    	    $this->scene_data = get_scene_info('pos', "<$this->x, $this->y, 0>");
+    	    $this->scene_data = $this->simiangrid->get_scene_by_pos($this->x, $this->y);
     	    $this->uuid = $this->scene_data['SceneID'];
     	    $this->_scene_extra_info($this->uuid);
     	}
@@ -67,7 +70,7 @@ class Region extends Controller {
 	function info($uuid, $extra=null)
 	{
 	    $this->uuid = $uuid;
-	    $this->scene_data = get_scene_info('id', $uuid);
+	    $this->scene_data = $this->simiangrid->get_scene($uuid);
 	    $this->_scene_extra_info($uuid);
 	    
 		if ( $extra == "inline" ) {
@@ -84,7 +87,7 @@ class Region extends Controller {
 	
 	function _scene_extra_info($uuid)
 	{    
-	    $grid_user = get_grid_user_data('id', $this->scene_data['ExtraData']['EstateOwner']);
+	    $grid_user = $this->simiangrid->get_user($this->scene_data['ExtraData']['EstateOwner']);
 	    $this->owner_name = $grid_user['Name'];
 	}
 }

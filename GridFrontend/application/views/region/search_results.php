@@ -1,4 +1,4 @@
-<h2><?php echo count($this->scene_list); ?> Results</h2>
+<h2><?php echo count($this->scene_list) . " " . lang('sg_results_found'); ?></h2>
 
 <ul>
 <?php
