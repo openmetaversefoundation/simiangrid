@@ -12,6 +12,7 @@ class SG_Auth
 		$this->ci->load->config('openid');
 		$this->ci->load->database();
 		$this->ci->load->model('sg_auth/user_session', 'user_session');
+		$this->ci->load->model('sg_auth/user_validation', 'user_validation');
 		$this->_init();
 	}
 	
@@ -24,6 +25,7 @@ class SG_Auth
 		$this->session = $this->ci->session;
 		$this->simiangrid = $this->ci->simiangrid;
 		$this->user_session = $this->ci->user_session;
+		$this->user_validation = $this->ci->user_validation;
 	}
 
 	function is_logged_in()
@@ -285,13 +287,24 @@ class SG_Auth
 			return $user_flags['Suspended'];
 		}
 	}
+	
+	function is_validated($user_id)
+	{
+		$user_flags = $this->_get_user_flags($user_id);
+		if ( empty($user_flags['Validated']) ) {
+			return false;
+		} else {
+			return $user_flags['Validated'];
+		}
+	}
 
 	function reset_validation($user_id)
 	{
+		$this->user_validation->clear_validation($user_id);
 		$code = random_uuid();
+		$this->user_validation->set_code($user_id, $code);
 		$user_flags = $this->_get_user_flags($user_id);
 		$user_flags['Validated'] = false;
-		$user_flags['ValidationCode'] = $code;
 		
 		$result = false;
 		if ( $this->_set_user_flags($user_id, $user_flags) ) {
@@ -305,9 +318,23 @@ class SG_Auth
 		}
 	}
 	
-	function validate($code, $user_id)
+	function set_valid($user_id)
 	{
-		
+		$user_flags = $this->_get_user_flags($user_id);
+		$user_flags['Validated'] = true;
+		$this->user_validation->clear_validation($user_id);
+		return $this->_set_user_flags($user_id, $user_flags);
+	}
+	
+	function validate($code)
+	{
+		$user_id = $this->user_validation->check_code($code);
+		$result = false;
+		if ( $user_id != null ) {
+			$result = $this->set_valid($user_id);
+			$this->user_validation->clear_validation($user_id);
+		}
+		return $result;
 	}
 	
 	function access_level_map()

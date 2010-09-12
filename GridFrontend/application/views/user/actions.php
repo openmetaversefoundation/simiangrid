@@ -9,7 +9,7 @@
 	<li><?php echo lang('sg_user_access_level'); ?> : <span id="access_level"><?php echo pretty_access($this->user_data['AccessLevel']); ?></span></li>
 	<li><input type="submit" id="raw_user_view" value="<?php echo lang('sg_raw'); ?>"></input></li>
 	<li><?php echo lang('sg_auth_ban_status'); ?> : <span id="ban_status"><?php echo $this->banned; ?></span></li>
-	<li><?php echo lang('sg_auth_ban_status'); ?> : <span id="ban_status"><?php echo $this->banned; ?></span></li>
+	<li><?php echo lang('sg_auth_validation_status'); ?> : <span id="validation_status"><?php echo $this->validation; ?></span></li>
 	<?php endif; ?>
 <ul>
 
@@ -126,6 +126,17 @@
 			tooltip : "<?php echo lang('sg_click_change'); ?>",
 			type : 'select',
 			data : ban_data
+		});
+
+		var validation_data = {
+			'true' : "<?php echo lang('sg_auth_validated'); ?>",
+			'false' : "<?php echo lang('sg_auth_not_validated'); ?>"
+		};
+		$("#validation_status").editable(<?php echo "\"" . site_url('user/actions/' . $this->user_id . '/change_validation_status') . "\""; ?>, {
+			submit : 'OK',
+			tooltip : "<?php echo lang('sg_click_change'); ?>",
+			type : 'select',
+			data : validation_data
 		});
 	});
 </script>

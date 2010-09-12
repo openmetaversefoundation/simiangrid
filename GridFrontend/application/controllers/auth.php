@@ -297,5 +297,12 @@ class Auth extends Controller
 		}
 		return redirect('auth/register');
 	}
-
+	
+	function validate($code)
+	{
+		if ( ! $this->sg_auth->validate($code) ) {
+			push_message(set_message('sg_auth_validation_fail'), 'error');
+		}
+		return redirect('about');
+	}
 }

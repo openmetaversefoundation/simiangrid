@@ -74,5 +74,9 @@ $lang['sg_auth_reset_body'] = 'Click <a href="%s">here</a> to validate your acco
 $lang['sg_auth_ban_status'] = 'User Status';
 $lang['sg_auth_banned'] = 'Banned';
 $lang['sg_auth_not_banned'] = 'Not Banned';
+$lang['sg_auth_validation_status'] = 'Email Status';
+$lang['sg_auth_validated'] = 'Validated';
+$lang['sg_auth_not_validated'] = 'Not Validate';
+$lang['sg_auth_validation_fail'] = 'Unable to validate email';
 
 ?>

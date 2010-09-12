@@ -181,7 +181,7 @@ function send_email($to, $subject, $message)
 	$ci =& get_instance();
 	$ci->load->library('Email');
 
-	$email = $this->ci->email;
+	$email = $ci->email;
 
 	$email->from($ci->config->item('email_from'));
 	$email->to($to);

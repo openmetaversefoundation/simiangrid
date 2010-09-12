@@ -341,6 +341,37 @@ class User extends Controller {
 		}
 		return;
 	}
+	
+	function _change_validation_status($uuid)
+	{
+		$val = $this->form_validation;
+		$val->set_rules('value', 'validation_status', 'trim|required|xss_clean');
+		
+		if ( $val->run() ) {
+			$real_val = $val->set_value('value');
+			
+			if ( $real_val == 'true' ) {
+				$status = true;
+			} else if ( $real_val == 'false' ) {
+				$status = false;
+			} else {
+				return;
+			}
+			if ( $status ) {
+				$result = $this->sg_auth->set_valid($uuid);
+			} else {
+				$result = $this->sg_auth->reset_validation($uuid);
+			}
+			if ( $result ) {
+				if ( $status ) {
+					echo lang('sg_auth_validated');
+				} else {
+					echo lang('sg_auth_not_validated');
+				}
+			}
+		}
+		return;
+	}
 
 	function actions($uuid, $action=null)
 	{
@@ -360,6 +391,8 @@ class User extends Controller {
 			return $this->_change_access_level($uuid);
 		} else if ( $action == "change_ban_status" && $this->sg_auth->is_admin() ) {
 			return $this->_change_ban_status($uuid);
+		} else if ( $action == "change_validation_status" && $this->sg_auth->is_admin() ) {
+			return $this->_change_validation_status($uuid);
 		} else {
 			$this->user_id = $uuid;
 			$this->user_data = $this->simiangrid->get_user($uuid);
@@ -369,6 +402,11 @@ class User extends Controller {
 				$this->banned = lang('sg_auth_banned');
 			} else {
 				$this->banned = lang('sg_auth_not_banned');
+			}
+			if ( $this->sg_auth->is_validated($uuid) ) {
+				$this->validation = lang('sg_auth_validated');
+			} else {
+				$this->validation = lang('sg_auth_not_validated');
 			}
 		    $this->simple_page = true;
 			return parse_template('user/actions');

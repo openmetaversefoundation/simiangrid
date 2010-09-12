@@ -18,3 +18,9 @@ CREATE TABLE IF NOT EXISTS `sgf_user_settings` (
 	`style` VARCHAR(16) NOT NULL,
 	PRIMARY KEY ( `user_id` )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+CREATE TABLE IF NOT EXISTS `sgf_user_validation` (
+	`user_id` VARCHAR(36) NOT NULL,
+	`validation_code` VARCHAR(36) NOT NULL,
+	PRIMARY KEY ( `user_id` )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
