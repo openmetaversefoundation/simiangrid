@@ -36,8 +36,8 @@
 <li><a href="{site_url}/auth/logout"><?php echo lang('sg_menu_logout'); ?></a></li>
 <?php endif; ?>
 <?php if ( ! $this->sg_auth->is_logged_in()): ?>
-<li><a href="{site_url}/auth"><?php echo lang('sg_menu_login'); ?></a></li>
-<li><a href="{site_url}/auth/register"><?php echo lang('sg_menu_register'); ?></a></li>
+<li><a href="{site_url}/auth"><?php echo lang('sg_login'); ?></a></li>
+<li><a href="{site_url}/auth/register"><?php echo lang('sg_register'); ?></a></li>
 <?php endif; ?>
 
 <li><a href="{site_url}/about"><?php echo lang('sg_menu_about'); ?></a></li>
