@@ -60,6 +60,12 @@
     $configOptions['login_service']['default'] = "http://localhost/Grid/login/";
     $configOptions['login_service']['string'] = "@@LOGIN_SERVICE@@";
     $configOptions['login_service']['file'] = "application/config/config.php";
+
+    $configOptions['login_service']['name'] = "Map Tile Host";
+    $configOptions['login_service']['description'] = "The URL of the Map Tile Server";
+    $configOptions['login_service']['default'] = "http://localhost/Grid/map.php/";
+    $configOptions['login_service']['string'] = "@@TILE_HOST@@";
+    $configOptions['login_service']['file'] = "application/config/config.php";
     
     $configOptions['grid_name']['name'] = "Grid Name";
     $configOptions['grid_name']['description'] = "The name of your grid.";

@@ -11,7 +11,12 @@
 |	http://example.com/
 |
 */
+
 $config['base_url']	= "@@BASE_URL@@";
+
+//the tile host is where the Grid component saves map tiles
+//should point to the map.php proxy to make google maps complain less
+$config['tile_host'] = "@@TILE_HOST@@";
 
 /*
 |--------------------------------------------------------------------------
@@ -391,6 +396,42 @@ $config['rewrite_short_tags'] = FALSE;
 |
 */
 $config['proxy_ips'] = '';
+
+
+// The default style when a user does not have one selected.
+// Also applies to users who are not logged in.
+$config['default_style'] = "Default";
+//These styles must be present in the static directory
+$config['style_list'] = array(
+	'horrible' => 'Bad Example',
+	'default' => 'Default'
+);
+
+
+//don't touch! hehe
+$config['admin_access_level'] = 200;
+//whether to support openid
+$config['openid_enabled'] = false;
+//is email activation required.
+//note this does not affect the authorization.
+$config['email_activation'] = false;
+//where emails are addressed from
+$config['email_from'] = 'noreply@localhost';
+
+//imagemagick is used to render textures in a way browsers can digest them
+//requires an extra php mod
+$config['use_imagick'] = false;
+
+
+//whether to use facebook. this is for social plugins and authentication
+$config['use_facebook'] = false;
+//retrieve these from your facebook application settings
+$config['facebook_secret'] = '...';
+$config['facebook_id'] = '...';
+
+//whether to place twitter buttons where 'appropriate'
+$config['use_twitter'] = true;
+
 
 
 /* End of file config.php */
