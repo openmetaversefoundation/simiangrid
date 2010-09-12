@@ -432,7 +432,7 @@ $config['facebook_secret'] = '...';
 $config['facebook_id'] = '...';
 
 //whether to place twitter buttons where 'appropriate'
-$config['use_twitter'] = true;
+$config['use_twitter'] = false;
 
 
 
