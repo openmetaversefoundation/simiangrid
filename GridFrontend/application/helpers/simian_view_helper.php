@@ -87,8 +87,8 @@
 	{
 		$access_levels = array(
 			'0' => lang('sg_user_access_anon'),
-			'5' => lang('sg_user_access_normal'),
-			'255' => lang('sg_user_access_admin')
+			'1' => lang('sg_user_access_normal'),
+			'200' => lang('sg_user_access_admin')
 		);
 		if ( $selected != null ) {
 			$access_levels['selected'] = $selected;
