@@ -127,17 +127,12 @@ class SG_Auth
 			$this->session->set_userdata('SG_UserID', $uuid);
 		}
 	}
-	
-	function _is_banned($user_id)
-	{
-		return false;
-	}
 
 	function _login_finish($user_id, $remember=false) {
 		if ( $user_id === null ) {
 			return false;
 		} else {
-			if ( $this->_is_banned($user_id) ) {
+			if ( $this->is_banned($user_id) ) {
 				return false;
 			} else {
 				$this->_login_session($user_id, $remember);
@@ -247,5 +242,80 @@ class SG_Auth
 			}
 		}
 		return false;
+	}
+
+	function _get_user_flags($user_id)
+	{
+		$user_data = $this->simiangrid->get_user($user_id, true);
+		if ( ! empty($user_data['UserFlags']) ) {
+			$user_flags = $user_data['UserFlags'];
+		} else {
+			$user_flags = array();
+		}
+		return $user_flags;
+	}
+
+	function _set_user_flag($user_id, $flag, $status)
+	{
+		$user_flags = $this->_get_user_flags($user_id);
+		$user_flags[$flag] = $status;
+		return $this->_set_user_flags($user_id, $user_flags);
+	}
+	
+	function _set_user_flags($user_id, $user_flags)
+	{
+		return $this->simiangrid->set_user_data($user_id, 'UserFlags', json_encode($user_flags));
+	}
+	function ban_user($user_id)
+	{
+		return $this->_set_user_flag($user_id, 'Suspended', true);
+	}
+	
+	function unban_user($user_id)
+	{
+		return $this->_set_user_flag($user_id, 'Suspended', false);
+	}
+	
+	function is_banned($user_id)
+	{
+		$user_flags = $this->_get_user_flags($user_id);
+		if ( empty($user_flags['Suspended']) ) {
+			return false;
+		} else {
+			return $user_flags['Suspended'];
+		}
+	}
+
+	function reset_validation($user_id)
+	{
+		$code = random_uuid();
+		$user_flags = $this->_get_user_flags($user_id);
+		$user_flags['Validated'] = false;
+		$user_flags['ValidationCode'] = $code;
+		
+		$result = false;
+		if ( $this->_set_user_flags($user_id, $user_flags) ) {
+			$user = $this->simiangrid->get_user($user_id);
+			$email = $user['Email'];
+			if ( ! send_email($email, set_message('sg_auth_reset_subject', get_site_title()), set_message('sg_auth_reset_body', site_url("auth/validate/$code") ) ) ) {
+				push_message(set_message('sg_email_fail', $email), 'error');
+			} else {
+				$result = true;
+			}
+		}
+	}
+	
+	function validate($code, $user_id)
+	{
+		
+	}
+	
+	function access_level_map()
+	{
+		return array(
+			'0' => lang('sg_user_access_anon'),
+			'1' => lang('sg_user_access_normal'),
+			'200' => lang('sg_user_access_admin')
+		);
 	}
 }

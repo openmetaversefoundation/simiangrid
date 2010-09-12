@@ -85,11 +85,8 @@
 
 	function json_access_levels($selected=null)
 	{
-		$access_levels = array(
-			'0' => lang('sg_user_access_anon'),
-			'1' => lang('sg_user_access_normal'),
-			'200' => lang('sg_user_access_admin')
-		);
+		$ci =& get_instance();
+		$access_levels = $ci->sg_auth->access_level_map();
 		if ( $selected != null ) {
 			$access_levels['selected'] = $selected;
 		}
@@ -152,6 +149,17 @@
 		$ci =& get_instance();
 		$region = $ci->simiangrid->get_scene($region_id);
 		echo anchor(site_url("region/info/$region_id"), $region['Name']);
+	}
+	
+	function pretty_access($level)
+	{
+		$ci =& get_instance();
+		$levels = $ci->sg_auth->access_level_map();
+		if ( !empty($levels[$level]) ) {
+			return $levels[$level];
+		} else {
+			return $level;
+		}
 	}
 
 ?>

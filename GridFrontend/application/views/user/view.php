@@ -18,5 +18,12 @@
 </div>
 
 <script>
-    $( "#user_menu" ).tabs({ ajaxOptions: { async: false } });
+    var menu = $( "#user_menu" ).tabs({ ajaxOptions: { async: false } });
+
+	var tab = "<?php echo $this->tab; ?>";
+	if ( tab == 'identities' ) {
+		menu.tabs('select', 1);
+	} else if ( tab == 'actions' ) {
+		menu.tabs('select', 2);
+	}
 </script>

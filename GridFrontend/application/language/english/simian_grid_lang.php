@@ -21,6 +21,8 @@ $lang['sg_email'] = 'Email';
 $lang['sg_register'] = 'Join Now';
 $lang['sg_click_change'] = 'Click to Change...';
 $lang['sg_type'] = 'Type';
+$lang['sg_admin'] = 'Admin';
+$lang['sg_email_fail'] = 'Problem sending email to %s';
 //region
 $lang['sg_region_name'] = 'Region Name';
 $lang['sg_region_owner'] = 'Owner';
@@ -67,5 +69,10 @@ $lang['sg_auth_forgot_password'] = 'Forgot Password';
 $lang['sg_auth_appearance'] = 'Starting Appearance';
 $lang['sg_auth_fb_register'] = 'Register with Facebook';
 $lang['sg_auth_ident_remove_error'] = 'Unable to remove identity type %s';
+$lang['sg_auth_reset_subject'] = '%s Password Reset';
+$lang['sg_auth_reset_body'] = 'Click <a href="%s">here</a> to validate your account.';
+$lang['sg_auth_ban_status'] = 'User Status';
+$lang['sg_auth_banned'] = 'Banned';
+$lang['sg_auth_not_banned'] = 'Not Banned';
 
 ?>

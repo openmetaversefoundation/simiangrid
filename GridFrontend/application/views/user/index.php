@@ -11,7 +11,7 @@
 
     function load_via_post(url_suffix, destination, data)
     {
-		return real_load_via_post(<?php echo "\"" . get_base_url() . "\"" ; ?> + url_suffix, destination, data);
+		return real_load_via_post(<?php echo "\"" . base_url() . "index.php/\"" ; ?> + url_suffix, destination, data);
 	}
    
     function do_search()
@@ -26,5 +26,6 @@
 
     $().ready(function() {
         $("#search_button").click(do_search);
+		$("#user_name").change(do_search);
     });
 </script>

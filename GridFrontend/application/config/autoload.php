@@ -51,7 +51,7 @@ $autoload['libraries'] = array('parser', 'SimianGrid', 'SG_Auth');
 |	$autoload['helper'] = array('url', 'file');
 */
 
-$autoload['helper'] = array('array', 'url', 'language', 'simian', 'simian_view');
+$autoload['helper'] = array('array', 'url', 'language', 'simian', 'simian_view', 'html');
 
 
 /*

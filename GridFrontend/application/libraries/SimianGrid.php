@@ -227,10 +227,14 @@ class SimianGrid
 		$query = array(
 			'RequestMethod' => 'AddUserData',
 			'UserID' => $user_id,
-			'Key' => $key,
-			'Value' => $value
+			 $key => $value
 		);
-		$this->_rest_post($this->user_service, $query);
+		$response = $this->_rest_post($this->user_service, $query);
+		if ( element('Success', $response, false) ) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	function remove_user_data($user_id, $key)
@@ -401,6 +405,24 @@ class SimianGrid
         $response = $this->_rest_post($this->user_service, $query);
         
         if (element('Success', $response)) {
+            return true;
+        } else {
+			return false;
+		}
+	}
+	
+	function set_access_level($user_id, $level)
+	{
+		$user_data = $this->get_user($user_id, true);
+		$query = array(
+			'RequestMethod' => 'AddUser',
+			'UserID' => $user_data['UserID'],
+			'Email' => $user_data['Email'],
+			'Name' => $user_data['Name'],
+			'AccessLevel' => $level
+		);
+		$response = $this->_rest_post($this->user_service, $query);
+		if (element('Success', $response)) {
             return true;
         } else {
 			return false;

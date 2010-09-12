@@ -24,7 +24,7 @@
 
 <div id="page">
 
-<h1>SimianGrid<span></span></h1>
+<h1><span>SimianGrid</span></h1>
 
 <menu>
 <li><a href="{site_url}/user/"><Users><?php echo lang('sg_menu_users'); ?></a></li>
@@ -39,10 +39,8 @@
 <li><a href="{site_url}/auth"><?php echo lang('sg_login'); ?></a></li>
 <li><a href="{site_url}/auth/register"><?php echo lang('sg_register'); ?></a></li>
 <?php endif; ?>
-
 <li><a href="{site_url}/about"><?php echo lang('sg_menu_about'); ?></a></li>
 </menu>
-
 <div id="border">
 <div id="contents">
 <?php endif; ?>

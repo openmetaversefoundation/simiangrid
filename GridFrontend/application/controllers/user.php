@@ -236,9 +236,14 @@ class User extends Controller {
 	    	$this->uuid = $uuid;
 		}
 	    $this->my_uuid = $this->sg_auth->get_uuid();
+		$this->tab = '';
 		if ( $extra == "inline" ) {
 			$this->simple_page = true;
-	    }
+	    } else if ( $extra == "actions" ) {
+			$this->tab = 'actions';
+		} else if ( $extra == 'identities' ) {
+			$this->tab = 'identities';
+		}
 		$this->title = $user['Name'];
 		parse_template('user/view');
 	}
@@ -289,6 +294,54 @@ class User extends Controller {
 		} 
 	}
 	
+	function _change_access_level($uuid)
+	{
+		$val = $this->form_validation;
+		$val->set_rules('value', 'access_level', 'trim|required|xss_clean|numeric');
+		
+		if ( $val->run() ) {
+			$level = $val->set_value('value');
+			$levels = $this->sg_auth->access_level_map();
+			if ( ! empty($levels[$level]) ) {
+				if ( $this->simiangrid->set_access_level($uuid, $level) ) {
+					echo $levels[$level];
+				} 
+			}
+		}
+		return;
+	}
+	
+	function _change_ban_status($uuid)
+	{
+		$val = $this->form_validation;
+		$val->set_rules('value', 'access_level', 'trim|required|xss_clean');
+		
+		if ( $val->run() ) {
+			$real_val = $val->set_value('value');
+			
+			if ( $real_val == 'true' ) {
+				$status = true;
+			} else if ( $real_val == 'false' ) {
+				$status = false;
+			} else {
+				return;
+			}
+			if ( $status ) {
+				$result = $this->sg_auth->ban_user($uuid);
+			} else {
+				$result = $this->sg_auth->unban_user($uuid);
+			}
+			if ( $result ) {
+				if ( $status ) {
+					echo lang('sg_auth_banned');
+				} else {
+					echo lang('sg_auth_not_banned');
+				}
+			}
+		}
+		return;
+	}
+
 	function actions($uuid, $action=null)
 	{
 		if ( ! $this->_me_or_admin($uuid) ) {
@@ -303,11 +356,20 @@ class User extends Controller {
 			return $this->_change_password($uuid);
 		} else if ( $action == "style_selection" ) {
 			return $this->_style_selection($uuid);
+		} else if ( $action == "change_access_level" && $this->sg_auth->is_admin() ) {
+			return $this->_change_access_level($uuid);
+		} else if ( $action == "change_ban_status" && $this->sg_auth->is_admin() ) {
+			return $this->_change_ban_status($uuid);
 		} else {
 			$this->user_id = $uuid;
 			$this->user_data = $this->simiangrid->get_user($uuid);
 		    $this->my_uuid = $this->sg_auth->get_uuid();
 			$this->stylesheet = get_stylesheet();
+			if ( $this->sg_auth->is_banned($uuid) ) {
+				$this->banned = lang('sg_auth_banned');
+			} else {
+				$this->banned = lang('sg_auth_not_banned');
+			}
 		    $this->simple_page = true;
 			return parse_template('user/actions');
 		}
