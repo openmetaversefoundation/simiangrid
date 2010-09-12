@@ -152,15 +152,21 @@ class SimianGrid
 		}
 	}
 
+	function get_identity($identifier)
+	{
+		$identities = $this->_get_user_identities('name', $identifier);
+		if ( count($identities) == 0 ) {
+			return null;
+		} else {
+			return $identities[0];
+		}
+	}
+
 	function get_user_identities($thing)
 	{
 		return $this->_get_user_identities('id', $thing);
 	}
 	
-	function get_user_identities_by_name($thing)
-	{
-		return $this->_get_user_identities('name', $thing);
-	}
 	
 	function _get_user_identities($type, $thing)
 	{

@@ -226,7 +226,7 @@ class Auth extends Controller
 				push_message(lang('sg_auth_fb_error'), 'error');
 				return redirect('auth/register');
 			}
-			if ( facebook_check($this, $token, $data) ) {
+			if ( ! $this->sg_auth->facebook_exists($fb_id) && facebook_check($this, $token, $data) ) {
 				$val = $this->form_validation;
 
 				$user_id = $this->_register($val);
@@ -269,22 +269,24 @@ class Auth extends Controller
 		            $this->session->set_flashdata('openid_identifier', $openid);
 		        }
 		        
-		        // OpenID authentication succeeded
-		        $val = $this->form_validation;
+				if ( ! $this->sg_auth->openid_exists($openid) ) {
+			        // OpenID authentication succeeded
+			        $val = $this->form_validation;
 		
-				$user_id = $this->_register($val);
+					$user_id = $this->_register($val);
 				
-				if ( $user_id != null ) {
-					if ( $this->simiangrid->identity_set($user_id, 'openid', $openid) ) {
-						return parse_template('simple');
+					if ( $user_id != null ) {
+						if ( $this->simiangrid->identity_set($user_id, 'openid', $openid) ) {
+							return parse_template('simple');
+						} else {
+							push_message(lang('sg_auth_open_error_assoc'), 'error');
+							$this->simiangrid->user_delete($user_id);
+						}
 					} else {
-						push_message(lang('sg_auth_open_error_assoc'), 'error');
-						$this->simiangrid->user_delete($user_id);
-					}
-				} else {
-    			    // Load OpenID registration page
-    	            return parse_template('auth/register_openid', $data);
-    			}
+	    			    // Load OpenID registration page
+	    	            return parse_template('auth/register_openid', $data);
+	    			}
+				}
 		    } else {
 				return redirect('auth/register');
 			}

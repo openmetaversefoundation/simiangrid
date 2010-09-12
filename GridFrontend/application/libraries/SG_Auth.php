@@ -206,4 +206,46 @@ class SG_Auth
 		return null;
 	}
 
+	function is_searchable($user_id)
+	{
+		$result = false;
+		$user = $this->simiangrid->get_user($user_id);
+
+		if ( $user != null ) {
+			$uuid = $user['UserID'];
+			$result = false;
+	        if ( $this->is_admin() ) {
+				$result = true;
+			} else if ( isset($user['LLAbout']) && isset($user['LLAbout']['AllowPublish']) ) {
+	            if ( $user['LLAbout']['AllowPublish'] ) {
+					$result = true;
+	            }
+	        }
+		}
+		return $result;
+	}
+	
+	function openid_exists($openid)
+	{
+		$result = $this->simiangrid->get_identity($openid);
+		if ( $result != null ) {
+			if ( $result['Type'] == 'openid' ) {
+				push_message(lang('sg_auth_openid_exists'), 'error');
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	function facebook_exists($fb_id)
+	{		
+		$result = $this->simiangrid->get_identity($fb_id);
+		if ( $result != null ) {
+			if ( $result['Type'] == 'facebook' ) {
+				push_message(lang('sg_auth_facebook_exists'), 'error');
+				return true;
+			}
+		}
+		return false;
+	}
 }

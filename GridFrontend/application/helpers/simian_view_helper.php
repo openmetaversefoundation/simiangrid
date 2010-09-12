@@ -133,5 +133,25 @@
 		}
 		echo json_encode($styles);
 	}
+	
+	function render_user_link($user_id)
+	{
+		$ci =& get_instance();
+		$user = $ci->simiangrid->get_user($user_id);
+		$result = '';
+		if ( $ci->sg_auth->is_searchable($user_id) ) {
+			$result = anchor(site_url("user/view/$user_id"), $user['Name']);
+		} else {
+			$result = $user['Name'];
+		}
+		echo $result;
+	}
+	
+	function render_region_link($region_id)
+	{
+		$ci =& get_instance();
+		$region = $ci->simiangrid->get_scene($region_id);
+		echo anchor(site_url("region/info/$region_id"), $region['Name']);
+	}
 
 ?>

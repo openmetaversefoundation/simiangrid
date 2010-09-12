@@ -48,8 +48,10 @@ class User extends Controller {
 			if ( ! empty($_GET['code']) ) {
 				$token = process_facebook_verification($_GET['code'], site_url("user/identities/$uuid/add_facebook"));
 				$fb_id = facebook_get_id($this, $token);
-				if ( ! $this->simiangrid->identity_set($uuid, 'facebook', $fb_id) ) {
-					push_message(lang('sg_auth_fb_error_assoc'), 'error');
+				if ( ! $this->sg_auth->facebook_exists($fb_id) ) {
+					if ( ! $this->simiangrid->identity_set($uuid, 'facebook', $fb_id) ) {
+						push_message(lang('sg_auth_fb_error_assoc'), 'error');
+					}
 				}
 			}
 		}
@@ -71,9 +73,11 @@ class User extends Controller {
 	            $openid = $data['openid_identifier'];
 	            $this->session->set_flashdata('openid_identifier', $openid);
 	        }
-	        
-			if ( ! $this->simiangrid->identity_set($uuid, 'openid', $openid) ) {
-				push_message(lang('sg_auth_open_error_assoc'), 'error');
+			
+			if ( ! $this->sg_auth->openid_exists($openid) ) {
+				if ( ! $this->simiangrid->identity_set($uuid, 'openid', $openid) ) {
+					push_message(lang('sg_auth_open_error_assoc'), 'error');
+				}
 			}
 		}
 		return redirect("user/view/$uuid");
@@ -119,13 +123,12 @@ class User extends Controller {
 			$type = $identity['Type'];
 			$enabled = (bool) $identity['Enabled'];
 			$real_identifier = $identity['Identifier'];
+			$ident = $real_identifier;
 			if ( $type == "openid" ) {
 				$this->has_openid = true;
 				$ident = "N/A";
 			} elseif ( $type == "facebook" ) {
 				$this->has_facebook = true;
-			} else {
-				$ident = $real_identifier;
 			}
 			if ( $type != "md5hash" ) {
 				$actions = $this->_render_remove_identity($uuid, $type, $real_identifier);
@@ -190,24 +193,6 @@ class User extends Controller {
 	    parse_template('user/profile');
 	}
 
-	function _is_searchable($user_id) {
-		$result = false;
-		$user = $this->simiangrid->get_user($user_id);
-		
-		if ( $user != null ) {
-			$uuid = $user['UserID'];
-			$result = false;
-	        if ( $this->sg_auth->is_admin() ) {
-				$result = true;
-			} else if ( isset($user['LLAbout']) && isset($user['LLAbout']['AllowPublish']) ) {
-	            if ( $user['LLAbout']['AllowPublish'] ) {
-					$result = true;
-	            }
-	        }
-		}
-		return $result;
-	}
-
 	function search()
 	{
 	    $this->simple_page = true;
@@ -217,7 +202,7 @@ class User extends Controller {
 	        $user_results = $this->simiangrid->search_user($name);
 			if ( $user_results != null ) {
 				foreach ( $user_results as $user ) {
-					if ( $this->_is_searchable($user['id']) ) {
+					if ( $this->sg_auth->is_searchable($user['id']) ) {
 						array_push($this->user_list, $user);
 					}
 				}
@@ -237,13 +222,23 @@ class User extends Controller {
 	}
 
 	function view($uuid, $extra=null)
-	{
-	    $this->uuid = $uuid;
+	{	
+		$user = $this->simiangrid->get_user($uuid);
+		if ( $user == null ) {
+			$user = $this->simiangrid->get_user_by_name($uuid);
+			if ( $user != null ) {
+				$this->uuid = $user['UserID'];
+			} else {
+				push_message(set_message('sg_user_not_found', $uuid), 'error');
+				return redirect('user/');
+			}
+		} else {
+	    	$this->uuid = $uuid;
+		}
 	    $this->my_uuid = $this->sg_auth->get_uuid();
 		if ( $extra == "inline" ) {
 			$this->simple_page = true;
 	    }
-		$user = $this->simiangrid->get_user($uuid);
 		$this->title = $user['Name'];
 		parse_template('user/view');
 	}
@@ -254,6 +249,10 @@ class User extends Controller {
 			return redirect('user/index');
 		}
 	    $this->user_data = $this->simiangrid->get_user($uuid);
+		if ( $this->user_data == null ) {
+			push_message(set_message('sg_user_not_found', $uuid), 'error');
+			return redirect('user/');
+		}
 	    $this->simple_page = true;
 	    parse_template('user/raw');
 	}
@@ -294,6 +293,11 @@ class User extends Controller {
 	{
 		if ( ! $this->_me_or_admin($uuid) ) {
 			return redirect('user/index');
+		}
+		$user = $this->simiangrid->get_user($uuid);
+		if ( $user == null ) {
+			push_message(set_message('sg_user_not_found', $uuid), 'error');
+			return redirect('user/');
 		}
 		if ( $action == "change_password" ) {
 			return $this->_change_password($uuid);

@@ -22,6 +22,7 @@ $lang['sg_register'] = 'Join Now';
 $lang['sg_click_change'] = 'Click to Change...';
 $lang['sg_type'] = 'Type';
 //region
+$lang['sg_region_name'] = 'Region Name';
 $lang['sg_region_owner'] = 'Owner';
 $lang['sg_region_position'] = 'Position';
 $lang['sg_region_unknown'] = 'Region Unknown';
@@ -40,10 +41,13 @@ $lang['sg_password_error'] = 'Unable to change password';
 $lang['sg_password_match'] = 'Passwords Must Match';
 $lang['sg_password_change'] = 'Change Password';
 $lang['sg_user_identifier'] = 'Identifier';
+$lang['sg_user_not_found'] = 'User %s not found';
 //auth
 $lang['sg_auth_username_format'] = 'Username must be alphanumeric or dashes with first and fast name separated by a space.';
 $lang['sg_auth_username_exists'] = 'Username already exists. Please choose another username.';
 $lang['sg_auth_email_exists'] = 'Email is already used by another user. Please choose another email address.';
+$lang['sg_auth_facebook_exists'] = 'This Facebook account is already associated with an existing account.';
+$lang['sg_auth_openid_exists'] = 'This OpenID is already associated with an existing account.';
 
 $lang['sg_auth_facebook_error_login'] = 'This Facebook account is not associated with an existing account';
 $lang['sg_auth_openid_error_login'] = 'This OpenID account is not associated with an existing account';

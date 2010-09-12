@@ -14,9 +14,9 @@
 	}
 ?>
 <br/>
-<?php echo lang('sg_name') . " : " . $this->scene_data['Name']; ?> <br/>
+<?php echo lang('sg_region_name') . " : " . $this->scene_data['Name']; ?> <br/>
 <?php echo lang('sg_region_position') . " : " .  $x . "," . $y; ?> <br/>
-<?php echo lang('sg_region_owner') . " : " . $this->owner_name ?><br/>
+<?php echo lang('sg_region_owner') . " : " ; render_user_link($this->owner_id); ?><br/>
 <?php 
 	if ( ! $this->simple_page ) {
 		$image_url = $this->config->item('tile_host') . "map-1-$x-$y-objects.png";

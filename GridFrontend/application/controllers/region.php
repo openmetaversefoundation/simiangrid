@@ -89,5 +89,6 @@ class Region extends Controller {
 	{    
 	    $grid_user = $this->simiangrid->get_user($this->scene_data['ExtraData']['EstateOwner']);
 	    $this->owner_name = $grid_user['Name'];
+		$this->owner_id = $grid_user['UserID'];
 	}
 }
