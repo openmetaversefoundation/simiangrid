@@ -174,13 +174,15 @@ class Auth extends Controller
 			$user_id = $this->_register($val);
 			if ( $user_id != null ) {
 				return parse_template('simple');
+			} else {
+				return parse_template('auth/register');
 			}
 		} elseif ( ! $this->sg_auth->allow_registration) {
 			push_message(lang('sg_auth_registration_disabled'), 'error');
 		} else {
 			push_message(lang('sg_auth_error_logout_first'), 'error');
 		}
-		return parse_template('auth/register');
+		return redirect('about');
 	}
 	
 	function _get_facebook_token_flash()
@@ -248,7 +250,7 @@ class Auth extends Controller
 		} else {
 			push_message(lang('sg_auth_error_logout_first'), 'error');
 		}
-		return parse_template('auth/register');
+		return redirect('about');
 	}
 	
 	function register_openid()
@@ -295,7 +297,7 @@ class Auth extends Controller
 		} else {
 			push_message(lang('sg_auth_error_logout_first'), 'error');
 		}
-		return redirect('auth/register');
+		return redirect('about');
 	}
 	
 	function validate($code)
