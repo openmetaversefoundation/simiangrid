@@ -417,6 +417,8 @@ $config['openid_enabled'] = false;
 $config['email_activation'] = false;
 //where emails are addressed from
 $config['email_from'] = 'noreply@localhost';
+//whether to allow registration
+$config['allow_registration'] = true;
 
 //imagemagick is used to render textures in a way browsers can digest them
 //requires an extra php mod

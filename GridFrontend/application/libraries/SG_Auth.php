@@ -21,6 +21,7 @@ class SG_Auth
 		$this->enabled_openid = $this->ci->config->item('openid_enabled');
 		$this->email_activation = $this->ci->config->item('email_activation');
 		$this->admin_access_level = $this->ci->config->item('admin_access_level');
+		$this->allow_registration = $this->ci->config->item('allow_registration');
 		
 		$this->session = $this->ci->session;
 		$this->simiangrid = $this->ci->simiangrid;
