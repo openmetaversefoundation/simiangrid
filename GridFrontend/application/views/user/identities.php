@@ -12,10 +12,13 @@ $openid_identifier = array(
 
 <?php echo $this->table->generate(); ?>
 
+<?php if ( $this->uuid == $this->sg_auth->get_uuid() ):?>
+
 <?php if ( ! $this->has_openid ): ?>
 <?php openid_identifier_render("Add OpenID", site_url('user/identities/' . $this->uuid . '/add_openid'), "Add"); ?>
 <?php endif; ?>
 
 <?php if ( ! $this->has_facebook ): ?>
 <?php generate_facebook_auth(site_url('user/identities/' . $this->uuid . '/add_facebook')); ?>
+<?php endif; ?>
 <?php endif; ?>
