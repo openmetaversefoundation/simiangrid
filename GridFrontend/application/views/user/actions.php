@@ -4,7 +4,9 @@
 
 <ul>
 	<li><input type="submit" id="change_password" value="Change Password"></input></li>
+	<?php if ( $this->user_id == $this->sg_auth->get_uuid() ): ?>
 	<li><?php echo lang('sg_user_style'); ?> : <span id="style_selection"><?php echo $this->stylesheet; ?></span></li>
+	<?php endif; ?>
 	<?php if ( $this->sg_auth->is_admin() ): ?>
 	<li><?php echo lang('sg_user_access_level'); ?> : <span id="access_level"><?php echo pretty_access($this->user_data['AccessLevel']); ?></span></li>
 	<li><input type="submit" id="raw_user_view" value="<?php echo lang('sg_raw'); ?>"></input></li>
@@ -107,36 +109,28 @@
 			submit : 'OK',
 			tooltip : "<?php echo lang('sg_click_change'); ?>",
 			type : 'select',
-			data : <?php json_access_levels($this->user_data['AccessLevel']); ?>
+			loadurl : "<?php echo site_url('user/actions/' . $this->user_id . '/load_access_level'); ?>"
 		});
 		$("#style_selection").editable(<?php echo "\"" . site_url('user/actions/' . $this->user_id . '/style_selection') . "\""; ?>, {
 			submit : 'OK',
 			tooltip : "<?php echo lang('sg_click_change'); ?>",
 			type : 'select',
-			data : <?php json_style_list(); ?>,
+			loadurl : "<?php echo site_url('user/actions/' . $this->user_id . '/load_style'); ?>",
 			callback : post_style_change
 		});
 		
-		var ban_data = {
-			'true' : "<?php echo lang('sg_auth_banned'); ?>",
-			'false' : "<?php echo lang('sg_auth_not_banned'); ?>"
-		};
 		$("#ban_status").editable(<?php echo "\"" . site_url('user/actions/' . $this->user_id . '/change_ban_status') . "\""; ?>, {
 			submit : 'OK',
 			tooltip : "<?php echo lang('sg_click_change'); ?>",
 			type : 'select',
-			data : ban_data
+			loadurl : "<?php echo site_url('user/actions/' . $this->user_id . '/load_ban_status'); ?>"
 		});
 
-		var validation_data = {
-			'true' : "<?php echo lang('sg_auth_validated'); ?>",
-			'false' : "<?php echo lang('sg_auth_not_validated'); ?>"
-		};
 		$("#validation_status").editable(<?php echo "\"" . site_url('user/actions/' . $this->user_id . '/change_validation_status') . "\""; ?>, {
 			submit : 'OK',
 			tooltip : "<?php echo lang('sg_click_change'); ?>",
 			type : 'select',
-			data : validation_data
+			loadurl : "<?php echo site_url('user/actions/' . $this->user_id . '/load_validation_status'); ?>"
 		});
 	});
 </script>

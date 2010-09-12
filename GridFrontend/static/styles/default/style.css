@@ -137,7 +137,7 @@ background-image: url(images/border.png);
 background-repeat: repeat-y;
 }
 
-menu {
+#menu {
 padding-left: 100px;
 background: url(images/menu.png) white;
 background-repeat: no-repeat;
@@ -151,13 +151,13 @@ text-align: center;
 font-weight: bold;
 }
 
-menu li {
+#menu li {
 display: block;
 float: left;
 height: 46px;
 }
 
-menu li a {
+#menu li a {
 color: #9E9E9E;
 background-image: url(images/menu_a.png);
 background-repeat: no-repeat;
@@ -169,7 +169,7 @@ text-decoration: underline;
 margin-top: 13px;
 }
 
-menu li a:hover {
+#menu li a:hover {
 color: #2D86A0;
 background-image: url(images/menu_a_hover.png);
 background-repeat: no-repeat;

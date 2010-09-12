@@ -5,7 +5,6 @@ class Region extends Controller {
 	function Region()
 	{
 		parent::Controller();
-		$this->load->library('DX_Auth');
 		$this->load->library('table');
 		$this->load->library('SimianGrid');
 

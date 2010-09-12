@@ -26,7 +26,7 @@
 
 <h1><span>SimianGrid</span></h1>
 
-<menu>
+<div id="menu">
 <li><a href="{site_url}/user/"><Users><?php echo lang('sg_menu_users'); ?></a></li>
 <li><a href="{site_url}/region"><?php echo lang('sg_menu_regions'); ?></a></li>
 <?php if ($this->sg_auth->is_logged_in()): ?>
@@ -40,7 +40,7 @@
 <li><a href="{site_url}/auth/register"><?php echo lang('sg_register'); ?></a></li>
 <?php endif; ?>
 <li><a href="{site_url}/about"><?php echo lang('sg_menu_about'); ?></a></li>
-</menu>
+</div>
 <div id="border">
 <div id="contents">
 <?php endif; ?>

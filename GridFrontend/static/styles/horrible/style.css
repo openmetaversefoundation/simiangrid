@@ -116,7 +116,7 @@ height: 137px;
 background-repeat: repeat-y;
 }
 
-menu {
+#menu {
 padding-left: 100px;
 background: white;
 background-repeat: no-repeat;
@@ -130,13 +130,13 @@ text-align: center;
 font-weight: bold;
 }
 
-menu li {
+#menu li {
 display: block;
 float: left;
 height: 46px;
 }
 
-menu li a {
+#menu li a {
 background-repeat: no-repeat;
 display:block;
 padding-top: 16px;
@@ -146,7 +146,7 @@ text-decoration: underline;
 margin-top: 13px;
 }
 
-menu li a:hover {
+#menu li a:hover {
 background-repeat: no-repeat;
 padding-top: 26px;
 height: 32px;

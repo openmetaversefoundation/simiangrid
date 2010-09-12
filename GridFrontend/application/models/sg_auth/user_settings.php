@@ -14,6 +14,7 @@ class User_Settings extends Model
 			return null;
 		}
 		$data = array(
+			'user_id' => $user_id,
 			'style' => $style
 		);
 		$this->_update_settings($user_id, $data);
@@ -45,10 +46,9 @@ class User_Settings extends Model
 
 	function _get_settings($user_id)
 	{
-		$sql = "select * from sgf_user_settings where user_id = \"?\"";
 		$query = $this->db->get_where($this->_table, array('user_id' => $user_id));
 		$result = $query->result();
-		if ( $result != null ) {
+		if ( $result != null && count($result) != 0 ) {
 			return $result[0];
 		} else {
 			return null;

@@ -294,6 +294,14 @@ class User extends Controller {
 		} 
 	}
 	
+	function _load_style($uuid)
+	{
+		$user = $this->simiangrid->get_user($uuid);
+		if ( $user != null ) {
+			echo json_style_list();
+		}
+	}
+	
 	function _change_access_level($uuid)
 	{
 		$val = $this->form_validation;
@@ -309,6 +317,14 @@ class User extends Controller {
 			}
 		}
 		return;
+	}
+	
+	function _load_access_level($uuid)
+	{
+		$user = $this->simiangrid->get_user($uuid);
+		if ( $user != null ) {
+			echo json_access_levels($user['AccessLevel']);
+		}
 	}
 	
 	function _change_ban_status($uuid)
@@ -342,6 +358,20 @@ class User extends Controller {
 		return;
 	}
 	
+	function _load_ban_status($uuid)
+	{
+		$ban_data = array(
+			'true' => lang('sg_auth_banned'),
+			'false' => lang('sg_auth_not_banned')
+		);
+		if ( $this->sg_auth->is_banned($uuid) ) {
+			$ban_data['selected'] = 'true';
+		} else {
+			$ban_data['selected'] = 'false';
+		}
+		echo json_encode($ban_data);
+	}
+	
 	function _change_validation_status($uuid)
 	{
 		$val = $this->form_validation;
@@ -373,6 +403,20 @@ class User extends Controller {
 		return;
 	}
 
+	function _load_validation_status($uuid)
+	{
+		$validation_data = array(
+			'true' => lang('sg_auth_validated'),
+			'false' => lang('sg_auth_not_validated')
+		);
+		if ( $this->sg_auth->is_validated($uuid) ) {
+			$validation_data['selected'] = 'true';
+		} else {
+			$validation_data['selected'] = 'false';
+		}
+		echo json_encode($validation_data);
+	}
+
 	function actions($uuid, $action=null)
 	{
 		if ( ! $this->_me_or_admin($uuid) ) {
@@ -387,12 +431,20 @@ class User extends Controller {
 			return $this->_change_password($uuid);
 		} else if ( $action == "style_selection" ) {
 			return $this->_style_selection($uuid);
+		} else if ( $action == "load_style" ) {
+			return $this->_load_style($uuid);
 		} else if ( $action == "change_access_level" && $this->sg_auth->is_admin() ) {
 			return $this->_change_access_level($uuid);
+		} else if ( $action == "load_access_level" && $this->sg_auth->is_admin() ) {
+			return $this->_load_access_level($uuid);
 		} else if ( $action == "change_ban_status" && $this->sg_auth->is_admin() ) {
 			return $this->_change_ban_status($uuid);
+		} else if ( $action == "load_ban_status" ) {
+			return $this->_load_ban_status($uuid);
 		} else if ( $action == "change_validation_status" && $this->sg_auth->is_admin() ) {
 			return $this->_change_validation_status($uuid);
+		} else if ( $action == "load_validation_status" ) {
+			return $this->_load_validation_status($uuid);
 		} else {
 			$this->user_id = $uuid;
 			$this->user_data = $this->simiangrid->get_user($uuid);
