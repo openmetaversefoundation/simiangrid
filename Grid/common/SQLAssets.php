@@ -168,7 +168,7 @@ class SQLAssets
             }
             else
             {
-                log_message('debug', "RemoveAsset could not find asset " . $asset->ID);
+                log_message('debug', "RemoveAsset could not find asset " . $assetID);
             }
         }
         else
