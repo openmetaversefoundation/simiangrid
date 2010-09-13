@@ -13,4 +13,17 @@ class About extends Controller {
 	{
 	    parse_template('about');
 	}
+	
+	function tooltip($tooltip)
+	{
+		if ( $tooltip == null ) {
+			$tooltip = $this->input('tooltip');
+		}
+		$value = lang("tooltip_$tooltip");
+		if ( ! $value ) {
+			echo lang('tooltip_generic');
+		} else {
+			echo $value;
+		}
+	}
 }

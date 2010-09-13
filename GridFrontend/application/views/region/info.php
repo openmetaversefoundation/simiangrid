@@ -1,4 +1,4 @@
-<h3>Info</h3>
+<h3><?php echo lang('sg_region_info'); ?></h3>
 
 <?php if ( $this->scene_data ): ?>
 <?php

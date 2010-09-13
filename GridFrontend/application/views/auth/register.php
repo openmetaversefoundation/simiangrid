@@ -4,7 +4,8 @@ $username = array(
 	'name'	=> 'username',
 	'id'	=> 'username',
 	'size'	=> 30,
-	'value' =>  set_value('username')
+	'value' =>  set_value('username'),
+	'title' => 'register_username'
 );
 
 $password = array(
@@ -26,7 +27,8 @@ $email = array(
 	'id'	=> 'email',
 	'maxlength'	=> 80,
 	'size'	=> 30,
-	'value'	=> set_value('email')
+	'value'	=> set_value('email'),
+	'title' => 'register_email'
 );
 
 $openid_identifier = array(

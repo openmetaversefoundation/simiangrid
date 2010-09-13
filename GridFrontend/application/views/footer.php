@@ -15,6 +15,25 @@
 </div>
 
 </div>
+
+<script type="text/javascript">
+$().ready(function() {
+	var url_base = "<?php echo site_url('about/tooltip/'); ?>";
+	$("[title!='']").each(function(i) {
+		var rel = $(this).attr('title');
+		$(this).qtip({
+			content : {
+				url: url_base + "/" + rel,
+				text: '...'
+			},
+		    show: 'mouseover',
+		    hide: 'mouseout'
+		});
+		$(this).attr('title', '');
+	});
+});
+</script>
+
 </body>
 </html>
 

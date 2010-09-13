@@ -28,6 +28,7 @@ $lang['sg_region_name'] = 'Region Name';
 $lang['sg_region_owner'] = 'Owner';
 $lang['sg_region_position'] = 'Position';
 $lang['sg_region_unknown'] = 'Region Unknown';
+$lang['sg_region_info'] = 'Region Info';
 //user
 $lang['sg_user_identities'] = 'Identities';
 $lang['sg_user_profile'] = 'Profile';
@@ -78,5 +79,8 @@ $lang['sg_auth_validation_status'] = 'Email Status';
 $lang['sg_auth_validated'] = 'Validated';
 $lang['sg_auth_not_validated'] = 'Not Validated';
 $lang['sg_auth_validation_fail'] = 'Unable to validate email';
-
+//tooltips
+$lang['tooltip_generic'] = 'No tooltip defined.';
+$lang['tooltip_register_username'] = 'Your username is in the format of "FirstName LastName". Ensure the two names are seperated by a space';
+$lang['tooltip_register_email'] = 'Please enter a valid email. This is needed to reset accounts and contact in event of administrative actions.';
 ?>

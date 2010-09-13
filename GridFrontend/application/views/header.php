@@ -15,8 +15,11 @@
 <base href="{base_url}" />
 <?php render_stylesheet(); ?>
 <link rel="stylesheet" href="static/jquery-ui.css" type="text/css" />
+<link rel="stylesheet" href="static/jquery.qtip.css" type="text/css" />
 <!-- <link rel="icon" href="static/images/icon.ico" /> -->
 <script src="static/javascript/jquery.min.js" type="text/javascript" ></script>
+<script src="static/javascript/jquery.qtip.js" type="text/javascript" ></script>
+<script src="static/javascript/jquery.qtip.ajax.js" type="text/javascript" ></script>
 <script src="static/javascript/jquery-ui.min.js" type="text/javascript" ></script>
 <script src="static/javascript/helpers.js" type="text/javascript" ></script>
 </head>
@@ -24,7 +27,7 @@
 
 <div id="page">
 
-<h1><span>SimianGrid</span></h1>
+<h1>SimianGrid<span></span></h1>
 
 <div id="menu">
 <li><a href="{site_url}/user/"><Users><?php echo lang('sg_menu_users'); ?></a></li>
