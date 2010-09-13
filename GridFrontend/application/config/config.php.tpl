@@ -403,10 +403,8 @@ $config['proxy_ips'] = '';
 $config['default_style'] = "Default";
 //These styles must be present in the static directory
 $config['style_list'] = array(
-	'horrible' => 'Bad Example',
 	'default' => 'Default'
 );
-
 
 //don't touch! hehe
 $config['admin_access_level'] = 200;
@@ -441,5 +439,9 @@ $config['user_search_default'] = true;
 $config['map_x'] = 1000;
 $config['map_y'] = 1000;
 $config['zoom'] = 5;
+
+//enable fancy tooltips. browser compatability is annoying, so disabled by default!
+$config['enable_tooltips'] = false;
+
 /* End of file config.php */
 /* Location: ./system/application/config/config.php */

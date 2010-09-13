@@ -16,7 +16,7 @@ $remember = array(
 	'name'	=> 'remember',
 	'id'	=> 'remember',
 	'value'	=> 1,
-	'checked'	=> set_value('remember'),
+	'checked' => set_value('remember'),
 	'style' => 'margin:0;padding:0'
 );
 
@@ -46,13 +46,13 @@ $openid_identifier = array(
 	<dt><?php echo form_label(lang('sg_name'), $username['id']);?></dt>
 	<dd>
 		<?php echo form_input($username)?>
-    <?php echo form_error($username['name']); ?>
+    	<?php echo form_error($username['name']); ?>
 	</dd>
 
     <dt><?php echo form_label(lang('sg_password'), $password['id']);?></dt>
 	<dd>
 		<?php echo form_password($password)?>
-    <?php echo form_error($password['name']); ?>
+    	<?php echo form_error($password['name']); ?>
 	</dd>
 
 	<dt></dt>
@@ -62,7 +62,7 @@ $openid_identifier = array(
 	</dd>
 
 	<dt></dt>
-	<dd><?php echo form_submit('login',lang('sg_login'), 'class="button"');?></dd>
+	<dd><?php echo form_submit('login', lang('sg_login'), 'class="button"');?></dd>
 </dl>
 
 <?php echo form_close()?>

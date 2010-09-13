@@ -82,72 +82,72 @@ echo <<<END
   }());
 </script>
 END;
-		}
 	}
+}
 
-	function generate_facebook_auth($url) {
-		$ci =& get_instance();
-		if ( $ci->config->item('use_facebook') ) {
-			$app_id = $ci->config->item('facebook_id');
-			echo "<a href=\"https://graph.facebook.com/oauth/authorize?client_id=$app_id&redirect_uri=$url&scope=email\"><img src=\"http://static.ak.fbcdn.net/rsrc.php/zB6N8/hash/4li2k73z.gif\"/></a>";
-		}
+function generate_facebook_auth($url) {
+	$ci =& get_instance();
+	if ( $ci->config->item('use_facebook') ) {
+		$app_id = $ci->config->item('facebook_id');
+		echo "<a href=\"https://graph.facebook.com/oauth/authorize?client_id=$app_id&redirect_uri=$url&scope=email\"><img src=\"http://static.ak.fbcdn.net/rsrc.php/zB6N8/hash/4li2k73z.gif\"/></a>";
 	}
-	
-	function process_facebook_verification($code, $url) {
-		$auth_token = null;
-		$ci =& get_instance();
-		$ci->load->library('Curl');
-		if ( $ci->config->item('use_facebook') ) {
-			$app_id = $ci->config->item('facebook_id');
-			$app_secret = $ci->config->item('facebook_secret');
-			$auth_url = "https://graph.facebook.com/oauth/access_token?client_id=$app_id&redirect_uri=$url&client_secret=$app_secret&code=$code";
-			$result = $ci->curl->simple_get($auth_url);
-			if ( $result != null ) {
-				parse_str($result, $result_bits);
-				if ( isset($result_bits['access_token']) ) {
-					$auth_token = $result_bits['access_token'];
-				}
+}
+
+function process_facebook_verification($code, $url) {
+	$auth_token = null;
+	$ci =& get_instance();
+	$ci->load->library('Curl');
+	if ( $ci->config->item('use_facebook') ) {
+		$app_id = $ci->config->item('facebook_id');
+		$app_secret = $ci->config->item('facebook_secret');
+		$auth_url = "https://graph.facebook.com/oauth/access_token?client_id=$app_id&redirect_uri=$url&client_secret=$app_secret&code=$code";
+		$result = $ci->curl->simple_get($auth_url);
+		if ( $result != null ) {
+			parse_str($result, $result_bits);
+			if ( isset($result_bits['access_token']) ) {
+				$auth_token = $result_bits['access_token'];
 			}
 		}
-		return $auth_token;
 	}
-	
-	function _facebook_graph_get($url_suffix, $token=null, $ci)
-	{
-		$ci->load->library('Curl');
-		$url = "https://graph.facebook.com/$url_suffix";
-		if ( $token != null ) {
-			$url = $url . "?access_token=$token";
-		}
-		return decode_recursive_json($ci->curl->simple_get($url));
-	}
-	
-	function facebook_check($ci, $token, &$data)
-	{
-		if (!isset($data))
-	        $data = array();
-		$result = _facebook_graph_get("me", $token, $ci);
+	return $auth_token;
+}
 
-		if ( ! $result ) {
-			return false;
-		}
-		if ( ! empty($result['name']) ) {
-			$data['username'] = $result['name'];
-		}
-		if ( ! empty($result['email']) ) {
-			$data['email'] = $result['email'];
-		}
-		return true;
+function _facebook_graph_get($url_suffix, $token=null, $ci)
+{
+	$ci->load->library('Curl');
+	$url = "https://graph.facebook.com/$url_suffix";
+	if ( $token != null ) {
+		$url = $url . "?access_token=$token";
 	}
-	
-	function facebook_get_id($ci, $token)
-	{
-		$result = _facebook_graph_get("me", $token, $ci);
-		$fb_id = null;
-		if ( !empty($result['id']) ) {
-			$fb_id = $result['id'];
-		}
-		return $fb_id;
+	return decode_recursive_json($ci->curl->simple_get($url));
+}
+
+function facebook_check($ci, $token, &$data)
+{
+	if (!isset($data))
+        $data = array();
+	$result = _facebook_graph_get("me", $token, $ci);
+
+	if ( ! $result ) {
+		return false;
 	}
-	
+	if ( ! empty($result['name']) ) {
+		$data['username'] = $result['name'];
+	}
+	if ( ! empty($result['email']) ) {
+		$data['email'] = $result['email'];
+	}
+	return true;
+}
+
+function facebook_get_id($ci, $token)
+{
+	$result = _facebook_graph_get("me", $token, $ci);
+	$fb_id = null;
+	if ( !empty($result['id']) ) {
+		$fb_id = $result['id'];
+	}
+	return $fb_id;
+}
+
 ?>

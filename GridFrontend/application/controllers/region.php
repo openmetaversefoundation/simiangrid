@@ -35,7 +35,7 @@ class Region extends Controller {
     	    $this->uuid = $this->scene_data['SceneID'];
     	    $this->_scene_extra_info($this->uuid);
     	}
-	    parse_template('region/info');
+	    return parse_template('region/info');
 	}
 	
 	function index()
@@ -63,25 +63,34 @@ class Region extends Controller {
 	    } else {
 	        $this->tile_host = "/Grid/map.php/";
 	    }
-	    parse_template('region/index');
+	    return parse_template('region/index');
 	}
 	
 	function info($uuid, $extra=null)
 	{
-	    $this->uuid = $uuid;
 	    $this->scene_data = $this->simiangrid->get_scene($uuid);
+		if ( $this->scene_data == null ) {
+			$this->scene_data = $this->simiangrid->get_scene_by_name($uuid);
+			if ( $this->scene_data != null ) {
+				$uuid = $this->scene_data['SceneID'];
+			} else {
+				push_message(set_message('sg_region_unknown', $uuid), 'error');
+				return redirect('region');
+			}
+		}
+		$this->uuid = $uuid;
 	    $this->_scene_extra_info($uuid);
 	    
 		if ( $extra == "inline" ) {
 			if ( $this->input->post('is_search') !== null ) {
-				$this->center_map = TRUE;
+				$this->center_map = true;
 			}
 			$this->simple_page = true;
 		} else {
 			$this->title = $this->scene_data['Name'];
 			$this->simple_page = false;
 		}
-	    parse_template('region/info');
+	    return parse_template('region/info');
 	}
 	
 	function _scene_extra_info($uuid)

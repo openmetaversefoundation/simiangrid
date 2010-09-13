@@ -1,5 +1,3 @@
-<h3><?php echo lang('sg_actions'); ?> </h3>
-
 <div>
 
 <ul>
@@ -86,7 +84,9 @@
 	function post_style_change(value, settings)
 	{
 		if ( value != '' ) {
-			$("link[media='screen']").attr("href", "static/styles/" + value + "/style.css");
+			$("link[media='screen'][id='main']").attr("href", "static/styles/" + value + "/style.css");
+			$("link[media='screen'][id='jquery_ui']").attr("href", "static/styles/" + value + "/jquery-ui.css");
+			$("link[media='screen'][id='jquery_qtip']").attr("href", "static/styles/" + value + "/jquery.qtip.css");
 		}
 	}
 

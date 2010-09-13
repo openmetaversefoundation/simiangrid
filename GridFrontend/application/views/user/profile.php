@@ -1,5 +1,3 @@
-<h3><?php echo lang('sg_user_profile'); ?> </h3>
-
 <div>
 
 <table>

@@ -12,6 +12,7 @@ class Auth extends Controller
 		parent::Controller();
 		
 		$this->lang->load('openid', 'english');
+		$this->lang->load('form_validation', 'english');
 		$this->load->library('Openid');
 		$this->load->library('Form_validation');
 
@@ -33,14 +34,10 @@ class Auth extends Controller
 	{
 		$result = false;
 		$space_pos = strpos($username, ' ');
-		if ( $space_pos === false ) {
-			$this->form_validation->set_message('username', lang('sg_auth_username_format'));
-		} else {
+		if ( $space_pos !== false ) {
 			$first_name = substr($username, 0, $space_pos);
 			$last_name = substr($username, $space_pos);
-			if ( ! ( $this->form_validation->alpha_dash($first_name) && $this->form_validation->alpha_dash($first_name) ) ) {
-				$this->form_validation->set_message('username', lang('sg_auth_username_format'));
-			} else {
+			if ( $this->form_validation->alpha_dash($first_name) && $this->form_validation->alpha_dash($first_name) ) {
 				$result = true;
 			}
 		}
@@ -51,7 +48,6 @@ class Auth extends Controller
 	{
 		$result = $this->simiangrid->get_user_by_name($username);
 		if ( $result != null ) {
-			$this->form_validation->set_message('username', lang('sg_auth_username_exists') );
 			return false;
 		} else {
 			return true;
@@ -125,9 +121,8 @@ class Auth extends Controller
 				// Redirect to homepage
 				redirect('', 'location');
 			} else {
-				$data['auth_message'] = 'invalid login';
-				// Load login page view
-				parse_template('auth/login', $data);
+				push_message(lang('sg_auth_invalid_login'), 'error');
+				return parse_template('auth/login');
 			}
 		} else {
 			push_message(lang('sg_auth_error_already'), 'error');
@@ -145,7 +140,7 @@ class Auth extends Controller
 	function _register($val)
 	{
 		// Set form validation rules	
-		$val->set_rules('username', 'User Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|callback_user_exists');
+		$val->set_rules('username', 'User Name', 'trim|required|xss_clean|min_length['.$this->min_username.']|max_length['.$this->max_username.']|callback_username_check|callback_username_exists_check');
 		$val->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->min_password.']|max_length['.$this->max_password.']|matches[confirm_password]');
 		$val->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean');
 		$val->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email|callback_email_check');
@@ -173,7 +168,8 @@ class Auth extends Controller
 			$val = $this->form_validation;
 			$user_id = $this->_register($val);
 			if ( $user_id != null ) {
-				return redirect('about');
+				push_message(lang('sg_auth_register_failure'), 'error');
+				return redirect('auth/register');
 			} else {
 				return parse_template('auth/register');
 			}

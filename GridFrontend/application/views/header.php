@@ -14,8 +14,6 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <base href="{base_url}" />
 <?php render_stylesheet(); ?>
-<link rel="stylesheet" href="static/jquery-ui.css" type="text/css" />
-<link rel="stylesheet" href="static/jquery.qtip.css" type="text/css" />
 <!-- <link rel="icon" href="static/images/icon.ico" /> -->
 <script src="static/javascript/jquery.min.js" type="text/javascript" ></script>
 <script src="static/javascript/jquery.qtip.js" type="text/javascript" ></script>
@@ -30,17 +28,17 @@
 <h1>SimianGrid<span></span></h1>
 
 <div id="menu">
-<li><a href="{site_url}/user/"><Users><?php echo lang('sg_menu_users'); ?></a></li>
-<li><a href="{site_url}/region"><?php echo lang('sg_menu_regions'); ?></a></li>
+<li><a title='menu_users' href="{site_url}/user/"><Users><?php echo lang('sg_menu_users'); ?></a></li>
+<li><a title='menu_regions' href="{site_url}/region"><?php echo lang('sg_menu_regions'); ?></a></li>
 <?php if ($this->sg_auth->is_logged_in()): ?>
-<li><a href="{site_url}/user/self"><?php echo lang('sg_menu_account'); ?></a></li>
+<li><a title='menu_account' href="{site_url}/user/self"><?php echo lang('sg_menu_account'); ?></a></li>
 <?php endif; ?>
 <?php if ($this->sg_auth->is_logged_in() && !strpos(uri_string(), 'logout')): ?>
-<li><a href="{site_url}/auth/logout"><?php echo lang('sg_menu_logout'); ?></a></li>
+<li><a title='menu_logout' href="{site_url}/auth/logout"><?php echo lang('sg_menu_logout'); ?></a></li>
 <?php endif; ?>
 <?php if ( ! $this->sg_auth->is_logged_in()): ?>
-<li><a href="{site_url}/auth"><?php echo lang('sg_login'); ?></a></li>
-<li><a href="{site_url}/auth/register"><?php echo lang('sg_register'); ?></a></li>
+<li><a title='menu_login' href="{site_url}/auth"><?php echo lang('sg_login'); ?></a></li>
+<li><a title='menu_register' href="{site_url}/auth/register"><?php echo lang('sg_register'); ?></a></li>
 <?php endif; ?>
 <li><a href="{site_url}/about"><?php echo lang('sg_menu_about'); ?></a></li>
 </div>

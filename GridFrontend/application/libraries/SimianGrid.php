@@ -285,7 +285,12 @@ class SimianGrid
 	
 	function get_scene_by_name($name)
 	{
-		return $this->_get_scene_info('name', $name);
+		$result = $this->_search_scene('name', $name);
+		if ( $result != null && count($result) > 0 ) {
+			return $this->get_scene($result[0]['id']);
+		} else {
+			return null;
+		}
 	}
 	
 	function get_scene_by_pos($x, $y)

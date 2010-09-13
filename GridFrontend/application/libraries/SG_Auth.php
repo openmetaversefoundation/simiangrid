@@ -206,18 +206,19 @@ class SG_Auth
 
 	function is_searchable($user_id)
 	{
-		$result = false;
+		$result = $this->ci->config->item('user_search_default');
 		$user = $this->simiangrid->get_user($user_id);
 
 		if ( $user != null ) {
 			$uuid = $user['UserID'];
-			$result = false;
 	        if ( $this->is_admin() ) {
 				$result = true;
 			} else if ( isset($user['LLAbout']) && isset($user['LLAbout']['AllowPublish']) ) {
 	            if ( $user['LLAbout']['AllowPublish'] ) {
 					$result = true;
-	            }
+	            } else {
+					$result = false;
+				}
 	        }
 		}
 		return $result;

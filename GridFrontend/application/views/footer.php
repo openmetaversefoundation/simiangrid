@@ -17,21 +17,36 @@
 </div>
 
 <script type="text/javascript">
-$().ready(function() {
-	var url_base = "<?php echo site_url('about/tooltip/'); ?>";
-	$("[title!='']").each(function(i) {
-		var rel = $(this).attr('title');
-		$(this).qtip({
-			content : {
-				url: url_base + "/" + rel,
-				text: '...'
-			},
-		    show: 'mouseover',
-		    hide: 'mouseout'
-		});
-		$(this).attr('title', '');
+	function init_tooltips()
+	{
+		var url_base = "<?php echo site_url('about/tooltip/'); ?>";
+		$("[title!='']").each(function(i) {
+			var rel = $(this).attr('title');
+<?php if ( $this->config->item('enable_tooltips') ): ?>
+			$(this).qtip({
+				content : {
+					url: url_base + "/" + rel,
+					text: '...'
+				},
+				show : {
+					solo : true,
+					effect : {
+						type : 'slide'
+					},
+					when : {
+						event: 'mouseover'
+					},
+					delay : 1000
+				},
+			    hide: 'mouseout'
+			});
+<?php endif; ?>
+			$(this).attr('title', '');
+		});		
+	}
+	$().ready(function() {
+		init_tooltips();
 	});
-});
 </script>
 
 </body>

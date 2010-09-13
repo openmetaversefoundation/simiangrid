@@ -69,13 +69,22 @@
 				if ( $type == "info" ) {
 					$type = 'information';
 				}
-				$image = "<img src=\"" . base_url() . "static/images/dialog-$type.png\"/>";
-				$render = "$render<li id=\"$id\">$image $message</li>";
+				$image = "<img src=\"" . "static/images/dialog-$type.png" . "\"></img>";
+				$render = "$render<li class=\"flash_message\" id=\"$id\">$image $message</li>";
 			}
 		}
 		
 		$render = "$render</ul>";
 		echo $render;
+		echo <<< END
+<script type="text/javascript">
+	$().ready(function() {
+		setTimeout(function() {
+			$(".flash_message").hide('explode', {}, 1000);
+		}, 5000);
+	});
+</script>
+END;
 	}
 
 	function set_message($msg, $val = '', $sub = '%s')
@@ -109,11 +118,24 @@
 		}
 		return $stylesheet;
 	}
+	
+	function pretty_style($style){
+		$ci =& get_instance();
+		$styles = $ci->config->item('style_list');
+		if ( empty($styles[$style]) ) {
+			return $style;
+		}
+		return $styles[$style];
+	}
 
 	function render_stylesheet()
 	{
 		$stylesheet = get_stylesheet();
-		echo "<link rel=\"stylesheet\" href=\"static/styles/$stylesheet/style.css\" type=\"text/css\" media=\"screen\"/>";
+		echo <<< END
+<link id="main" rel="stylesheet" href="static/styles/$stylesheet/style.css" type="text/css" media="screen"/>
+<link id="jquery_ui" rel="stylesheet" href="static/styles/$stylesheet/jquery-ui.css" type="text/css" media="screen"/>
+<link id="jquery_qtip" rel="stylesheet" href="static/styles/$stylesheet/jquery.qtip.css" type="text/css" media="screen"/>
+END;
 	}
 	
 	function json_style_list()

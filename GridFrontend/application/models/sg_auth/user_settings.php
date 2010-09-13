@@ -38,6 +38,7 @@ class User_Settings extends Model
 			if ( !empty($data['style']) ) {
 				$existing->style = $data['style'];
 			}
+			$this->db->where('user_id', $user_id);
 			$this->db->update($this->_table, $existing);
 		} else {
 			$this->db->insert($this->_table, $data);

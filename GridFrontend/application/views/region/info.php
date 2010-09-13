@@ -1,6 +1,5 @@
 <h3><?php echo lang('sg_region_info'); ?></h3>
 
-<?php if ( $this->scene_data ): ?>
 <?php
 	$x = $this->scene_data['MinPosition'][0] / 256;
 	$y = $this->scene_data['MinPosition'][1] / 256;
@@ -29,7 +28,4 @@
 		echo "center_map($x + 0.5, $y + 0.5)";
 	?>
 </script>
-<?php endif; ?>
-<?php else: ?>
-<?php echo lang('sg_region_unknown') ;?>
 <?php endif; ?>

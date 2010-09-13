@@ -289,7 +289,7 @@ class User extends Controller {
 			$styles = $this->config->item('style_list');
 			if ( isset($styles[$style]) ) {
 				$this->user_settings->set_style($uuid, $style);
-				echo $style;
+				echo pretty_style($style);
 			} 
 		} 
 	}
@@ -449,7 +449,7 @@ class User extends Controller {
 			$this->user_id = $uuid;
 			$this->user_data = $this->simiangrid->get_user($uuid);
 		    $this->my_uuid = $this->sg_auth->get_uuid();
-			$this->stylesheet = get_stylesheet();
+			$this->stylesheet = pretty_style(get_stylesheet());
 			if ( $this->sg_auth->is_banned($uuid) ) {
 				$this->banned = lang('sg_auth_banned');
 			} else {
