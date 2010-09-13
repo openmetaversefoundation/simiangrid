@@ -434,7 +434,12 @@ $config['facebook_id'] = '...';
 //whether to place twitter buttons where 'appropriate'
 $config['use_twitter'] = false;
 
+//default behavior for search results
+$config['user_search_default'] = true;
 
-
+//settings to control default map views
+$config['map_x'] = 1000;
+$config['map_y'] = 1000;
+$config['zoom'] = 5;
 /* End of file config.php */
 /* Location: ./system/application/config/config.php */
