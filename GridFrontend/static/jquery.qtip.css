@@ -1,0 +1,241 @@
+/*!
+ * jquery.qtip.css The jQuery tooltip plugin - Styles
+ *
+ * Copyright (c) 2009 Craig Thompson
+ * http://craigsworks.com
+ *
+ * Licensed under MIT
+ * http://www.opensource.org/licenses/mit-license.php
+ *
+ * Launch	: August 2009
+ * Version	: TRUNK - NOT FOR USE IN PRODUCTION ENVIRONMENTS!!!!
+ *
+ * FOR STABLE VERSIONS VISIT: http://craigsworks.com/projects/qtip/download/
+ */
+.ui-tooltip-accessible{
+	left: -10000em !important;
+	top: -10000em !important;
+	display: block !important;
+	visibility: hidden !important;
+}
+
+.ui-tooltip, .qtip{
+	position: absolute;
+	display: none;
+
+	max-width: 600px;
+	min-width: 50px;
+
+	-moz-border-radius: 0px;
+	-webkit-border-radius: 0px;
+	border-radius: 0;
+}
+
+	.ui-tooltip-wrapper{
+		position: relative;
+		overflow: hidden;
+
+		border-width: 3px;
+		border-style: solid;
+	}
+
+	.ui-tooltip-content{
+		position: relative;
+		padding: 5px 9px;
+
+		overflow: hidden;
+		text-align: left;
+	}
+
+	.ui-tooltip-titlebar{
+		position: relative;
+		padding: 6px 35px 6px 10px;
+
+		font-weight: bold;
+	}
+
+		/*! Default close button class */
+		.ui-tooltip-close{
+			position: absolute;
+			height: 16px;
+			width: 16px;
+			padding: 1px;
+			right: 5px;
+			top: 5px;
+
+			cursor: pointer;
+			line-height: 0px;
+			font-size: 0px;
+		}
+
+			.ui-tooltip-close .ui-icon{
+				height: 16px;
+				width: 16px;
+				display: block;
+			}
+
+		/*! Custom button class */
+		.ui-tooltip-button{
+			float: right;
+		}
+
+
+/*! Default tooltip style */
+.ui-tooltip-wrapper{
+	border-color: #F9E98E;
+	background-color: #FBF7AA;
+	color: #A27D35;
+}
+
+	.ui-tooltip .ui-tooltip-titlebar{
+		background-color: #F0DE7D;
+	}
+
+	.ui-tooltip .ui-tooltip-close .ui-icon{
+		background: #A27D35 url('images/close.png') no-repeat 50% 50%;
+	}
+
+/*! Plain tooltip style */
+.ui-tooltip-plain .ui-tooltip-wrapper{
+	border-color: black;
+	border-width: 1px;
+
+	background-color: white;
+	color: black;
+}
+
+	.ui-tooltip-plain .ui-tooltip-titlebar{
+		background-color: white;
+	}
+
+	.ui-tooltip-plain .ui-tooltip-close .ui-icon{
+		background: black;
+	}
+
+/*! Light tooltip style */
+.ui-tooltip-light .ui-tooltip-wrapper{
+	border-color: #E2E2E2;
+	background-color: white;
+	color: #454545;
+}
+
+	.ui-tooltip-light .ui-tooltip-titlebar{
+		background-color: #f1f1f1;
+	}
+
+	.ui-tooltip-light .ui-tooltip-close .ui-icon{
+		background: #454545 url('images/close-light.png') no-repeat 50% 50%;
+	}
+
+
+/*! Dark tooltip style */
+.ui-tooltip-dark .ui-tooltip-wrapper{
+	border-color: #303030;
+	background-color: #505050;
+	color: #f3f3f3;
+}
+
+	.ui-tooltip-dark .ui-tooltip-titlebar{
+		background-color: #404040;
+	}
+
+	.ui-tooltip-dark .ui-tooltip-close .ui-icon{
+		background: #f3f3f3 url('images/close-dark.png') no-repeat 50% 50%;
+	}
+
+
+/*! Red tooltip style */
+.ui-tooltip-red .ui-tooltip-wrapper{
+	border-color: #D95252;
+	background-color: #F78B83;
+	color: #912323;
+}
+
+	.ui-tooltip-red .ui-tooltip-titlebar{
+		background-color: #F06D65;
+	}
+
+	.ui-tooltip-red .ui-tooltip-close .ui-icon{
+		background: #9C2F2F url('images/close-red.png') no-repeat 50% 50%;
+	}
+
+
+/*! Green tooltip style */
+.ui-tooltip-green .ui-tooltip-wrapper{
+	border-color: #90D93F;
+	background-color: #CAED9E;
+	color: #3F6219;
+}
+
+	.ui-tooltip-green .ui-tooltip-titlebar{
+		background-color: #B0DE78;
+	}
+
+	.ui-tooltip-green .ui-tooltip-close .ui-icon{
+		background: #58792E url('images/close-green.png') no-repeat 50% 50%;
+	}
+
+
+/*! Blue tooltip style */
+.ui-tooltip-blue .ui-tooltip-wrapper{
+	border-color: #ADD9ED;
+	background-color: #E5F6FE;
+	color: #5E99BD;
+}
+
+	.ui-tooltip-blue .ui-tooltip-titlebar{
+		background-color: #D0E9F5;
+	}
+
+	.ui-tooltip-blue .ui-tooltip-close .ui-icon{
+		background: #4D9FBF url('images/close-blue.png') no-repeat 50% 50%;
+	}
+
+
+/*!
+ * Tips plugin
+ */
+.ui-tooltip-tip{
+	position: absolute;
+	height: 14px;
+	width: 14px;
+	margin: 0 auto;
+
+	line-height: 0.1px;
+	font-size: 1px;
+
+	background: transparent !important;
+	border: 0px !important;
+}
+
+	.ui-tooltip-tip *{
+		line-height: 0.1px;
+		font-size: 0.1px;
+	}
+
+	.ui-tooltip-tip div.ui-tooltip-tip-inner{
+		background: transparent !important;
+		border: 0px solid transparent;
+	}
+
+
+/*!
+ * Modal plugin
+ */
+#qtip-blanket{
+	position: absolute;
+	left: -1000em;
+	top: -1000em;
+
+	display: none;
+	background-color: black;
+	cursor: pointer;
+
+	/* Set this to any below 15000 (default starting z-index for qTips) */
+	z-index: 14999;
+
+	opacity: 0.7;
+	filter:alpha('opacity=70');
+	-moz-opacity: 0.7;
+	-webkit-opacity: 0.7;
+}
