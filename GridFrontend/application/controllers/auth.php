@@ -138,7 +138,7 @@ class Auth extends Controller
 	function logout()
 	{
 		$this->sg_auth->logout();
-		simple_message(lang('sg_auth_logged_out'));
+		push_message(lang('sg_auth_logged_out'), 'info');
 		return redirect('about', 'location');
 	}
 	
@@ -173,7 +173,7 @@ class Auth extends Controller
 			$val = $this->form_validation;
 			$user_id = $this->_register($val);
 			if ( $user_id != null ) {
-				return parse_template('simple');
+				return redirect('about');
 			} else {
 				return parse_template('auth/register');
 			}
@@ -235,7 +235,7 @@ class Auth extends Controller
 
 				if ( $user_id != null ) {
 					if ( $this->simiangrid->identity_set($user_id, 'facebook', $fb_id) ) {
-						return parse_template('simple');
+						return redirect('about');
 					} else {
 						push_message(lang('sg_auth_fb_error_assoc'), 'error');
 						$this->simiangrid->user_delete($user_id);
@@ -279,7 +279,7 @@ class Auth extends Controller
 				
 					if ( $user_id != null ) {
 						if ( $this->simiangrid->identity_set($user_id, 'openid', $openid) ) {
-							return parse_template('simple');
+							return redirect('about');
 						} else {
 							push_message(lang('sg_auth_open_error_assoc'), 'error');
 							$this->simiangrid->user_delete($user_id);

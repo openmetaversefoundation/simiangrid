@@ -5,12 +5,6 @@ function ends_with($str, $sub)
    return (substr($str, strlen($str) - strlen($sub)) == $sub);
 }
 
-function simple_message($message)
-{
-	$data['message'] = $message;
-	return parse_template('simple', $data);
-}
-
 function parse_template($template, $data = array())
 {
     $CI =& get_instance();
