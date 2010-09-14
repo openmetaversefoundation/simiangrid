@@ -10,6 +10,10 @@ color: #9E9E9E;
 background: #D8D8D8;
 }
 
+img {
+border: 0px;
+}
+
 #page {
 width: 761px;
 margin-left: auto;

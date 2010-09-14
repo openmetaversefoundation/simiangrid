@@ -38,7 +38,14 @@
 					},
 					delay : 1000
 				},
-			    hide: 'mouseout'
+			    hide: {
+					effect : {
+						type : 'slide'
+					},
+					when : {
+						event : 'mouseout'
+					}
+				}
 			});
 <?php endif; ?>
 			$(this).attr('title', '');

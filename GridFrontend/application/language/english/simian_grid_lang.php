@@ -30,6 +30,7 @@ $lang['sg_region_position'] = 'Position';
 $lang['sg_region_unknown'] = 'Region %s Not Found';
 $lang['sg_region_info'] = 'Region Info';
 //user
+$lang['sg_user_view'] = 'User View';
 $lang['sg_user_identities'] = 'Identities';
 $lang['sg_user_profile'] = 'Profile';
 $lang['sg_user_last_location'] = 'Last Location';

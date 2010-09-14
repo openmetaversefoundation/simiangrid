@@ -1,4 +1,4 @@
-<h2>User View</h2>
+<h2><?php echo lang('sg_user_view'); ?>s</h2>
 
 <?php
 	$my_url = get_base_url() . "user/view/" . $this->uuid;
