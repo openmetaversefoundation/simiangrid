@@ -400,16 +400,14 @@ $config['proxy_ips'] = '';
 
 // The default style when a user does not have one selected.
 // Also applies to users who are not logged in.
-$config['default_style'] = "Default";
+$config['default_style'] = "default";
 //These styles must be present in the static directory
 $config['style_list'] = array(
-	'default' => 'Default'
+	'default' => 'Default Theme'
 );
 
 //don't touch! hehe
 $config['admin_access_level'] = 200;
-//whether to support openid
-$config['openid_enabled'] = false;
 //is email activation required.
 //note this does not affect the authorization.
 $config['email_activation'] = false;
