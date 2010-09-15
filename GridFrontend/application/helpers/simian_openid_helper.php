@@ -50,6 +50,8 @@
 	{
 		if (!isset($data))
 	        $data = array();
+	
+		$ci->lang->load('openid');
 	    
 	    $ci->config->load('openid');
 	    
@@ -58,10 +60,10 @@
 
     	switch ($response->status) {
         case Auth_OpenID_CANCEL:
-            push_message('error', $ci->lang->line('openid_cancel'), $ci);
+            push_message($ci->lang->line('openid_cancel'), 'error', $ci);
             break;
         case Auth_OpenID_FAILURE:
-            push_message('error', set_message('openid_failure', $response->message), $ci);
+            push_message(set_message('openid_failure', $response->message), 'error', $ci);
             break;
         case Auth_OpenID_SUCCESS:
             $openid = $response->getDisplayIdentifier();

@@ -63,7 +63,7 @@ class User extends Controller {
 		$callback_url = site_url("user/identities/$uuid/add_openid");
 		if ($this->input->post('action') == 'verify') {
 			return openid_process_verify($this, $callback_url);
-	    } else if ($this->session->flashdata('openid_identifier') OR openid_check($this, $callback_url, $data) ) {
+	    } else if ( $this->session->flashdata('openid_identifier') OR openid_check($this, $callback_url, $data) ) {
 	        $openid = null;
 	        if ($this->session->flashdata('openid_identifier')) {
 	            $openid = $this->session->flashdata('openid_identifier');
@@ -73,7 +73,7 @@ class User extends Controller {
 	            $openid = $data['openid_identifier'];
 	            $this->session->set_flashdata('openid_identifier', $openid);
 	        }
-			
+
 			if ( ! $this->sg_auth->openid_exists($openid) ) {
 				if ( ! $this->simiangrid->identity_set($uuid, 'openid', $openid) ) {
 					push_message(lang('sg_auth_open_error_assoc'), 'error');
