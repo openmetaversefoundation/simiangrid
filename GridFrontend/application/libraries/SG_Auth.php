@@ -196,8 +196,10 @@ class SG_Auth
 		$user_id = $this->simiangrid->register($username, $email);
 		if ( $user_id != null ) {
 			if ( $this->simiangrid->identity_set($user_id, 'md5hash', $username, '$1$' . md5($password)) ) {
-				if ( $this->simiangrid->create_avatar($user_id, $avtype) ) {
-					return $user_id;
+				if ( $this->simiangrid->identity_set($user_id, 'a1hash', $username, md5($username . ':Inventory:' . $password)) ) {
+					if ( $this->simiangrid->create_avatar($user_id, $avtype) ) {
+						return $user_id;
+					}
 				}
 			}
 		}

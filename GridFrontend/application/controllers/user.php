@@ -272,7 +272,11 @@ class User extends Controller {
 		if ( $val->run() ) {
 			$password = $val->set_value('password');
 			$user_data = $this->simiangrid->get_user($uuid);
-			$success = $this->simiangrid->identity_set($uuid, 'md5hash', $user_data['Name'], '$1$' . md5($password));
+			if ( $this->simiangrid->identity_set($uuid, 'md5hash', $user_data['Name'], '$1$' . md5($password)) ) {
+				if ( $this->simiangrid->identity_set($uuid, 'a1hash', $user_data['Name'], md5($user_data['Name'] . ':Inventory:' . $password)) ) {
+					$success = true;
+				}
+			}
 		}
 		$result = json_encode(array('success'=>$success));
 		echo $result;
