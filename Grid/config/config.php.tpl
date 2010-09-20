@@ -154,10 +154,19 @@ $config['default_location'] = "OpenSim Test/128/128/25";
 | Library Owner
 |--------------------------------------------------------------------------
 |
-| UUID of the user account that owns the grid-wide inventory
+| Configure a grid-wide asset library. If you specify the name or UUID of an
+| avatar, that avatar's inventory will be exported as the library. If no
+| library path is defined, the entire inventory will be exported. Otherwise,
+| just items in the path will be exported.
+|
+| Specifying the owner by uuid or the folder by uuid will improve 
+| performance marginally.
 |
 */
 $config['library_owner_id'] = "ba2a564a-f0f1-4b82-9c61-b7520bfcd09f";
+//$config['library_owner_name'] = "Library TestUser";
+//$config['library_folder_id'] = "/Grid Library";
+//$config['library_folder_path'] = "";
 
 /*
 |--------------------------------------------------------------------------

@@ -41,12 +41,27 @@ class inventory_lib_root
 
     public function GetResults()
     {
-        $config =& get_config();
+        // Get the library owner ID
+        $userID = NULL;
+        if (! get_library_owner($userID))
+        {
+            log_message('warn', '[inventory_lib_root] no library owner found');
+            return array();
+        }
+
+        log_message('debug', sprintf('[inventory_lib_root] library owner is %s', $userID));
+
+        // Get the root folder ID
+        $rootFolderID = NULL;
+        if (! get_library_root_folder($userID, $rootFolderID))
+        {
+            log_message('warn', '[inventory_lib_root] no library root found');
+            return array();
+        }
         
-        $results[] = array(
-        	'folder_id' => $config['library_owner_id']
-        );
-        
-        return $results;
+        log_message('debug', sprintf('[inventory_lib_root] library root is %s', $rootFolderID));
+
+        $results[] = array('folder_id' => $rootFolderID);
+         return $results;
     }
 }

@@ -41,12 +41,14 @@ class inventory_lib_owner
 
     public function GetResults()
     {
-        $config =& get_config();
+        // Get the library owner ID
+        $userID = NULL;
+        if (! get_library_owner($userID))
+            return array();
         
-        $results[] = array(
-        	'agent_id' => $config['library_owner_id']
-        );
+        log_message('debug', sprintf('[inventory_lib_owner] library owner is %s', $userID));
         
+        $results[] = array('agent_id' => $userID);
         return $results;
     }
 }

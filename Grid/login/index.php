@@ -143,6 +143,22 @@ function get_user($userID)
     return null;
 }
 
+function get_user_by_name($userName)
+{
+    $config =& get_config();
+    $userService = $config['user_service'];
+    
+    $response = webservice_post($userService, array(
+        'RequestMethod' => 'GetUser',
+        'Name' => $userName)
+    );
+    
+    if (!empty($response['Success']) && !empty($response['User']))
+        return $response['User'];
+    
+    return null;
+}
+
 function get_session($userID)
 {
     $config =& get_config();
@@ -264,6 +280,108 @@ function lookup_scene_by_position($position, $findClosest = false)
         return Scene::fromOSD($response);
     
     return null;
+}
+
+function get_inventory_items($userID, $folderID, $childrenOnly, &$items)
+{
+    $config =& get_config();
+    $inventoryService = $config['inventory_service'];
+
+    $response = webservice_post($inventoryService, array(
+        'RequestMethod' => 'GetInventoryNode',
+        'ItemID' => $folderID,
+        'OwnerID' => $userID,
+        'IncludeFolders' => '1',
+        'IncludeItems' => '0',
+        'ChildrenOnly' => $childrenOnly));
+
+    if (! empty($response['Success']) && is_array($response['Items']))
+    {
+        $items = $response['Items'];
+        return true;
+    }
+
+    $items = null;
+    return false;
+}
+
+function get_inventory_folder_by_path($userID, &$folderID, $path)
+{
+    // check to see if we are done parsing the path
+    if (! is_array($path) || count($path) == 0)
+        return true;
+
+    $folders = NULL;
+    if (get_inventory_items($userID, $folderID, 1, $folders))
+    {
+        $pathelem = array_shift($path);
+        foreach ($folders as $folder)
+        {
+            if ($folder['Name'] == $pathelem)
+            {
+                $folderID = $folder['ID'];
+                return get_inventory_folder_by_path($userID, $folderID, $path);
+            }
+        }
+    }
+
+    return false;
+}
+
+function get_library_owner(&$ownerID)
+{
+    $config =& get_config();
+
+    // Get the library owner ID
+    if (! isset($config['library_owner_id']))
+    {
+        if (! isset($config['library_owner_name']))
+        {
+            log_message('warn','library owner not configured');
+            return false;
+        }
+
+        $userName = $config['library_owner_name'];
+        $userInfo = get_user_by_name($userName);
+        if (! $userInfo)
+        {
+            log_message('warn',sprintf('library owner not found %s',$userName));
+            return false;
+        }
+        $config['library_owner_id'] = $userInfo["UserID"];
+    }
+
+    $ownerID = $config['library_owner_id'];
+    return true;
+}
+
+function get_library_root_folder($ownerID,&$rootFolderID)
+{
+    $config =& get_config();
+    $rootFolderID = $ownerID;
+    
+    if (isset($config['library_folder_id']))
+    {
+        log_message('debug','[index] found library root in configuration');
+        $rootFolderID = $config['library_folder_id'];
+        return true;
+    }
+
+    if (isset($config['library_folder_path']))
+    {
+        $path = $config['library_folder_path'];
+        $pathArray = preg_split('/\//',$path,-1,PREG_SPLIT_NO_EMPTY);
+
+        // Sets $rootFolderID on return
+        if (! get_inventory_folder_by_path($ownerID,$rootFolderID,$pathArray))
+        {
+            log_message('warn',sprintf('unable to resolve library %s',$path));
+            return false;
+        }
+    }
+
+    $config['library_folder_id'] = $rootFolderID;
+    return true;
 }
 
 function get_inventory($userID, &$rootFolderID, &$items)

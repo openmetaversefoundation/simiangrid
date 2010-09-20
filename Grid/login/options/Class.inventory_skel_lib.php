@@ -38,45 +38,62 @@ class inventory_skel_lib
 {
     function __construct($user)
     {}
-
-    public function GetResults()
+    
+    private function GetResults()
     {
-        $config =& get_config();
         $mimes =& get_mimes();
         
-        $rootFolderID = NULL;
-        $items = NULL;
+        // Get the library owner ID
+        $userID = NULL;
         
-        $folders = array();
-        
-        if (get_inventory($config['library_owner_id'], $rootFolderID, $items))
+        if (! get_library_owner($userID))
         {
-            foreach ($items as $item)
-            {
-                $type = isset($mimes[$item['ContentType']]) ? $mimes[$item['ContentType']] : -1;
-                $folders[] = array(
-                    'folder_id' => $item['ID'],
-                    'name' => $item['Name'],
-                    'parent_id' => $item['ParentID'],
-                    'version' => (int)$item['Version'],
-                    'type_default' => (int)$type
-                );
-            }
+            log_message('warn', '[inventory_skel_lib] failed to get library owner');
+            return array();
         }
         else
         {
-            log_message('warn', 'Failed to fetch inventory skeleton for library owner ' . $config['library_owner_id']);
+            // Get the root folder ID
+            $rootFolderID = $userID;
             
-            /*$folders[] = array(
-                'folder_id' => $config['library_owner_id'],
-                'name' => 'Library',
-                'parent_id' => '00000000-0000-0000-0000-000000000000',
-                'version' => 1,
-                'type_default' => 8
-            );*/
+            if (! get_library_root_folder($userID,$rootFolderID))
+            {
+                log_message('warn', '[inventory_skel_lib] failed to get library root');
+                return array();
+            }
+            
+            // Get the items from the inventory folder
+            $items = NULL;
+            if (! get_inventory_items($userID, $rootFolderID, 0, $items))
+            {
+                log_message('warn', '[inventory_skel_lib] failed to get library contents');
+                return array();
+            }
+            
+            // Build the output folder structure
+            $folders = array();
+            
+            foreach ($items as $item)
+            {
+                $type = isset($mimes[$item['ContentType']]) ? $mimes[$item['ContentType']] : -1;
+                $parentid = $item['ParentID'];
+                $folderid = $item['ID'];
+                $foldername = $item['Name'];
+                
+                if ($folderid == $rootFolderID)
+                    $parentid = '00000000-0000-0000-0000-000000000000';
+                
+                $folders[] = array(
+                    'folder_id' => $folderid,
+                    'name' => $foldername,
+                    'parent_id' => $parentid,
+                    'version' => (int)$item['Version'],
+                    'type_default' => (int)$type);
+            }
+            
+            log_message('debug', sprintf('[inventory_skel_lib] %d folders from %s owned by %s',
+                count($folders),$rootFolderID, $userID));
+            return $folders;
         }
-        
-        log_message('debug', 'Returning ' . count($folders) . ' inventory folders in the library skeleton');
-        return $folders;
     }
 }
