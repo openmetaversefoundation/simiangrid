@@ -39,7 +39,7 @@ class inventory_skel_lib
     function __construct($user)
     {}
     
-    private function GetResults()
+    public function GetResults()
     {
         $mimes =& get_mimes();
         
