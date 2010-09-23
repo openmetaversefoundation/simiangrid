@@ -112,3 +112,23 @@ function center_map(x, y, zoom)
 	map.panTo(convert_grid_pos(x, y));
 	map.setZoom(zoom);
 }
+
+function load_region_by_pos(x, y)
+{
+    var data = {
+        'x' : x,
+        'y' : y
+    };
+    div_loader("view_coord", "#region_info", data);
+	$("#search_results").dialog('close');
+	$("#region_info").dialog('open');
+}
+
+function load_search_result(scene_id)
+{
+	var data = {
+		'is_search' : true
+	};
+    div_loader("info/" + scene_id + "/inline", "#region_info", data);
+	$("#region_info").dialog('open');
+}

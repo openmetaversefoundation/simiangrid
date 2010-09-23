@@ -40,9 +40,9 @@ $openid_identifier = array(
 
 <h2><?php echo lang('sg_register'); ?></h2>
 
-<?php generate_facebook_auth(site_url('auth/register_facebook')); ?>
+<?php generate_facebook_auth("$site_url/auth/register_facebook"); ?>
 
-<?php openid_identifier_render(lang('sg_auth_register_login'), site_url('auth/register_openid'), "Register"); ?>
+<?php openid_identifier_render(lang('sg_auth_register_login'), "$site_url/auth/register_openid", "Register"); ?>
 
 <fieldset><legend><?php echo lang('sg_register'); ?></legend>
 <?php echo form_open($this->uri->uri_string())?>

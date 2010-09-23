@@ -11,92 +11,140 @@ class Region extends Controller {
 		$this->load->helper('form');
 		$this->load->helper('simian_view_helper');
 		$this->load->helper('simian_facebook_helper');
+		
+		$this->lang->load('simian_grid', get_language() );
 	}
 
 	function search()
 	{
-	    $this->simple_page = true;
+		$data = array();
 	    if ( $this->input->post('name') ) {
 	        $name = $this->input->post('name');
-	        $this->scene_list = $this->simiangrid->search_scene($name);
+	        $data['scene_list'] = $this->simiangrid->search_scene($name);
 	    } else {
-	        $this->scene_list = array();
+	        $data['scene_list'] = array();
 	    }
-		return parse_template('region/search_results');
+		return parse_template('region/search_results', $data, true);
 	}
 	
 	function view_coord()
 	{    
-	    $this->simple_page = true;
+	    $data = array();
 	    if ( $this->input->post('x') && $this->input->post('y') ) {
-    	    $this->x = ($this->input->post('x') * 256) + 1;
-    	    $this->y = ($this->input->post('y') * 256) + 1;
-    	    $this->scene_data = $this->simiangrid->get_scene_by_pos($this->x, $this->y);
-    	    $this->uuid = $this->scene_data['SceneID'];
-    	    $this->_scene_extra_info($this->uuid);
+    	    $data['x'] = ($this->input->post('x') * 256) + 1;
+    	    $data['y'] = ($this->input->post('y') * 256) + 1;
+    	    $data['scene_data'] = $this->simiangrid->get_scene_by_pos($data['x'], $data['y']);
+    	    $data['uuid'] = $data['scene_data']['SceneID'];
+			$data['inline'] = true;
+    	    $this->_scene_extra_info($data['uuid'], $data);
     	}
-	    return parse_template('region/info');
+	    return parse_template('region/details_popup', $data, true);
 	}
 	
-	function index()
+	function _init_map(&$data)
 	{
-   	    if ( $this->config->item('map_x') ) {
-   	        $this->x = $this->config->item('map_x');
+		if ( $this->config->item('map_x') ) {
+   	        $data['x'] = $this->config->item('map_x');
    	    } else {
-   	        $this->x = 1000;
+   	        $data['x'] = 1000;
    	    }
 
         if ( $this->config->item('map_y') ) {
-            $this->y = $this->config->item('map_y');
+            $data['y'] = $this->config->item('map_y');
         } else {
-            $this->y = 1000;
+            $data['y'] = 1000;
         }
 	   
         if ( $this->config->item('zoom') ) {
-            $this->zoom = $this->config->item('zoom');
+            $data['zoom'] = $this->config->item('zoom');
         } else {
-            $this->zoom = 4;
+            $data['zoom'] = 4;
         }
 	    
 	    if ( $this->config->item('tile_host') ) {
-	        $this->tile_host = $this->config->item('tile_host');
+	        $data['tile_host'] = $this->config->item('tile_host');
 	    } else {
-	        $this->tile_host = "/Grid/map.php/";
+	        $data['tile_host'] = "/Grid/map.php/";
 	    }
-	    return parse_template('region/index');
+	}
+
+	function map()
+	{
+		$data = array();
+		$this->_init_map($data);
+		return parse_template('region/map', $data, true);
+	}
+
+	function index()
+	{
+		$data = array();
+		$this->_init_map($data);
+	    return parse_template('region/index', $data);
 	}
 	
-	function info($uuid, $extra=null)
-	{
-	    $this->scene_data = $this->simiangrid->get_scene($uuid);
-		if ( $this->scene_data == null ) {
-			$this->scene_data = $this->simiangrid->get_scene_by_name($uuid);
-			if ( $this->scene_data != null ) {
-				$uuid = $this->scene_data['SceneID'];
+	function view($uuid, $extra=null)
+	{	
+		$data = array();
+	    $data['scene_data'] = $this->simiangrid->get_scene($uuid);
+		if ( $data['scene_data'] == null ) {
+			$data['scene_data'] = $this->simiangrid->get_scene_by_name($uuid);
+			if ( $data['scene_data'] != null ) {
+				$uuid = $data['scene_data']['SceneID'];
 			} else {
 				push_message(set_message('sg_region_unknown', $uuid), 'error');
 				return redirect('region');
 			}
 		}
-		$this->uuid = $uuid;
-	    $this->_scene_extra_info($uuid);
+		$data['uuid'] = $uuid;
+		$data['tab'] = '';
+		if ( $extra == "stats" ) {
+			$data['tab'] = 'stats';
+		}
+		$data['title'] = $data['scene_data']['Name'];
+		parse_template('region/view', $data);
+	}
+
+	function details($uuid, $extra=null)
+	{
+		$data = array();
+	    $data['scene_data'] = $this->simiangrid->get_scene($uuid);
+	    $this->_scene_extra_info($uuid, $data);
 	    
+		$data['inline'] = false;
 		if ( $extra == "inline" ) {
 			if ( $this->input->post('is_search') !== null ) {
-				$this->center_map = true;
+				$data['center_map'] = true;
 			}
-			$this->simple_page = true;
+			return parse_template('region/details_popup', $data, true);
 		} else {
-			$this->title = $this->scene_data['Name'];
-			$this->simple_page = false;
+	    	return parse_template('region/details', $data, true);
 		}
-	    return parse_template('region/info');
 	}
 	
-	function _scene_extra_info($uuid)
+	function stats($uuid, $extra=null)
+	{
+		$data = array();
+		$data['scene_id'] = $uuid;
+	    $data['scene_data'] = $this->simiangrid->get_scene($uuid);
+		$details = $this->simiangrid->simulator_details($uuid);
+		if ( $details != null ) {
+			$data['sim_details'] = $details;
+			if ( $extra == 'feed' ) {
+				$result = array(
+					'sim_fps' => (float) $details['sim_fps'],
+					'phys_fps' => (float) $details['phys_fps']
+				);
+				echo json_encode($result);
+				return;
+			}
+		}
+		return parse_template('region/stats', $data, true);
+	}
+	
+	function _scene_extra_info($uuid, &$data)
 	{    
-	    $grid_user = $this->simiangrid->get_user($this->scene_data['ExtraData']['EstateOwner']);
-	    $this->owner_name = $grid_user['Name'];
-		$this->owner_id = $grid_user['UserID'];
+	    $grid_user = $this->simiangrid->get_user($data['scene_data']['ExtraData']['EstateOwner']);
+	    $data['owner_name'] = $grid_user['Name'];
+		$data['owner_id'] = $grid_user['UserID'];
 	}
 }

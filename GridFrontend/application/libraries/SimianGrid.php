@@ -433,6 +433,28 @@ class SimianGrid
 			return false;
 		}
 	}
+	
+	function simulator_details($scene_id)
+	{
+		$scene = $this->get_scene($scene_id);
+		if ( $scene == null ) {
+			return null;
+		}
+		$url = $scene['Address'] . 'jsonSimStats/';
+		$result = $this->ci->curl->simple_get($url);
+		if ( $result == null ) {
+			log_message('debug', "Unable to retrieve simulator stats from $url");
+			return null;
+		}
+		$details = decode_recursive_json($result);
+		$result = array(
+			'sim_fps' => $details['SimFPS'],
+			'phys_fps' => $details['PhyFPS'],
+			'version' => $details['Version'],
+			'uptime' => $details['Uptime']
+		);
+		return $result;
+	}
 
 }
 ?>

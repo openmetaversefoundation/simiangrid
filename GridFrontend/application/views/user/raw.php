@@ -1,3 +1,3 @@
 <pre>
-<?php var_dump($this->user_data); ?>
+<?php var_dump($user_data); ?>
 </pre>

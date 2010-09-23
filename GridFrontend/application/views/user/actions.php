@@ -1,17 +1,36 @@
 <div>
 
-<ul>
-	<li><input type="submit" id="change_password" value="Change Password"></input></li>
-	<?php if ( $this->user_id == $this->sg_auth->get_uuid() ): ?>
-	<li><?php echo lang('sg_user_style'); ?> : <span id="style_selection"><?php echo $this->stylesheet; ?></span></li>
+<table>
+	<tr>
+		<td>Change Password</td>
+		<td><input type="submit" id="change_password" value="Change"></input></td>
+	</tr>
+	<?php if ( $user_id == $this->sg_auth->get_uuid() ): ?>
+	<tr>
+		<td>Change Language</td>
+		<td><span id="user_language"><?php echo lang('sg_lang_' . $language); ?></span></td>
+	</tr>
 	<?php endif; ?>
 	<?php if ( $this->sg_auth->is_admin() ): ?>
-	<li><?php echo lang('sg_user_access_level'); ?> : <span id="access_level"><?php echo pretty_access($this->user_data['AccessLevel']); ?></span></li>
-	<li><input type="submit" id="raw_user_view" value="<?php echo lang('sg_raw'); ?>"></input></li>
-	<li><?php echo lang('sg_auth_ban_status'); ?> : <span id="ban_status"><?php echo $this->banned; ?></span></li>
-	<li><?php echo lang('sg_auth_validation_status'); ?> : <span id="validation_status"><?php echo $this->validation; ?></span></li>
-	<?php endif; ?>
-<ul>
+	<tr>
+		<td><?php echo lang('sg_user_access_level'); ?></td>
+		<td><span id="access_level"><?php echo pretty_access($user_data['AccessLevel']); ?></span></td>
+	</tr><tr>
+		<td>Raw</td>
+		<td><input type="submit" id="raw_user_view" value="<?php echo lang('sg_raw'); ?>"></input></td>
+	</tr><tr>
+		<td><?php echo lang('sg_auth_ban_status'); ?></td>
+		<td><span id="ban_status"><?php echo $banned; ?></span></td>
+	</tr><tr>
+		<td><?php echo lang('sg_auth_validation_status'); ?></td>
+		<td><span id="validation_status"><?php echo $validation; ?></span></td>
+	</tr>	
+	<tr>
+		<td><?php echo lang('sg_avatar_reset'); ?></td>
+		<td><a href="{site_url}/user/actions/{user_id}/reset_avatar"><?php echo lang('sg_reset'); ?></td>
+	</tr>
+<?php endif; ?>
+</table>
 
 <div>
 
@@ -31,7 +50,7 @@
 <div id="raw_popup_contents"></div>
 </div>
 
-<script src="static/javascript/jquery.jeditable.mini.js" type="text/javascript" ></script>
+<script src="{base_url}/static/javascript/jquery.jeditable.mini.js" type="text/javascript" ></script>
 <script type="text/javascript">
 	var password_popup_visible = false;
 
@@ -60,7 +79,7 @@
 				password : password
 			};
 			var request = {
-	            url : <?php echo "\"" . site_url('user/actions/' . $this->user_id . '/change_password') . "\""; ?>,
+	            url : "<?php echo "$site_url/user/actions/" . $user_id . '/change_password'; ?>",
 	            dataType : 'json',
 	            type : 'POST',
 	            success : change_password_callback,
@@ -76,18 +95,9 @@
 	function do_raw_user()
 	{
 		$("#raw_popup_contents").html("Loading...");
-		var url = <?php echo "\"" . site_url('user/raw/' . $this->user_id) . "\""; ?>;
-		real_load_via_post(url, "#raw_popup_contents");
+		var url = "<?php echo "$site_url/user/raw/" . $user_id; ?>";
+		load_via_post(url, "#raw_popup_contents");
 		$("#raw_popup").dialog('open');
-	}
-	
-	function post_style_change(value, settings)
-	{
-		if ( value != '' ) {
-			$("link[media='screen'][id='main']").attr("href", "static/styles/" + value + "/style.css");
-			$("link[media='screen'][id='jquery_ui']").attr("href", "static/styles/" + value + "/jquery-ui.css");
-			$("link[media='screen'][id='jquery_qtip']").attr("href", "static/styles/" + value + "/jquery.qtip.css");
-		}
 	}
 
 	$().ready(function() {
@@ -105,32 +115,28 @@
 		$("#raw_popup").dialog({autoOpen: false, title:"<?php echo lang('sg_raw'); ?>", modal: true, width: 500, position: 'top' });
 		$("#raw_user_view").click(do_raw_user);
 		
-		$("#access_level").editable(<?php echo "\"" . site_url('user/actions/' . $this->user_id . '/change_access_level') . "\""; ?>, {
+		$("#access_level").editable("<?php echo "$site_url/user/actions/" . $user_id . '/change_access_level'; ?>", {
 			submit : 'OK',
-			tooltip : "<?php echo lang('sg_click_change'); ?>",
 			type : 'select',
-			loadurl : "<?php echo site_url('user/actions/' . $this->user_id . '/load_access_level'); ?>"
-		});
-		$("#style_selection").editable(<?php echo "\"" . site_url('user/actions/' . $this->user_id . '/style_selection') . "\""; ?>, {
-			submit : 'OK',
-			tooltip : "<?php echo lang('sg_click_change'); ?>",
-			type : 'select',
-			loadurl : "<?php echo site_url('user/actions/' . $this->user_id . '/load_style'); ?>",
-			callback : post_style_change
-		});
-		
-		$("#ban_status").editable(<?php echo "\"" . site_url('user/actions/' . $this->user_id . '/change_ban_status') . "\""; ?>, {
-			submit : 'OK',
-			tooltip : "<?php echo lang('sg_click_change'); ?>",
-			type : 'select',
-			loadurl : "<?php echo site_url('user/actions/' . $this->user_id . '/load_ban_status'); ?>"
+			loadurl : "<?php echo "$site_url/user/actions/" . $user_id . '/load_access_level'; ?>"
 		});
 
-		$("#validation_status").editable(<?php echo "\"" . site_url('user/actions/' . $this->user_id . '/change_validation_status') . "\""; ?>, {
+		$("#user_language").editable("<?php echo "$site_url/user/actions/" . $user_id . '/change_language'; ?>", {
 			submit : 'OK',
-			tooltip : "<?php echo lang('sg_click_change'); ?>",
 			type : 'select',
-			loadurl : "<?php echo site_url('user/actions/' . $this->user_id . '/load_validation_status'); ?>"
+			loadurl : "<?php echo "$site_url/user/actions/" . $user_id . '/load_language'; ?>"
+		});
+		
+		$("#ban_status").editable("<?php echo "$site_url/user/actions/" . $user_id . '/change_ban_status'; ?>", {
+			submit : 'OK',
+			type : 'select',
+			loadurl : "<?php echo "$site_url/user/actions/" . $user_id . '/load_ban_status'; ?>"
+		});
+
+		$("#validation_status").editable("<?php echo "$site_url/user/actions/" . $user_id . '/change_validation_status'; ?>", {
+			submit : 'OK',
+			type : 'select',
+			loadurl : "<?php echo "$site_url/user/actions/" . $user_id . '/load_validation_status'; ?>"
 		});
 	});
 </script>

@@ -1,25 +1,24 @@
-<?php if ( ! isset($this->simple_page) || ! $this->simple_page ):?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>
 <?php
-	$title = get_site_title();
-	if ( isset($this->title) ) {
-		$title = "$title - " . $this->title;
+	$real_title = get_site_title();
+	if ( isset($title) ) {
+		$real_title = "$real_title - " . $title;
 	}
-	echo $title;
+	echo $real_title;
 ?>
 </title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <base href="{base_url}" />
 <?php render_stylesheet(); ?>
 <!-- <link rel="icon" href="static/images/icon.ico" /> -->
-<script src="static/javascript/jquery.min.js" type="text/javascript" ></script>
-<script src="static/javascript/jquery.qtip.js" type="text/javascript" ></script>
-<script src="static/javascript/jquery.qtip.ajax.js" type="text/javascript" ></script>
-<script src="static/javascript/jquery-ui.min.js" type="text/javascript" ></script>
-<script src="static/javascript/helpers.js" type="text/javascript" ></script>
+<script src="{base_url}/static/javascript/jquery.min.js" type="text/javascript" ></script>
+<script src="{base_url}/static/javascript/jquery.qtip.js" type="text/javascript" ></script>
+<script src="{base_url}/static/javascript/jquery.qtip.ajax.js" type="text/javascript" ></script>
+<script src="{base_url}/static/javascript/jquery-ui.min.js" type="text/javascript" ></script>
+<script src="{base_url}/static/javascript/helpers.js" type="text/javascript" ></script>
 </head>
 <body>
 
@@ -44,7 +43,6 @@
 </div>
 <div id="border">
 <div id="contents">
-<?php endif; ?>
 <div id="messages">
 <?php messages_render(); ?>
 </div>

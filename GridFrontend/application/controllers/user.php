@@ -12,7 +12,9 @@ class User extends Controller {
 		$this->load->helper('form');
 		$this->load->helper('simian_view_helper');
 		$this->load->helper('simian_openid_helper');
-		$this->load->helper('simian_facebook_helper');		
+		$this->load->helper('simian_facebook_helper');	
+		
+		$this->lang->load('simian_grid', get_language() );	
 	}
 
 	function _me_or_admin($uuid)
@@ -80,7 +82,7 @@ class User extends Controller {
 				}
 			}
 		}
-		return redirect("user/view/$uuid");
+		return redirect("user/view/$uuid/identities");
 	}
 	
 	function _remove_identity($uuid)
@@ -110,34 +112,35 @@ class User extends Controller {
 	}
 	
 	function _list_identities($uuid) {
-		$this->uuid = $uuid;
-	    $this->identities = $this->simiangrid->get_user_identities($uuid);
-	    $this->simple_page = true;
+		$data = array();
+		$data['uuid'] = $uuid;
+	    $data['identities'] = $this->simiangrid->get_user_identities($uuid);
 	
 		$this->table->set_heading(lang('sg_type'), lang('sg_user_identifier'), lang('sg_actions') );
 		
-		$this->has_openid = false;
-		$this->has_facebook = false;
+		$data['has_openid'] = false;
+		$data['has_facebook'] = false;
 		
-		foreach ( $this->identities as $identity ) {
+		foreach ( $data['identities'] as $identity ) {
 			$type = $identity['Type'];
 			$enabled = (bool) $identity['Enabled'];
 			$real_identifier = $identity['Identifier'];
 			$ident = $real_identifier;
 			if ( $type == "openid" ) {
 				$this->has_openid = true;
-				$ident = "N/A";
+				$url = parse_url($real_identifier);
+				$ident = $url['host'];
 			} elseif ( $type == "facebook" ) {
-				$this->has_facebook = true;
+				$data['has_facebook'] = true;
 			}
-			if ( $type != "md5hash" ) {
+			if ( $type != "md5hash" && $type != "a1hash" ) {
 				$actions = $this->_render_remove_identity($uuid, $type, $real_identifier);
 			} else {
 				$actions = '';
 			}
 			$this->table->add_row($type, $ident, $actions);
 		}
-	    return parse_template('user/identities');
+	    return parse_template('user/identities', $data, true);
 	}
 
 	function index()
@@ -165,8 +168,9 @@ class User extends Controller {
 
 	function profile($uuid)
 	{
-	    $this->user_id = $uuid;
-	    $this->my_uuid = $this->sg_auth->get_uuid();
+		$data = array();
+	    $data['user_id'] = $uuid;
+	    $data['my_uuid'] = $this->sg_auth->get_uuid();
 	    $grid_user = $this->simiangrid->get_user($uuid);
 	    if ( $grid_user == null ) {
 	        return show_404($uuid);
@@ -174,10 +178,10 @@ class User extends Controller {
 	    if ( isset($grid_user['LastLocation'] ) ) {
 	        $last_scene_id = $grid_user['LastLocation']['SceneID'];
     	    if ( $last_scene_id != null ) {
-    	        $this->last_scene = $this->simiangrid->get_scene($last_scene_id);
+    	        $data['last_scene'] = $this->simiangrid->get_scene($last_scene_id);
     	    }
 	    }
-	    $this->user_info = array(
+	    $data['user_info'] = array(
 	        'name' => $grid_user['Name'],
 	        'email' => $grid_user['Email']
 	    );
@@ -185,30 +189,29 @@ class User extends Controller {
 		    if ( isset($grid_user['LLAbout'] ) ) {
 		        $this->user_info['about'] = $grid_user['LLAbout']['About'];
 		        if ( isset($grid_user['LLAbout']['Image']) ) {
-		            $this->avatar_image = $uuid;
+		            $data['avatar_image'] = $uuid;
 		        }
 		    }
 		}
-	    $this->simple_page = true;  
-	    parse_template('user/profile');
+	    parse_template('user/profile', $data, true);
 	}
 
 	function search()
 	{
-	    $this->simple_page = true;
-	   	$this->user_list = array();
+		$data = array();
+		$data['user_list'] = array();
 	    if ( $this->input->post('name') ) {
 	        $name = $this->input->post('name');
 	        $user_results = $this->simiangrid->search_user($name);
 			if ( $user_results != null ) {
 				foreach ( $user_results as $user ) {
 					if ( $this->sg_auth->is_searchable($user['id']) ) {
-						array_push($this->user_list, $user);
+						array_push($data['user_list'], $user);
 					}
 				}
 			}
 	    }
-		return parse_template('user/search_results');
+		return parse_template('user/search_results', $data, true);
 	}
 	
 	function self()
@@ -223,29 +226,28 @@ class User extends Controller {
 
 	function view($uuid, $extra=null)
 	{	
+		$data = array();
 		$user = $this->simiangrid->get_user($uuid);
 		if ( $user == null ) {
 			$user = $this->simiangrid->get_user_by_name($uuid);
 			if ( $user != null ) {
-				$this->uuid = $user['UserID'];
+				$data['uuid'] = $user['UserID'];
 			} else {
 				push_message(set_message('sg_user_not_found', $uuid), 'error');
 				return redirect('user/');
 			}
 		} else {
-	    	$this->uuid = $uuid;
+	    	$data['uuid'] = $uuid;
 		}
-	    $this->my_uuid = $this->sg_auth->get_uuid();
-		$this->tab = '';
-		if ( $extra == "inline" ) {
-			$this->simple_page = true;
-	    } else if ( $extra == "actions" ) {
-			$this->tab = 'actions';
+	    $data['my_uuid'] = $this->sg_auth->get_uuid();
+		$data['tab'] = '';
+		if ( $extra == "actions" ) {
+			$data['tab'] = 'actions';
 		} else if ( $extra == 'identities' ) {
-			$this->tab = 'identities';
+			$data['tab'] = 'identities';
 		}
-		$this->title = $user['Name'];
-		parse_template('user/view');
+		$data['title'] = $user['Name'];
+		parse_template('user/view', $data);
 	}
 	
 	function raw($uuid)
@@ -253,13 +255,8 @@ class User extends Controller {
 		if ( ! $this->_me_or_admin($uuid) ) {
 			return redirect('user/index');
 		}
-	    $this->user_data = $this->simiangrid->get_user($uuid);
-		if ( $this->user_data == null ) {
-			push_message(set_message('sg_user_not_found', $uuid), 'error');
-			return redirect('user/');
-		}
-	    $this->simple_page = true;
-	    parse_template('user/raw');
+	    $data['user_data'] = $this->simiangrid->get_user($uuid);
+	    parse_template('user/raw', $data, true);
 	}
 	
 	function _change_password($uuid)
@@ -282,30 +279,7 @@ class User extends Controller {
 		echo $result;
 		return;
 	}
-	
-	function _style_selection($uuid)
-	{
-		$val = $this->form_validation;
-		$val->set_rules('value', 'style_selection', 'trim|required|xss_clean|min_length[4]|max_length[30]');
-		
-		if ( $val->run() ) {
-			$style = $val->set_value('value');
-			$styles = $this->config->item('style_list');
-			if ( isset($styles[$style]) ) {
-				$this->user_settings->set_style($uuid, $style);
-				echo pretty_style($style);
-			} 
-		} 
-	}
-	
-	function _load_style($uuid)
-	{
-		$user = $this->simiangrid->get_user($uuid);
-		if ( $user != null ) {
-			echo json_style_list();
-		}
-	}
-	
+
 	function _change_access_level($uuid)
 	{
 		$val = $this->form_validation;
@@ -420,6 +394,48 @@ class User extends Controller {
 		}
 		echo json_encode($validation_data);
 	}
+	
+	function _get_language($uuid)
+	{
+		return get_language($uuid);
+	}
+	
+	function _load_language($uuid)
+	{
+		$current_language = $this->_get_language($uuid);
+		$languages = $this->config->item('languages');
+		$result = array();
+		foreach ( $languages as $language ) {
+			$language_name = lang("sg_lang_$language");
+			if ( $language_name == null ) {
+				$language_name = $language;
+			}
+			$result[$language] = $language_name;
+		}
+		echo json_encode($result);
+	}
+	
+	function _change_language($uuid)
+	{
+		$val = $this->form_validation;
+		$val->set_rules('value', '', 'trim|required|xss_clean');
+		
+		if ( $val->run() ) {
+			$language = $val->set_value('value');
+            $languages = $this->config->item('languages');
+            if ( array_search($language, $languages) !== false ) {
+                $this->user_settings->set_language($uuid, $language);
+            }
+        }
+	}
+
+	function _reset_avatar($uuid)
+	{
+		if ( ! $this->simiangrid->create_avatar($uuid, "DefaultAvatar") ) {
+			push_message(set_message('sg_avatar_reset_fail', 'Backend Failure'), 'error');
+		}
+		return redirect('user/view/' . $uuid, 'location');
+	}
 
 	function actions($uuid, $action=null)
 	{
@@ -433,10 +449,6 @@ class User extends Controller {
 		}
 		if ( $action == "change_password" ) {
 			return $this->_change_password($uuid);
-		} else if ( $action == "style_selection" ) {
-			return $this->_style_selection($uuid);
-		} else if ( $action == "load_style" ) {
-			return $this->_load_style($uuid);
 		} else if ( $action == "change_access_level" && $this->sg_auth->is_admin() ) {
 			return $this->_change_access_level($uuid);
 		} else if ( $action == "load_access_level" && $this->sg_auth->is_admin() ) {
@@ -449,23 +461,28 @@ class User extends Controller {
 			return $this->_change_validation_status($uuid);
 		} else if ( $action == "load_validation_status" ) {
 			return $this->_load_validation_status($uuid);
+		} else if ( $action == "change_language" ) {
+			return $this->_change_language($uuid);
+		} else if ( $action == "load_language") {
+			return $this->_load_language($uuid);
+		} else if ( $action == "reset_avatar" ) {
+			return $this->_reset_avatar($uuid);
 		} else {
-			$this->user_id = $uuid;
-			$this->user_data = $this->simiangrid->get_user($uuid);
-		    $this->my_uuid = $this->sg_auth->get_uuid();
-			$this->stylesheet = pretty_style(get_stylesheet());
+			$data['user_id'] = $uuid;
+			$data['user_data'] = $this->simiangrid->get_user($uuid);
+		    $data['my_uuid'] = $this->sg_auth->get_uuid();
 			if ( $this->sg_auth->is_banned($uuid) ) {
-				$this->banned = lang('sg_auth_banned');
+				$data['banned'] = lang('sg_auth_banned');
 			} else {
-				$this->banned = lang('sg_auth_not_banned');
+				$data['banned'] = lang('sg_auth_not_banned');
 			}
 			if ( $this->sg_auth->is_validated($uuid) ) {
-				$this->validation = lang('sg_auth_validated');
+				$data['validation'] = lang('sg_auth_validated');
 			} else {
-				$this->validation = lang('sg_auth_not_validated');
+				$data['validation'] = lang('sg_auth_not_validated');
 			}
-		    $this->simple_page = true;
-			return parse_template('user/actions');
+			$data['language'] = $this->_get_language($uuid);
+			return parse_template('user/actions', $data, true);
 		}
 	}
 }

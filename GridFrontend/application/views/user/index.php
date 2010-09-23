@@ -8,11 +8,6 @@
 	<div id="search_results"></div>
 	<div id="user_info"></div>
 <script>
-
-    function load_via_post(url_suffix, destination, data)
-    {
-		return real_load_via_post(<?php echo "\"" . base_url() . "index.php/\"" ; ?> + url_suffix, destination, data);
-	}
    
     function do_search()
     {
@@ -20,7 +15,7 @@
         var data = {
             'name' : search_name
         };
-        load_via_post("user/search", "#search_results", data);
+        load_via_post("{site_url}/user/search", "#search_results", data);
         return false;
     }
 

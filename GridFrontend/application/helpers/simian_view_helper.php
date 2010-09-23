@@ -12,27 +12,14 @@
 	
 	function get_site_host()
 	{
-		$url_bits = explode('/', get_base_url());
-		$domain_name = $url_bits[2];
-		return $domain_name;
+		$url = parse_url(site_url());
+		return $url['host'];
 	}
 	
 	function get_site_path()
 	{
-		$url_bits = explode('/', get_base_url());
-		$site_path = implode('/', array_slice($url_bits, 3));
-		return $site_path;
-	}
-	
-	function get_base_url()
-	{
-		$url = base_url();
-		$check = substr($url, count($url) - 2, count($url) - 1);
-		if ( $check == '/' ) {
-			return $url;
-		} else {
-			return $url . '/';
-		}
+		$url = parse_url(site_url());
+		return $url['path'];
 	}
 	
 	function push_message($message, $type='info', $ci=null)
@@ -118,7 +105,7 @@ END;
 		}
 		return $stylesheet;
 	}
-	
+
 	function pretty_style($style){
 		$ci =& get_instance();
 		$styles = $ci->config->item('style_list');
@@ -127,14 +114,49 @@ END;
 		}
 		return $styles[$style];
 	}
+	
+	function render_style_selector()
+	{
+		$ci =& get_instance();
+		if ( ! $ci->sg_auth->is_logged_in() ) {
+			return;
+		}
+		if ( $ci->config->item('allow_style_change') ) {
+			echo '<select name="style_selector">';
+			$styles = $ci->config->item('style_list');
+			$current_style = get_stylesheet();
+			foreach ( $styles as $key => $name ) {
+				if ( $key == $current_style ) {
+					$checked_bit = 'selected="selected"';
+				} else {
+					$checked_bit = '';
+				}
+				echo '<option value="' . $key . '" ' . $checked_bit . '>' . $name . '</option>';
+			}
+			echo '</select>';
+			$style_url = site_url('about/style_selection');
+			echo <<< END
+<script type="text/javascript">
+	$("select[name='style_selector']").change(function() {
+		var style_name = '';
+		$("select[name='style_selector'] option:selected").each(function() {
+			style_name = $(this).val();
+			select_style("$style_url", style_name);
+		});
+	});
+</script>
+END;
+		}
+	}
 
 	function render_stylesheet()
 	{
 		$stylesheet = get_stylesheet();
+		$base_url = base_url();
 		echo <<< END
-<link id="main" rel="stylesheet" href="static/styles/$stylesheet/style.css" type="text/css" media="screen"/>
-<link id="jquery_ui" rel="stylesheet" href="static/styles/$stylesheet/jquery-ui.css" type="text/css" media="screen"/>
-<link id="jquery_qtip" rel="stylesheet" href="static/styles/$stylesheet/jquery.qtip.css" type="text/css" media="screen"/>
+<link id="main" rel="stylesheet" href="$base_url/static/styles/$stylesheet/style.css" type="text/css" media="screen"/>
+<link id="jquery_ui" rel="stylesheet" href="$base_url/static/styles/$stylesheet/jquery-ui.css" type="text/css" media="screen"/>
+<link id="jquery_qtip" rel="stylesheet" href="$base_url/static/styles/$stylesheet/jquery.qtip.css" type="text/css" media="screen"/>
 END;
 	}
 	

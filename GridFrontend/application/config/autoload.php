@@ -95,7 +95,7 @@ $autoload['config'] = array();
 |
 */
 
-$autoload['language'] = array('simian_grid');
+$autoload['language'] = array();
 
 
 /*

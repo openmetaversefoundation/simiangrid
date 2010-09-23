@@ -12,13 +12,10 @@ $lang['openid_canonical'] = "  (XRI CanonicalID: %s) ";
 $lang['openid_nist_level'] = "<p>Le niveau NIST auth retournée par le serveur est: <tt>%s</tt></p>";
 $lang['openid_auth_age'] = "<p>L'âge d'authentification renvoyées par le serveur est: <tt>%s</tt></p>";
 
-$lang['openid_auth_error'] = 'Erreur d'authentification; OpenID non valide.';
+$lang['openid_auth_error'] = 'Erreur d\'authentification; OpenID non valide.';
 $lang['openid_sreg_failed'] = 'SREG a échoué.';
 $lang['openid_pape_failed'] = 'PAPE a échoué.';
 $lang['openid_redirect_failed'] = 'Impossible de se rediriger vers le serveur: %s';
-$lang['openid_storepath_failed'] = 'Impossible de créer le répertoire FileStore %s. S'il vous plaît vérifier les autorisations effectives.';
+$lang['openid_storepath_failed'] = 'Impossible de créer le répertoire FileStore %s. S\'il vous plaît vérifier les autorisations effectives.';
 
 ?>
-
-/* End of file openid_lang.php */
-/* Location: ./application/language/french/openid_lang.php */

@@ -73,6 +73,3 @@ Cordialement,
 The %s Team";
 
 ?>
-
-/* End of file dx_auth_lang.php */
-/* Location: ./application/language/french/dx_auth_lang.php */

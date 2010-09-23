@@ -10,9 +10,7 @@ class Auth extends Controller
 	function Auth()
 	{
 		parent::Controller();
-		
-		$this->lang->load('openid', 'english');
-		$this->lang->load('form_validation', 'english');
+
 		$this->load->library('Openid');
 		$this->load->library('Form_validation');
 
@@ -20,7 +18,10 @@ class Auth extends Controller
 		$this->load->helper('form');
 		$this->load->helper('simian_openid_helper');
 		$this->load->helper('simian_facebook_helper');
-		
+
+		$this->lang->load('simian_grid', get_language() );
+		$this->lang->load('openid', get_language() );
+		$this->lang->load('form_validation', get_language() );
 	}
 	
 	function index()
@@ -62,6 +63,17 @@ class Auth extends Controller
 			return false;
 		} else {
 			return true;
+		}
+	}
+
+	function email_exists($email)
+	{
+		$result = $this->simiangrid->get_user_by_email($email);
+		if ( $result != null ) {
+			return true;
+		} else {
+			$this->form_validation->set_message('email', lang('sg_auth_email_not_exist') );
+			return false;
 		}
 	}
 
@@ -109,7 +121,7 @@ class Auth extends Controller
 	
 	function login()
 	{
-		if ( ! $this->sg_auth->is_logged_in()) {
+		if ( ! $this->sg_auth->is_logged_in() ) {
 			$val = $this->form_validation;
 			
 			// Set form validation rules
@@ -117,11 +129,10 @@ class Auth extends Controller
 			$val->set_rules('password', 'Password', 'trim|required|xss_clean');
 			$val->set_rules('remember', 'Remember me', 'integer');
 			
-			if ($val->run() AND $this->sg_auth->login($val->set_value('username'), $val->set_value('password'), $val->set_value('remember'))) {
+			if ($val->run() AND $this->sg_auth->login($val->set_value('username'), $val->set_value('password'), $val->set_value('remember')) ) {
 				// Redirect to homepage
-				redirect('', 'location');
+				return redirect('about', 'location');
 			} else {
-				push_message(lang('sg_auth_invalid_login'), 'error');
 				return parse_template('auth/login');
 			}
 		} else {
@@ -150,14 +161,10 @@ class Auth extends Controller
 		if ($val->run() ) {
 			$user_id = $this->sg_auth->register($val->set_value('username'), $val->set_value('password'), $val->set_value('email'), $val->set_value('avatar_type', 'DefaultAvatar'));
 			if ( $user_id != null ) {
-				if ($this->sg_auth->email_activation) {
-					$message = lang('sg_auth_register_success_validation');
-				} else {					
-					$message = set_message('sg_auth_register_success', anchor(base_url() + "index.php/auth/login", 'Login'));
-				}		
-				push_message($message, 'info');
 				return $user_id;
 			}
+		} else {
+			return FALSE;
 		}
 		return null;
 	}
@@ -167,7 +174,7 @@ class Auth extends Controller
 		if ( ! $this->sg_auth->is_logged_in() && $this->sg_auth->allow_registration ) {
 			$val = $this->form_validation;
 			$user_id = $this->_register($val);
-			if ( $user_id != null ) {
+			if ( $user_id === null ) {
 				push_message(lang('sg_auth_register_failure'), 'error');
 				return redirect('auth/register');
 			} else {
@@ -229,7 +236,10 @@ class Auth extends Controller
 
 				$user_id = $this->_register($val);
 
-				if ( $user_id != null ) {
+				if ( $user_id === null ) {
+    	            push_message(lang('sg_auth_register_failure'), 'error');
+	                return redirect('auth/register');
+				} else if ( $user_id !== FALSE ) { 
 					if ( $this->simiangrid->identity_set($user_id, 'facebook', $fb_id) ) {
 						return redirect('about');
 					} else {
@@ -273,7 +283,10 @@ class Auth extends Controller
 		
 					$user_id = $this->_register($val);
 				
-					if ( $user_id != null ) {
+					if ( $user_id === null ) {
+	                    push_message(lang('sg_auth_register_failure'), 'error');
+    	                return redirect('auth/register');
+					} else if ( $user_id !== FALSE ) {
 						if ( $this->simiangrid->identity_set($user_id, 'openid', $openid) ) {
 							return redirect('about');
 						} else {
@@ -298,9 +311,74 @@ class Auth extends Controller
 	
 	function validate($code)
 	{
-		if ( ! $this->sg_auth->validate($code) ) {
+		if ( ! $this->sg_auth->validate('email', $code) ) {
 			push_message(set_message('sg_auth_validation_fail'), 'error');
+		} else {
+			push_message(lang('sg_auth_validation_success'), 'info');
 		}
 		return redirect('about');
+	}
+	
+	function forgot_password()
+	{
+		if ( ! $this->sg_auth->is_logged_in() ) {
+			$val = $this->form_validation;
+			$val->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email|callback_email_exists');
+			if ( $val->run() ) {
+				$email = $val->set_value('email');
+				$user = $this->simiangrid->get_user_by_email($email);
+				if ( $this->sg_auth->reset_password_start($user['UserID']) ) {
+					push_message(set_message('sg_auth_password_reset_email', $email), 'info');
+				} 
+				return redirect('about', 'location');
+			}
+		} else {
+			return redirect('about', 'location');
+		}
+		return parse_template('auth/forgot_password');
+	}
+	
+	function reset_password($code=null)
+	{
+		if ( $this->sg_auth->is_logged_in() ) {
+			push_message(lang('sg_auth_error_logout_first'), 'error');
+			return redirect('about', 'location');
+		}
+		if ( $code == null ) {
+			log_message('debug', 'no code detected so processing form');
+			$val = $this->form_validation;
+			$val->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->min_password.']|max_length['.$this->max_password.']|matches[confirm_password]');
+			$val->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean');
+			$val->set_rules('code', '', 'trim|required|xss_clean');
+			
+			if ( $val->run() ) {
+				log_message('debug', 'validated reset_password form');
+				if ( $this->sg_auth->password_reset($val->set_value('code'), $val->set_value('password')) ) {
+					push_message(lang('sg_password_success'), 'info');
+				} else {
+					push_message(lang('sg_password_error'), 'error');
+				}
+				return redirect('about', 'location');
+			} else {
+				if ( $this->input->post('code') != null ) {
+					$code = $this->input->post('code');
+					log_message('debug', 'Unable to validate reset_password form');
+					return redirect(site_url("auth/reset_password/$code"), 'location');
+				} else {
+					log_message('error', 'Missing code on reset_password');
+					return redirect('about', 'location');
+				}
+			}
+		} else {
+			if ( $this->sg_auth->password_reset_verify($code) ) {
+				log_message('debug', 'validated reset_password code so producing form');
+				$data = array();
+				$data['code'] = $code;
+				return parse_template('auth/reset_password', $data);
+			} else {
+				log_message('debug', 'unable to validate reset_password code');
+				return redirect('about', 'location');
+			}
+		}
 	}
 }

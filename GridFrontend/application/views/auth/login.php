@@ -35,9 +35,9 @@ $openid_identifier = array(
 
 <h2><?php echo lang('sg_login'); ?></h2>
 
-<?php generate_facebook_auth(site_url('auth/login_facebook')); ?>
+<?php generate_facebook_auth("$site_url/auth/login_facebook"); ?>
 
-<?php openid_identifier_render(lang('sg_auth_openid_login'), site_url('auth/login_openid'), "Login"); ?>
+<?php openid_identifier_render(lang('sg_auth_openid_login'), "$site_url/auth/login_openid", "Login"); ?>
 
 <fieldset><legend><?php lang('sg_login')?></legend>
 <?php echo form_open($this->uri->uri_string())?>
@@ -58,7 +58,7 @@ $openid_identifier = array(
 	<dt></dt>
 	<dd>
 		<?php echo form_checkbox($remember);?> <?php echo form_label(lang('sg_auth_remember'), $remember['id']);?> 
-		<?php echo anchor(base_url() . 'index.php/auth/forgot_password', lang('sg_auth_forgot_password'));?> 
+		<?php echo anchor("$site_url/auth/forgot_password", lang('sg_auth_forgot_password'));?> 
 	</dd>
 
 	<dt></dt>

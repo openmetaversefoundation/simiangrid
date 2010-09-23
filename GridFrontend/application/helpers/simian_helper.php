@@ -5,16 +5,20 @@ function ends_with($str, $sub)
    return (substr($str, strlen($str) - strlen($sub)) == $sub);
 }
 
-function parse_template($template, $data = array())
+function parse_template($template, $data = array(), $unadorned=false)
 {
     $CI =& get_instance();
     
     $data['site_url'] = site_url();
 	$data['base_url'] = base_url();
 	
-    $CI->parser->parse('header', $data);
+	if ( ! $unadorned ) {
+    	$CI->parser->parse('header', $data);
+	}
     $CI->parser->parse($template, $data);
-    $CI->parser->parse('footer', $data);
+	if ( ! $unadorned ) {
+    	$CI->parser->parse('footer', $data);
+	}
 }
 
 function random_uuid()
@@ -116,42 +120,6 @@ function import_asset_folder($folder)
     return $i;
 }
 
-function _suspend_simiangrid_user($userID)
-{   
-    $CI =& get_instance();
-
-    $query = array(
-        'RequestMethod' => 'AddUserData',
-        'UserID' => $userID,
-        'Suspended' => 1
-    );
-
-    $response = rest_post($CI->config->item('user_service'), $query);
-
-    if (element('Success', $response))
-        return true;
-    log_message('error', "Failed to suspend user $userID: " .  element('Message', $response, 'Unknown error'));
-    return false;
-}
-
-function _unsuspend_simiangrid_user($userID)
-{       
-    $CI =& get_instance();
-
-    $query = array(
-        'RequestMethod' => 'RemoveUserData',
-        'UserID' => $userID,
-        'Key' => 'Suspended'
-    );
-
-    $response = rest_post($CI->config->item('user_service'), $query);
-
-    if (element('Success', $response))
-        return true;
-    log_message('error', "Failed to unsuspend user $userID: " .  element('Message', $response, 'Unknown error'));
-    return false;
-}
-
 function decode_recursive_json($json)
 {   
     if ( is_string($json) ) {
@@ -182,5 +150,23 @@ function send_email($to, $subject, $message)
 	$email->subject($subject);
 	$email->message($message);
 
+	log_message('debug', "sent email to $to : $subject");
+
 	return $email->send();
+}
+
+function get_language($user_id=null)
+{
+	$ci =& get_instance();
+	$language = $ci->config->item('language');
+	if ( $user_id == null ) {
+		$user_id = $ci->sg_auth->get_uuid();
+	}
+	if ( $user_id != null ) {
+		$user_language = $ci->user_settings->get_language($user_id);
+		if ( $user_language != null ) {
+			$language = $user_language;
+		}
+	}
+	return $language;
 }

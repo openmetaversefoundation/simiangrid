@@ -133,9 +133,11 @@ class SG_Auth
 
 	function _login_finish($user_id, $remember=false) {
 		if ( $user_id === null ) {
+			push_message(lang('sg_auth_invalid_login'), 'error');
 			return false;
 		} else {
 			if ( $this->is_banned($user_id) ) {
+				push_message(lang('sg_auth_banned_login'), 'error');
 				return false;
 			} else {
 				$this->_login_session($user_id, $remember);
@@ -191,17 +193,47 @@ class SG_Auth
 		$this->session->sess_destroy();
 	}
 	
+	function set_password($user_id, $password)
+	{
+		$user = $this->simiangrid->get_user($user_id);
+		$username = $user['Name'];
+		$md5result = $this->simiangrid->identity_set($user_id, 'md5hash', $username, '$1$' . md5($password));
+		$a1result = $this->simiangrid->identity_set($user_id, 'a1hash', $username, md5($username . ':Inventory:' . $password));
+		if ( ! $md5result ) {
+			log_message('error', "Unable to set md5hash for $user_id");
+		}
+		if ( ! $a1result ) {
+			log_message('error', "Unable to set a1hash for $user_id");
+		}
+		return $md5result && $a1result;
+	}
+	
 	function register($username, $password, $email, $avtype)
 	{
 		$user_id = $this->simiangrid->register($username, $email);
 		if ( $user_id != null ) {
-			if ( $this->simiangrid->identity_set($user_id, 'md5hash', $username, '$1$' . md5($password)) ) {
-				if ( $this->simiangrid->identity_set($user_id, 'a1hash', $username, md5($username . ':Inventory:' . $password)) ) {
-					if ( $this->simiangrid->create_avatar($user_id, $avtype) ) {
-						return $user_id;
-					}
+			if ( $this->set_password($user_id, $password) ) {
+				if ( $this->simiangrid->create_avatar($user_id, $avtype) ) {
+					if ($this->email_activation) {
+						if ( ! $this->reset_validation($user_id) ) {
+							log_message('warning', "Unable to send validation email for $user_id");
+						}
+						$message = lang('sg_auth_register_success_validation');
+					} else {					
+						$message = set_message('sg_auth_register_success', anchor(site_url() + "/auth/login", 'Login'));
+					}		
+					push_message($message, 'info');
+					log_message('debug', "Succesfully created user $user_id");
+					return $user_id;
+				} else {
+					log_message('error', "Unable to create avatar type $avtype for $user_id");
 				}
 			}
+		}
+		if ( $user_id != null ) {
+			//user created but broken somehow
+			//TODO : account rollback
+			log_message('info', "This is where we would have rolled back user $user_id");
 		}
 		return null;
 	}
@@ -304,9 +336,9 @@ class SG_Auth
 
 	function reset_validation($user_id)
 	{
-		$this->user_validation->clear_validation($user_id);
+		$this->user_validation->clear_validation('email', $user_id);
 		$code = random_uuid();
-		$this->user_validation->set_code($user_id, $code);
+		$this->user_validation->set_code($user_id, 'email', $code);
 		$user_flags = $this->_get_user_flags($user_id);
 		$user_flags['Validated'] = false;
 		
@@ -314,29 +346,30 @@ class SG_Auth
 		if ( $this->_set_user_flags($user_id, $user_flags) ) {
 			$user = $this->simiangrid->get_user($user_id);
 			$email = $user['Email'];
-			if ( ! send_email($email, set_message('sg_auth_reset_subject', get_site_title()), set_message('sg_auth_reset_body', site_url("auth/validate/$code") ) ) ) {
+			if ( ! send_email($email, set_message('sg_auth_validaion_subject', get_site_title()), set_message('sg_auth_validation_body', site_url("auth/validate/$code") ) ) ) {
 				push_message(set_message('sg_email_fail', $email), 'error');
 			} else {
 				$result = true;
 			}
 		}
+		return $result;
 	}
 	
 	function set_valid($user_id)
 	{
 		$user_flags = $this->_get_user_flags($user_id);
 		$user_flags['Validated'] = true;
-		$this->user_validation->clear_validation($user_id);
+		$this->user_validation->clear_validation('email', $user_id);
 		return $this->_set_user_flags($user_id, $user_flags);
 	}
 	
 	function validate($code)
 	{
-		$user_id = $this->user_validation->check_code($code);
+		$user_id = $this->user_validation->check_code('email', $code);
 		$result = false;
 		if ( $user_id != null ) {
 			$result = $this->set_valid($user_id);
-			$this->user_validation->clear_validation($user_id);
+			$this->user_validation->clear_validation('email', $user_id);
 		}
 		return $result;
 	}
@@ -349,4 +382,40 @@ class SG_Auth
 			'200' => lang('sg_user_access_admin')
 		);
 	}
+
+	function reset_password_start($user_id)
+	{
+		$this->user_validation->clear_validation('password', $user_id);
+		$code = random_uuid();
+		$this->user_validation->set_code($user_id, 'password', $code);
+		$user = $this->simiangrid->get_user($user_id);
+		$email = $user['Email'];
+		if ( ! send_email($email, set_message('sg_auth_password_subject', get_site_title()), set_message('sg_auth_password_body', site_url("auth/reset_password/$code") ) ) ) {
+			push_message(set_message('sg_email_fail', $email), 'error');
+			return false;
+		} else {
+			return true;
+		};
+	}
+	
+	function password_reset_verify($code)
+	{
+		if ( $this->user_validation->check_code('password', $code) != null ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	function password_reset($code, $password)
+	{
+		$user_id = $this->user_validation->check_code('password', $code);
+		if ( $user_id == null ) {
+			log_message('debug', 'unable to lookup uer_id from code in password_reset');
+			return false;
+		}
+		$this->user_validation->clear_validation('password', $user_id);
+		return $this->set_password($user_id, $password);
+	}
+
 }

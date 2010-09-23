@@ -48,5 +48,8 @@ $route['scaffolding_trigger'] = "";
 // stuff...
 $route['get_grid_info'] = "gridinfo";
 
+// route big map to the region controller
+$route['map'] = 'region/map';
+
 /* End of file routes.php */
 /* Location: ./system/application/config/routes.php */

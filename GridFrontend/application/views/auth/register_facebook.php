@@ -44,7 +44,7 @@ $facebook_token_field = array(
 
 <fieldset><legend><?php echo lang('sg_auth_fb_register'); ?></legend>
 <dl>
-	<?php echo form_open(site_url("auth/register_facebook"))?>
+	<?php echo form_open("$site_url/auth/register_facebook"); ?>
 
 	<dt><?php echo form_label(lang('sg_name'), $username_field['id']);?></dt>
 	<dd>

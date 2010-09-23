@@ -4,7 +4,7 @@ class GridInfo extends Controller {
 
 	function GridInfo()
 	{
-		parent::Controller();   
+		parent::Controller();
 	}
        
 	function index()

@@ -44,7 +44,7 @@ $openid_identifier_field = array(
 
 <fieldset><legend><?php echo lang('sg_auth_openid_register'); ?></legend>
 <dl>
-	<?php echo form_open(site_url("auth/register_openid"))?>
+	<?php echo form_open("$site_url/auth/register_openid")?>
 
 	<dt><?php echo form_label('OpenID', $openid_identifier_field['id']);?></dt>
     <dd>
