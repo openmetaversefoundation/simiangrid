@@ -192,7 +192,7 @@ END;
 	{
 		$ci =& get_instance();
 		$region = $ci->simiangrid->get_scene($region_id);
-		echo anchor(site_url("region/info/$region_id"), $region['Name']);
+		echo anchor(site_url("region/view/$region_id"), $region['Name']);
 	}
 	
 	function pretty_access($level)
