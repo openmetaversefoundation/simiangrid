@@ -118,6 +118,7 @@
         $result = array();
 		$result['required'] = MYSQL_VERSION;
         if ( ! $db ) {
+			unset($_SESSION['db_version']);
             $result['connect'] = FALSE;
         } else {
             $result['connect'] = TRUE;
@@ -132,6 +133,9 @@
 			$result['db_check'] = dbSelect($db);
 			mysqli_close($db);
         }
+		if ( ! isset($_SESSION['db_version']) ) {
+			$_SESSION['db_version'] = array();
+		}
 		$_SESSION['db_version'] = array_merge($_SESSION['db_version'], $result);
 		return $result;
 	}

@@ -1,7 +1,7 @@
 <?php if ( ! defined('BASEPATH') or !defined('SIMIAN_INSTALLER') ) exit('No direct script access allowed'); ?>
 <html>
     <head>
-        <title><?php echo INSTALLER_PROJECT . " - " . $result['page'] ?></title>
+        <title><?php echo INSTALLER_PROJECT . " - " . $result['page']; ?></title>
     </head>
     <body>
         <div id="main">

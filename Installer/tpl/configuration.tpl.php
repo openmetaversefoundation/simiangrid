@@ -22,6 +22,6 @@
                 ?>
             </table>
             <input type="hidden" name="next" />
-            <input type="submit" name="Next Step"/>
+            <input type="submit" name="Next Step" value="Next Step"/>
         </form>
 <?php require 'footer.tpl.php'; ?>
