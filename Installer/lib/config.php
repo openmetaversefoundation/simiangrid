@@ -106,10 +106,10 @@
         $writableFiles = configFileList();
         
         foreach ( $writableDirectories as $directory ) {
-			$check_result = is_writable($directory);
-			if ( ! $check_result ) {
-				userMessage("error", "Directory $directory is not writable.");
-			}
+	    $check_result = is_writable($directory);
+	    if ( ! $check_result ) {
+		userMessage("error", "Directory $directory is not writable.");
+	    }
             $item = array (
                 'name' => $directory,
                 'check' => $check_result,
@@ -122,17 +122,17 @@
                 $path_dir = dirname($path);
                 if ( is_dir($path_dir) ) {
                     $check = is_writable($path_dir);
-					if ( ! $check ) {
-						userMessage("error", "Directory $path_dir is not writable for $file.");
-					}
+		    if ( ! $check ) {
+			userMessage("error", "Directory $path is not writable for $file.");
+		    }
                 } else {
-					userMessage("error", "Unable to find directory $path_dir.");
-				}
+		    userMessage("error", "Unable to find directory $path.");
+		}
             } else {
                 $check = is_writable($check);
-				if ( ! $check ) {
-					userMessage("error", "File $file is not writable.");
-				}
+		if ( ! $check ) {
+		    userMessage("error", "File $file is not writable.");
+		}
             }
             $item = array (
                 'name' => $path,
