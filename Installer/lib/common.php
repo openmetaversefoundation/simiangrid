@@ -211,12 +211,10 @@
         sessionInit();
         
         $result = array();
-        if ( configExists() ) {
-            if ( installerStep() !== STEP_DONE && installerStep() !== STEP_WRITE ) {
-                installerStepSet(STEP_DONE);
-                redirectSelf();
-            }
-        }
+		if ( installerStep() !== STEP_DONE && configExists() && installerStep() !== STEP_WRITE ) {
+	        installerStepSet(STEP_DONE);
+	        redirectSelf();
+		}
         $is_redirect = FALSE;
         
         if ( isset($_SERVER['PATH_INFO']) ) {

@@ -34,5 +34,5 @@
             }
         ?>
     </table>
-    <a href="?next">Continue</a>
+    <a href="?next">Next Step</a>
 <?php require 'footer.tpl.php'; ?>

@@ -16,6 +16,6 @@
                 </tr>
             </table>
             <input type="hidden" name="next" />
-            <input type="submit" name="Submit"/>
+            <input type="submit" name="Next Step"/>
         </form>
 <?php require 'footer.tpl.php'; ?>

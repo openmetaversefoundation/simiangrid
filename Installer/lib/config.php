@@ -5,6 +5,7 @@
         $config_files = configFileList();
         foreach ( $config_files as $config_file ) {
             if ( is_file($config_file) ) {
+				userMessage('warn', "Config file $config_file already exists.");
                 return TRUE;
             }
         }
