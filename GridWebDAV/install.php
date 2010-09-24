@@ -1,7 +1,7 @@
 <?php
-    define(SIMIAN_INSTALLER, TRUE);
+    define("SIMIAN_INSTALLER", TRUE);
 
-    define(NEED_PHP_VERSION, "5.3");
+    define("NEED_PHP_VERSION", "5.3");
     define("INSTALLER_PROJECT", 'Simian Grid WebDAV');
     
     $requiredModules = array(
