@@ -71,10 +71,12 @@ function convert_grid_pos(x, y)
 
 function handle_click(event)
 {
-    var x = event.latLng.b;
-    var y = event.latLng.c;
-    var real_x = 0 - Math.ceil(( x / scale) / 2);
-    var real_y = Math.floor(( y / scale) / 2);
+    var x = event.latLng.lng();
+    var y = event.latLng.lat();
+	console.log('what ' + x + '/' + y);
+    var real_x = Math.ceil(( x / scale) / 2) - 1;
+    var real_y = 0 - Math.floor(( y / scale) / 2) - 1;
+	console.log('whattt ' + real_x + '/' + real_y);
     CLICK_HANDLER(real_x, real_y);
 }
 
