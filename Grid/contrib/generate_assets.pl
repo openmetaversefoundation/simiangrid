@@ -1,11 +1,21 @@
 #!/usr/bin/perl
+# ===========================================
+# author     Dave Coyle <http://coyled.com>
+# copyright  Open Metaverse Foundation
+# license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
+# link       http://openmetaverse.googlecode.com/
+# ===========================================
 #
 # generate fake 4KB assets and shove them into SimianGrid
 #
 # usage: ./generate_assets --count 100 --asset-url http://grid.example.com/Grid/
 #
-# should work out-of-the-box on Ubuntu.  no idea if this works on
-# Windows.  sorry.
+# installation instructions:
+#       ubuntu / debian:
+#              - aptitude install perl libwww-perl 
+#              - then run 
+#
+# no idea if this works on Windows.  sorry.
 #
 
 use warnings;
