@@ -12,7 +12,7 @@
         }
         $result['page'] = "PHP Requirements";
         $result['php_version'] = phpVersionCheck();
-        $result['modules'] = phpModuleList($requiredModules);
+        $result['modules'] = phpModuleList();
     } else if ( installerStep() === STEP_DB_CONFIG ) {
         if ( $_SERVER['REQUEST_METHOD'] == "GET" ) {
             if ( isRedirect() ) {

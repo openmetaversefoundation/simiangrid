@@ -3,13 +3,16 @@
     function configExists()
     {
         $config_files = configFileList();
+		$result = FALSE;
         foreach ( $config_files as $config_file ) {
             if ( is_file($config_file) ) {
 				userMessage('warn', "Config file $config_file already exists.");
-                return TRUE;
+				if ( $result == FALSE ) {
+					$result = TRUE;
+				}
             }
         }
-        return FALSE;
+        return $result;
     }
 
     function configGetValue($name)

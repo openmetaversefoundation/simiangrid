@@ -20,8 +20,23 @@
     <h2>Extensions</h2>           
     <table>
         <th>Package</th><th>Installed</th>
+		<th colspan="2">Required Modules</th>
         <?php
-            foreach ( $result['modules'] as $module => $enabled ) {
+            foreach ( $result['modules']['required'] as $module => $enabled ) {
+                if ( $enabled ) {
+                    $enabled_string = "<font color=\"green\">OK</font>";
+                } else {
+                    $enabled_string = "<font color=\"red\">NOT OK</font>";
+                }
+                echo "
+            <tr>
+                <td>$module</td><td>$enabled_string</td>
+            </tr>";
+            }
+        ?>
+		<th colspan="2">Optional Modules</th>
+        <?php
+            foreach ( $result['modules']['optional'] as $module => $enabled ) {
                 if ( $enabled ) {
                     $enabled_string = "<font color=\"green\">OK</font>";
                 } else {

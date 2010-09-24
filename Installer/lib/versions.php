@@ -1,13 +1,27 @@
 <?php if ( ! defined('BASEPATH') or !defined('SIMIAN_INSTALLER') ) exit('No direct script access allowed');
 
-    function phpModuleList($requiredModules)
+    function phpModuleList()
     {
+		global $requiredModules, $optionalModules;
         $result = array();
+		$result['optional'] = array();
+		$result['required'] = array();
         foreach ( $requiredModules as $module ) {
             $check = extension_loaded($module);
-            $result[$module] = $check;
+            $result['required'][$module] = $check;
         }
         
+		if ( ! isset($optionalModules) || $optionalModules == null ) {
+			$optionalModules = array();
+		}
+        foreach ( $optionalModules as $module ) {
+            $check = extension_loaded($module);
+			if ( ! $check ) {
+				userMessage('warn', "The module $module is not required for basic operation.");
+			}
+            $result['optional'][$module] = $check;
+        }
+
         $_SESSION['module_list'] = $result;
 
         return $result;
@@ -32,10 +46,10 @@
         $result = FALSE;
         if ( $_SESSION['php_version_check'] === TRUE ) {
             $result = TRUE ;
-            foreach ( $_SESSION['module_list'] as $module => $enabled ) {
+            foreach ( $_SESSION['module_list']['required'] as $module => $enabled ) {
                 if ( ! $enabled ) {
                     $result = FALSE;
-                    userMessage('error', "Please check your configured php modules");
+                    userMessage('error', "Please check your configured php modules.");
                     break;
                 }
             }
