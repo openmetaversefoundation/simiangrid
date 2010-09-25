@@ -123,7 +123,7 @@
                 if ( is_dir($path_dir) ) {
                     $check = is_writable($path_dir);
 		    if ( ! $check ) {
-			userMessage("error", "Directory " . getcwd() . "/$path_dir is not writable.");
+			userMessage("error", "Directory " . getcwd() . "/$path_dir is not writable for $file.");
 		    }
                 } else {
 		    userMessage("error", "Unable to find directory $path.");
@@ -151,7 +151,7 @@
         $success = TRUE;
         foreach ( $configOptions as $key => $config ) {
             $config_value = $_POST[$key];
-            f ( $config_value != null ) {
+            if ( $config_value != null ) {
                 $results[$key] = $config_value;
             }
         }
