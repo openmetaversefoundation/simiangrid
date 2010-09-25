@@ -108,7 +108,7 @@
         foreach ( $writableDirectories as $directory ) {
 	    $check_result = is_writable($directory);
 	    if ( ! $check_result ) {
-		userMessage("error", "Directory $directory is not writable.");
+		userMessage("error", "Directory " . getcwd() . "$directory is not writable.");
 	    }
             $item = array (
                 'name' => $directory,
