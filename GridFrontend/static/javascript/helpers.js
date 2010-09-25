@@ -1,4 +1,5 @@
 {
+
 	function load_via_post(url, destination, data)
 	{
 		var div_loader = post_div_loader();
@@ -70,7 +71,10 @@
                     when : {
                         event : 'mouseout'
                     }
-                }
+                },
+				style: {
+					name: 'red'
+				}
             });
             thing.attr('title', '');
         }

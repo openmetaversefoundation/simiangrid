@@ -196,22 +196,49 @@ class User extends Controller {
 	    parse_template('user/profile', $data, true);
 	}
 
+	function _truncate_search($search_results, $offset, $page_count)
+	{
+		$results = array();
+		$offset_count = 0;
+		$result_count = 0;
+		foreach ( $search_results as $search_result ) {
+			if ( $offset_count >= $offset && $result_count <= $page_count ) {
+				$search_item = array(
+					render_user_link($search_result['id'])
+				);
+				array_push($results, $search_item);
+				$result_count = $result_count + 1;
+			} else {
+				$offset_count = $offset_count + 1;
+			}
+		}
+		return $results;
+	}
+
 	function search()
 	{
-		$data = array();
-		$data['user_list'] = array();
-	    if ( $this->input->post('name') ) {
-	        $name = $this->input->post('name');
-	        $user_results = $this->simiangrid->search_user($name);
-			if ( $user_results != null ) {
-				foreach ( $user_results as $user ) {
-					if ( $this->sg_auth->is_searchable($user['id']) ) {
-						array_push($data['user_list'], $user);
-					}
-				}
-			}
-	    }
-		return parse_template('user/search_results', $data, true);
+		parse_str($_SERVER['QUERY_STRING'],$_GET); 
+		$offset = $_GET['iDisplayStart'];
+		$limit = $_GET['iDisplayLength'];
+		$search = $_GET['sSearch'];
+		if ( $search == '' ) {
+			$trunc_count = 0;
+			$total_count = 0;
+			$trunc_results = array();
+		} else {
+			$search_results = $this->simiangrid->search_user($search);
+			$total_count = count($search_results);
+			$trunc_results = $this->_truncate_search($search_results, $offset, $limit);
+			$trunc_count = count($trunc_results);
+		}
+		$result = array(
+			"sEcho" => $_GET['sEcho'],
+			"iTotalRecords" => $total_count,
+			"iTotalDisplayRecords" => $trunc_count,
+			"aaData" => $trunc_results
+		);
+		echo json_encode($result);
+		return;
 	}
 	
 	function self()

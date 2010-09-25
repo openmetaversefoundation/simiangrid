@@ -14,7 +14,7 @@
         <th><?php echo lang('sg_user_last_location'); ?></th><td>
         <?php 
             if ( isset($last_scene) ) {
-                render_region_link($last_scene['SceneID']); 
+                echo render_region_link($last_scene['SceneID']); 
             }
         ?>
         </td>

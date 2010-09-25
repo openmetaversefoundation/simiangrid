@@ -157,6 +157,7 @@ END;
 <link id="main" rel="stylesheet" href="$base_url/static/styles/$stylesheet/style.css" type="text/css" media="screen"/>
 <link id="jquery_ui" rel="stylesheet" href="$base_url/static/styles/$stylesheet/jquery-ui.css" type="text/css" media="screen"/>
 <link id="jquery_qtip" rel="stylesheet" href="$base_url/static/styles/$stylesheet/jquery.qtip.css" type="text/css" media="screen"/>
+<link id="jquery_ui" rel="stylesheet" href="$base_url/static/styles/$stylesheet/datatables.css" type="text/css" media="screen"/>
 END;
 	}
 	
@@ -179,20 +180,23 @@ END;
 	{
 		$ci =& get_instance();
 		$user = $ci->simiangrid->get_user($user_id);
-		$result = '';
-		if ( $ci->sg_auth->is_searchable($user_id) ) {
-			$result = anchor(site_url("user/view/$user_id"), $user['Name']);
+		if ( $user == null ) {
+			$result = 'N/A';
 		} else {
-			$result = $user['Name'];
+			if ( $ci->sg_auth->is_searchable($user_id) ) {
+				$result = anchor(site_url("user/view/$user_id"), $user['Name']);
+			} else {
+				$result = $user['Name'];
+			}
 		}
-		echo $result;
+		return $result;
 	}
 	
 	function render_region_link($region_id)
 	{
 		$ci =& get_instance();
 		$region = $ci->simiangrid->get_scene($region_id);
-		echo anchor(site_url("region/view/$region_id"), $region['Name']);
+		return anchor(site_url("region/view/$region_id"), $region['Name']);
 	}
 	
 	function pretty_access($level)

@@ -13,7 +13,7 @@ Unknown
 <br/>
 <?php echo lang('sg_region_name') . " : " . $scene_data['Name']; ?> <br/>
 <?php echo lang('sg_region_position') . " : " .  $x . "," . $y; ?> <br/>
-<?php echo lang('sg_region_owner') . " : " ; render_user_link($owner_id); ?><br/>
+<?php echo lang('sg_region_owner') . " : " ; echo render_user_link($owner_id); ?><br/>
 
 <?php if ( isset($center_map) && $center_map ): ?>
 <script type="text/javascript">

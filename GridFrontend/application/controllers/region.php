@@ -7,24 +7,13 @@ class Region extends Controller {
 		parent::Controller();
 		$this->load->library('table');
 		$this->load->library('SimianGrid');
+		$this->load->library('table');
 
 		$this->load->helper('form');
 		$this->load->helper('simian_view_helper');
 		$this->load->helper('simian_facebook_helper');
 		
 		$this->lang->load('simian_grid', get_language() );
-	}
-
-	function search()
-	{
-		$data = array();
-	    if ( $this->input->post('name') ) {
-	        $name = $this->input->post('name');
-	        $data['scene_list'] = $this->simiangrid->search_scene($name);
-	    } else {
-	        $data['scene_list'] = array();
-	    }
-		return parse_template('region/search_results', $data, true);
 	}
 	
 	function view_coord()
@@ -146,5 +135,54 @@ class Region extends Controller {
 	    $grid_user = $this->simiangrid->get_user($data['scene_data']['ExtraData']['EstateOwner']);
 	    $data['owner_name'] = $grid_user['Name'];
 		$data['owner_id'] = $grid_user['UserID'];
+	}
+
+	function _render_region_popup($scene)
+	{
+		return anchor('region/view/' . $scene['id'], $scene['name'], array('class'=>'search_result','onclick' => 'load_search_result(\'' . $scene['id'] . '\', ' . $scene['x'] . ', ' . $scene['y'] . '); return false;'));
+	}
+	function _truncate_search($search_results, $offset, $page_count)
+	{
+		$results = array();
+		$offset_count = 0;
+		$result_count = 0;
+		foreach ( $search_results as $search_result ) {
+			if ( $offset_count >= $offset && $result_count <= $page_count ) {
+				$search_item = array(
+					$this->_render_region_popup($search_result)
+				);
+				array_push($results, $search_item);
+				$result_count = $result_count + 1;
+			} else {
+				$offset_count = $offset_count + 1;
+			}
+		}
+		return $results;
+	}
+
+	function search()
+	{
+		parse_str($_SERVER['QUERY_STRING'],$_GET); 
+		$offset = $_GET['iDisplayStart'];
+		$limit = $_GET['iDisplayLength'];
+		$search = $_GET['sSearch'];
+		if ( $search == '' ) {
+			$trunc_count = 0;
+			$total_count = 0;
+			$trunc_results = array();
+		} else {
+			$search_results = $this->simiangrid->search_scene($search);
+			$total_count = count($search_results);
+			$trunc_results = $this->_truncate_search($search_results, $offset, $limit);
+			$trunc_count = count($trunc_results);
+		}
+		$result = array(
+			"sEcho" => $_GET['sEcho'],
+			"iTotalRecords" => $total_count,
+			"iTotalDisplayRecords" => $trunc_count,
+			"aaData" => $trunc_results
+		);
+		echo json_encode($result);
+		return;
 	}
 }

@@ -1,15 +1,17 @@
 <div style="height:100%; width:100%;">
-	<div id="search_results"></div>
 	<div id="region_info"></div>
-		
-	<div id="search_form">
-
-<?php
-	echo form_input(array('name'=>'name', 'id'=>'region_name'));
-	echo anchor("#", lang('sg_search'), array('id' => 'search_button'));
-?>
+	<div id="search_popup">
+		<table class="display" id="search_results">
+			<thead>
+				<th>Region Name</th>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
 	</div>
-
+	<div>
+		<a href="#" id="search_button">Search</a>
+	</div>
 	<div id="map_canvas" style="width:720px; height:400px; background-color: #1D475F; "></div>
 
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
@@ -33,32 +35,32 @@
 		var data = {
 			'is_search' : true
 		};
-        load_via_post("{site_url}/region/view/" + scene_id + "/inline", "#region_info", data);
+        load_via_post("{site_url}/region/details/" + scene_id + "/inline", "#region_info", data);
 		$("#region_info").dialog('open');
     }
-   
-    function do_search()
-    {
-        var search_name = $("#region_name").val();
-        var data = {
-            'name' : search_name
-        };
-        load_via_post("{site_url}/region/search", "#search_results", data, false);
-		$("#search_results").dialog('open');
-        return false;
-    }
-    
-    var load_error_dialog;
+
     $().ready(function() {
-		$("#search_results").dialog({ autoOpen: false, position: ['left', 'center'] });
+		$("#search_popup").dialog({
+			autoOpen: false, 
+			position: ['left', 'top']
+		});
 		$("#region_info").dialog({ autoOpen: false, position: ['right', 'center'] });
-        $("#search_button").click(do_search);
-		$("#region_name").change(do_search);
+		$("#search_button").click(function(event) {
+			$("#search_popup").dialog('open');
+			return false;
+		});
         <?php
             echo "initialize_map(\"" . $tile_host. "\", " 
                                    . $x . ", " 
                                    . $y . ", " 
                                    . $zoom . ", load_region_by_pos);"
         ?>
+		$("#search_results").dataTable({
+			"bProcessing": true,
+			"bServerSide": true,
+			"sAjaxSource": "{site_url}/region/search",
+			"bSort": false,
+			"bLengthChange": false
+		});
     });
 </script>

@@ -1,26 +1,20 @@
-<div style="height:100%; width:100%;">		
-	<div id="search_form">
-<?php
-	echo form_input(array('name'=>'name', 'id'=>'user_name'));
-	echo anchor("#", lang('sg_search'), array('id' => 'search_button'));
-?>
-	</div>
-	<div id="search_results"></div>
-	<div id="user_info"></div>
+<div style="height:100%; width:100%;">
+	<table class="display" id="search_results">
+		<thead>
+			<th>User Name</th>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+</div>
 <script>
-   
-    function do_search()
-    {
-        var search_name = $("#user_name").val();
-        var data = {
-            'name' : search_name
-        };
-        load_via_post("{site_url}/user/search", "#search_results", data);
-        return false;
-    }
-
     $().ready(function() {
-        $("#search_button").click(do_search);
-		$("#user_name").change(do_search);
+		$("#search_results").dataTable({
+			"bProcessing": true,
+			"bServerSide": true,
+			"sAjaxSource": "{site_url}/user/search",
+			"bSort": false,
+			"bLengthChange": false
+		});
     });
 </script>

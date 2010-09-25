@@ -18,6 +18,7 @@
 <script src="{base_url}/static/javascript/jquery.qtip.js" type="text/javascript" ></script>
 <script src="{base_url}/static/javascript/jquery.qtip.ajax.js" type="text/javascript" ></script>
 <script src="{base_url}/static/javascript/jquery-ui.min.js" type="text/javascript" ></script>
+<script src="{base_url}/static/javascript/jquery.dataTables.js" type="text/javascript" ></script>
 <script src="{base_url}/static/javascript/helpers.js" type="text/javascript" ></script>
 </head>
 <body>
