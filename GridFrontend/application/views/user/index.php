@@ -1,7 +1,9 @@
 <div style="height:100%; width:100%;">
 	<table class="display" id="search_results">
 		<thead>
-			<th>User Name</th>
+			<tr>
+				<th>User Name</th>
+			</tr>
 		</thead>
 		<tbody>
 		</tbody>

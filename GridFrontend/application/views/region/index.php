@@ -3,7 +3,9 @@
 	<div id="search_popup">
 		<table class="display" id="search_results">
 			<thead>
-				<th>Region Name</th>
+				<tr>
+					<th>Region Name</th>
+				</tr>
 			</thead>
 			<tbody>
 			</tbody>
