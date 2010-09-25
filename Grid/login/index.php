@@ -695,9 +695,25 @@ function process_login($method_name, $params, $user_data)
         	"Sorry! We couldn't log you in. User account information could not be retrieved. If this problem persists, please contact the grid operator.");
     }
 
-    if (!empty($user['Suspended']))
-        return array('reason' => 'key', 'login' => 'false', 'message' =>
-            "Sorry!  We couldn't log you in.  User account has been suspended or is not yet activated.  If this problem persists, please contact the grid operator.");
+    if ( ! empty($user['UserFlags']) ) {
+		$success = true;
+		if ( ! empty($user['UserFlags']['Suspended']) && $user['UserFlags']['Suspended'] == true ) {
+			$success = false;
+		}
+		if ( $config['validation_required'] ) {
+			if ( ! empty($user['UserFlags']['Validated']) ) {
+				if ( ! $user['UserFlags']['Validated'] ) {
+					$success = false;
+				}
+			} else {
+				$success = false;
+			}
+		}
+		if ( ! $success ) {
+        	return array('reason' => 'key', 'login' => 'false', 'message' =>
+            	"Sorry!  We couldn't log you in.  User account has been suspended or is not yet activated.  If this problem persists, please contact the grid operator.");
+		}
+	}
     
     $lastLocation = null;
     if (isset($user['LastLocation']))
