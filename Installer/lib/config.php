@@ -123,7 +123,7 @@
                 if ( is_dir($path_dir) ) {
                     $check = is_writable($path_dir);
 		    if ( ! $check ) {
-			userMessage("error", "Directory $path is not writable for $file.");
+			userMessage("error", "Directory $path_dir is not writable for $file.");
 		    }
                 } else {
 		    userMessage("error", "Unable to find directory $path.");
