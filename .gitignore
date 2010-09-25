@@ -1,0 +1,8 @@
+#TextMate state files or something
+._*
+#Map Tiles we don't care about
+Grid/map/map-*.jpg
+Grid/map/map-*.png
+#LogFiles
+Grid/logs/log-*.php
+GridFrontend/system/logs/log-*.php
