@@ -81,6 +81,8 @@ $request_xml = file_get_contents("php://input");
 $response = xmlrpc_server_call_method($xmlrpc_server, $request_xml, '');
 
 header('Content-Type: text/xml');
+
+log_message('debug', "SENDING THIS -> $response");
 echo $response;
 
 xmlrpc_server_destroy($xmlrpc_server);
@@ -381,7 +383,9 @@ function bitShift($num1, $bits)
 function link_region($method_name, $params, $user_data)
 {
     log_message('info', "link_region called");
-    
+
+    $config =& get_config();
+
     $req = $params[0];
 
     $region_name = $req['region_name'];
@@ -403,8 +407,8 @@ function link_region($method_name, $params, $user_data)
         $handle = bitOr($handle, (string)$y, 0);
         $response['handle'] = (string)$handle;
         
-        $response['region_image'] = "http://" . $scene->ExtraData['ExternalAddress'] . ":" . $scene->ExtraData['ExternalPort'] . "/index.php?method=" . str_replace('-', '', $scene->SceneID);
-        $response['external_name'] = '';
+        $response['region_image'] = "http://" . $scene->ExtraData['ExternalAddress'] . ":" . $scene->ExtraData['ExternalPort'] . "/index.php?method=regionImage" . str_replace('-', '', $scene->SceneID);
+        $response['external_name'] = $scene->ExtraData['ExternalAddress'];
     }
     
     return $response;
@@ -426,12 +430,12 @@ function get_region($method_name, $params, $user_data)
     } else {
         $response['result'] = "true";
         $response['uuid'] = $scene->SceneID;
-        $response['x'] = $scene->MinPosition->X;
-        $response['y'] = $scene->MinPosition->Y;
+        $response['x'] = (string) $scene->MinPosition->X;
+        $response['y'] = (string) $scene->MinPosition->Y;
         $response['region_name'] = $scene->Name;
-        $response['hostname'] = $scene->Address;
-        $response['http_port'] = $scene->ExternalData['ExternalPort'];
-        $response['internal_port'] = $scene->ExternalData['InternalPort'];
+        $response['hostname'] = $scene->ExtraData['ExternalAddress'];
+        $response['http_port'] = (string) $scene->ExtraData['ExternalPort'];
+        $response['internal_port'] = (string) $scene->ExtraData['InternalPort'];
     }
 
     return $response;
