@@ -24,6 +24,7 @@ $lang['sg_type'] = 'Type';
 $lang['sg_admin'] = 'Admin';
 $lang['sg_email_fail'] = 'Problem sending email to %s';
 $lang['sg_reset'] = 'Reset';
+$lang['sg_style_selector'] = 'Style Selector';
 //region
 $lang['sg_region_name'] = 'Region Name';
 $lang['sg_region_owner'] = 'Owner';

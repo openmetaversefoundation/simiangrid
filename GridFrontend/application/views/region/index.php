@@ -46,7 +46,11 @@
 			autoOpen: false, 
 			position: ['left', 'top']
 		});
-		$("#region_info").dialog({ autoOpen: false, position: ['right', 'center'] });
+		$("#region_info").dialog({ 
+			autoOpen: false, 
+			position: ['right', 'center'],
+			title: "<?php echo lang('sg_region_info'); ?>" 
+		});
 		$("#search_button").click(function(event) {
 			$("#search_popup").dialog('open');
 			return false;
