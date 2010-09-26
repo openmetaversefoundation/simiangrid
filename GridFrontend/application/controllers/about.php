@@ -14,7 +14,9 @@ class About extends Controller {
 	
 	function index()
 	{
-	    parse_template('about');
+		$data = array();
+		$data['page'] = 'about';
+	    parse_template('about', $data);
 	}
 	
 	function tooltip($tooltip)

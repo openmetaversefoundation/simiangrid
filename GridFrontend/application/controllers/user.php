@@ -145,7 +145,9 @@ class User extends Controller {
 
 	function index()
 	{
-		parse_template('user/index');
+		$data = array();
+		$data['page'] = 'users';
+		parse_template('user/index', $data);
 	}
 
     function profile_pic($uuid)
@@ -266,7 +268,14 @@ class User extends Controller {
 		} else {
 	    	$data['uuid'] = $uuid;
 		}
-	    $data['my_uuid'] = $this->sg_auth->get_uuid();
+	    $my_uuid = $this->sg_auth->get_uuid();
+		$data['page'] = 'users';
+		if ( $my_uuid != null ) {
+			$data['my_uuid'] = $my_uuid;
+			if ( $my_uuid == $uuid ) {
+				$data['page'] = 'account';
+			}
+		}
 		$data['tab'] = '';
 		if ( $extra == "actions" ) {
 			$data['tab'] = 'actions';

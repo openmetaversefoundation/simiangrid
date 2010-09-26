@@ -68,6 +68,7 @@ class Region extends Controller {
 	{
 		$data = array();
 		$this->_init_map($data);
+		$data['page'] = 'regions';
 	    return parse_template('region/index', $data);
 	}
 	
@@ -141,6 +142,7 @@ class Region extends Controller {
 	{
 		return anchor('region/view/' . $scene['id'], $scene['name'], array('class'=>'search_result','onclick' => 'load_search_result(\'' . $scene['id'] . '\', ' . $scene['x'] . ', ' . $scene['y'] . '); return false;'));
 	}
+
 	function _truncate_search($search_results, $offset, $page_count)
 	{
 		$results = array();

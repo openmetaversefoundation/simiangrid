@@ -133,7 +133,9 @@ class Auth extends Controller
 				// Redirect to homepage
 				return redirect('about', 'location');
 			} else {
-				return parse_template('auth/login');
+				$data = array();
+				$data['page'] = 'login';
+				return parse_template('auth/login', $data);
 			}
 		} else {
 			push_message(lang('sg_auth_error_already'), 'error');
@@ -178,7 +180,9 @@ class Auth extends Controller
 				push_message(lang('sg_auth_register_failure'), 'error');
 				return redirect('auth/register');
 			} else {
-				return parse_template('auth/register');
+				$data = array();
+				$data['page'] = 'join';
+				return parse_template('auth/register', $data);
 			}
 		} elseif ( ! $this->sg_auth->allow_registration) {
 			push_message(lang('sg_auth_registration_disabled'), 'error');
@@ -247,7 +251,8 @@ class Auth extends Controller
 						$this->simiangrid->user_delete($user_id);
 					}
 				} else {
-    			    // Load OpenID registration page
+    			    // Load OpenID registrationpage
+					$data['page'] = 'join';
     	            return parse_template('auth/register_facebook', $data);
     			}
 			}
@@ -295,6 +300,7 @@ class Auth extends Controller
 						}
 					} else {
 	    			    // Load OpenID registration page
+						$data['page'] = 'join';
 	    	            return parse_template('auth/register_openid', $data);
 	    			}
 				}
