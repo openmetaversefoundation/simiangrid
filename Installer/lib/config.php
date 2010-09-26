@@ -108,7 +108,7 @@
         foreach ( $writableDirectories as $directory ) {
 	    $check_result = is_writable($directory);
 	    if ( ! $check_result ) {
-		userMessage("error", "Directory " . getcwd() . "/$directory is not writable.");
+		userMessage("error", "Directory " . getcwd() . "/$directory is not writable (It must be writeable by the account the webserver runs under).");
 	    }
             $item = array (
                 'name' => $directory,
@@ -123,7 +123,7 @@
                 if ( is_dir($path_dir) ) {
                     $check = is_writable($path_dir);
 		    if ( ! $check ) {
-			userMessage("error", "Directory " . getcwd() . "/$path_dir is not writable.");
+			userMessage("error", "Directory " . getcwd() . "/$path_dir is not writable (It must be writeable by the account the webserver runs under).");
 		    }
                 } else {
 		    userMessage("error", "Unable to find directory $path.");
@@ -131,7 +131,7 @@
             } else {
                 $check = is_writable($check);
 		if ( ! $check ) {
-		    userMessage("error", "File $file is not writable.");
+		    userMessage("error", "File $file is not writable (It must be writeable by the account the webserver runs under).");
 		}
             }
             $item = array (
