@@ -16,7 +16,8 @@
 			"bServerSide": true,
 			"sAjaxSource": "{site_url}/user/search",
 			"bSort": false,
-			"bLengthChange": false
+			"bLengthChange": false,
+			"bJQueryUI": true
 		});
     });
 </script>

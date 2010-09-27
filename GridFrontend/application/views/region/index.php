@@ -62,7 +62,8 @@
 			"bServerSide": true,
 			"sAjaxSource": "{site_url}/region/search",
 			"bSort": false,
-			"bLengthChange": false
+			"bLengthChange": false,
+			"bJQueryUI": true
 		});
     });
 </script>
