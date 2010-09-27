@@ -44,7 +44,7 @@
     function phpRequirementsMet()
     {
         $result = FALSE;
-        if ( $_SESSION['php_version_check'] === TRUE ) {
+        if ( isset($_SESSION['php_version_check']) && $_SESSION['php_version_check'] === TRUE ) {
             $result = TRUE ;
             foreach ( $_SESSION['module_list']['required'] as $module => $enabled ) {
                 if ( ! $enabled ) {
