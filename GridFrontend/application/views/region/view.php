@@ -1,5 +1,3 @@
-<h3><?php echo lang('sg_region_info'); ?></h3>
-
 <?php
     $my_url = "$site_url/region/view/$uuid";
     generate_like_button($my_url);

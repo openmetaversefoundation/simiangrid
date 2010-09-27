@@ -91,6 +91,7 @@ class Region extends Controller {
 			$data['tab'] = 'stats';
 		}
 		$data['title'] = $data['scene_data']['Name'];
+		$data['page'] = 'regions';
 		parse_template('region/view', $data);
 	}
 
