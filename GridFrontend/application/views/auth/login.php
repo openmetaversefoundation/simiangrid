@@ -33,8 +33,6 @@ $openid_identifier = array(
 );
 ?>
 
-<h2><?php echo lang('sg_login'); ?></h2>
-
 <?php generate_facebook_auth("$site_url/auth/login_facebook"); ?>
 
 <?php openid_identifier_render(lang('sg_auth_openid_login'), "$site_url/auth/login_openid", "Login"); ?>

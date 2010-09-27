@@ -122,8 +122,12 @@ END;
 			return;
 		}
 		if ( $ci->config->item('allow_style_change') ) {
-			echo '<select name="style_selector">';
 			$styles = $ci->config->item('style_list');
+			if ( count($styles) <= 1 ) {
+				return;
+			}
+			echo lang('sg_style_selector');
+			echo '<select name="style_selector">';
 			$current_style = get_stylesheet();
 			foreach ( $styles as $key => $name ) {
 				if ( $key == $current_style ) {

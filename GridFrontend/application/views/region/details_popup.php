@@ -1,5 +1,3 @@
-<h3><?php echo lang('sg_region_info'); ?></h3>
-
 <?php if ( !isset($scene_data) || $scene_data == null ): ?>
 Unknown
 <?php else: ?>

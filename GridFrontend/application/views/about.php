@@ -1,6 +1,3 @@
-
-<h2>About</h2>
-
 <table><tr><td>
 <p><a href="http://code.google.com/p/openmetaverse/wiki/SimianGrid">SimianGrid</a>
 <?php echo lang('sg_about_blurb'); ?>

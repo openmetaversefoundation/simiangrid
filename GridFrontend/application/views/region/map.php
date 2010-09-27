@@ -19,7 +19,11 @@
 	var div_loader = post_div_loader("<?php echo "$site_url/region/" ; ?>");
 
     $().ready(function() {
-		$("#region_info").dialog({ autoOpen: false });
+		$("#region_info").dialog({ 
+			autoOpen: false, 
+			position: ['right', 'center'],
+			title: "<?php echo lang('sg_region_info'); ?>" 
+		});
         <?php
             echo "initialize_map(\"" . $tile_host. "\", " 
                                    . $x . ", " 

@@ -1,5 +1,3 @@
-<h2><?php echo lang('sg_user_view'); ?>s</h2>
-
 <?php
 	$my_url = "$site_url/user/view/" . $uuid;
 	generate_like_button($my_url);

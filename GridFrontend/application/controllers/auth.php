@@ -179,7 +179,7 @@ class Auth extends Controller
 			if ( $user_id === null ) {
 				push_message(lang('sg_auth_register_failure'), 'error');
 				return redirect('auth/register');
-			} else {
+			} else if ( $user_id === FALSE ) {
 				$data = array();
 				$data['page'] = 'join';
 				return parse_template('auth/register', $data);
