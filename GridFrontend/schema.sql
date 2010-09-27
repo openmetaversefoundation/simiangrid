@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `sgf_sessions` (
   `ip_address` varchar(16) collate utf8_bin NOT NULL default '0',
   `user_agent` varchar(150) collate utf8_bin NOT NULL,
   `last_activity` int(10) unsigned NOT NULL default '0',
-  `user_data` text collate utf8_bin DEFAULT '',
+  `user_data` text,
   PRIMARY KEY  (`session_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
