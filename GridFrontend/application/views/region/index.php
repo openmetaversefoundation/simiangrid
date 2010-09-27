@@ -1,21 +1,17 @@
-<div style="height:100%; width:100%;">
-	<div id="region_info"></div>
-	<div id="search_popup">
-		<table class="display" id="search_results">
-			<thead>
-				<tr>
-					<th>Region Name</th>
-				</tr>
-			</thead>
-			<tbody>
-			</tbody>
-		</table>
-	</div>
-	<div>
-		<a href="#" id="search_button">Search</a>
-	</div>
-	<div id="map_canvas" style="width:720px; height:400px; background-color: #1D475F; "></div>
-
+<div id="region_info"></div>
+<div id="search_popup">
+	<table class="display" id="search_results">
+		<thead>
+			<tr>
+				<th>Region Name</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+</div>
+<a href="#" id="search_button">Search</a>
+<div id="map_canvas" style="width:700px; height:350px; background-color: #1D475F; "></div>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 <script type="text/javascript" src="{base_url}/static/javascript/map.js"></script>
 

@@ -27,9 +27,9 @@
 
 <div id="border" class="ui-corner-bottom">
 
-<div id="header" class="ui-corner-top">
+<div id="header" class="ui-corner-top ui-widget ui-widget-content">
 	<div id="logo"></div>
-	<div id="menu" class="ui-widget-header ui-corner-all ui-tabs-nav"><ul>
+	<div id="menu" class="ui-widget-header ui-corner-top ui-tabs-nav"><ul>
 	<li><a id="menu_users" class="ui-state-default ui-corner-all ui-widget" title='menu_users' href="{site_url}/user/"><Users><?php echo lang('sg_menu_users'); ?></a></li>
 	<li><a id="menu_regions" class="ui-state-default ui-corner-all ui-widget"  title='menu_regions' href="{site_url}/region"><?php echo lang('sg_menu_regions'); ?></a></li>
 	<?php if ($this->sg_auth->is_logged_in()): ?>
@@ -76,7 +76,7 @@
 		}
 	});
 </script>
-<div id="contents">
+<div id="contents" class="ui-widget ui-widget-content">
 <div id="messages">
 <?php messages_render(); ?>
 </div>

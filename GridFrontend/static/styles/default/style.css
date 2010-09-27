@@ -58,7 +58,6 @@ html, body {
 }
 
 #menu ul {
-	margin-bottom: 10px;
 	margin-left: 10px;
 	margin-right: 10px;
 	display: block;
@@ -75,17 +74,22 @@ html, body {
 }
 
 #footer {
-	width: 750px;
+	width: 730px;
 	background: #ffffff;
 	padding-bottom: 20px;
-	padding-top: 10px;
 	font-size: 75%;
+	padding-left: 10px;
+	padding-right: 10px;
+	margin-top: 10px;
 }
 
 #contents {
+	width: 700px;
 	padding-top: 10px;
 	padding-left: 25px;
 	padding-right: 25px;
+	margin-bottom: 10px;
+	margin-top: 10px;
 	display: block;
 	background: #ffffff;
 }

@@ -204,13 +204,13 @@ class User extends Controller {
 		$offset_count = 0;
 		$result_count = 0;
 		foreach ( $search_results as $search_result ) {
-			if ( $offset_count >= $offset && $result_count <= $page_count ) {
+			if ( $offset_count >= $offset && $result_count < $page_count ) {
 				$search_item = array(
 					render_user_link($search_result['id'])
 				);
 				array_push($results, $search_item);
 				$result_count = $result_count + 1;
-			} else {
+			} else if ( $offset_count < $offset ){
 				$offset_count = $offset_count + 1;
 			}
 		}

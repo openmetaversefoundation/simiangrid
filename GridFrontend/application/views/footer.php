@@ -1,6 +1,6 @@
 </div>
 
-<div id="footer" class="ui-widget ui-corner-bottom">
+<div id="footer" class="ui-widget ui-widget-content ui-corner-bottom">
 <div style="float: left;">
 SimianGrid is provided by the <a href="http://www.openmetaverse.org/">Open Metaverse Foundation</a>
 </div>
