@@ -171,17 +171,15 @@ class Region extends Controller {
 		$search = $_GET['sSearch'];
 		if ( $search == '' ) {
 			$trunc_count = 0;
-			$total_count = 0;
 			$trunc_results = array();
 		} else {
 			$search_results = $this->simiangrid->search_scene($search);
-			$total_count = count($search_results);
 			$trunc_results = $this->_truncate_search($search_results, $offset, $limit);
-			$trunc_count = count($trunc_results);
+			$trunc_count = count($search_results);
 		}
 		$result = array(
 			"sEcho" => $_GET['sEcho'],
-			"iTotalRecords" => $total_count,
+			"iTotalRecords" => $this->simiangrid->total_scene_count(),
 			"iTotalDisplayRecords" => $trunc_count,
 			"aaData" => $trunc_results
 		);

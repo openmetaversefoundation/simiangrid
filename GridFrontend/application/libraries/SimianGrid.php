@@ -456,5 +456,32 @@ class SimianGrid
 		return $result;
 	}
 
+	function total_user_count()
+	{
+		$data = array(
+			'RequestMethod' => 'GetUserStats'
+		);
+		$result = $this->_rest_post($this->user_service, $data);
+		if ( isset($result['Success']) ) {
+			return $result['UserCount'];
+		} else {
+			log_message('error', "Unknown response to GetUserStats. Returning 0.");
+			return 0;
+		}
+	}
+
+	function total_scene_count()
+	{
+		$data = array(
+			'RequestMethod' => 'GetSceneStats'
+		);
+		$result = $this->_rest_post($this->grid_service, $data);
+		if ( isset($result['Success']) ) {
+			return $result['SceneCount'];
+		} else {
+			log_message('error', "Unknown response to GetSceneStats. Returning 0.");
+			return 0;
+		}
+	}
 }
 ?>
