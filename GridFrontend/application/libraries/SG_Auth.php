@@ -261,7 +261,7 @@ class SG_Auth
 		return null;
 	}
 
-	function is_searchable($user_id)
+	function is_user_searchable($user_id)
 	{
 		$result = $this->config->item('user_search_default');
 		$user = $this->simiangrid->get_user($user_id);
@@ -270,8 +270,8 @@ class SG_Auth
 			$uuid = $user['UserID'];
 	        if ( $this->is_admin() ) {
 				$result = true;
-			} else if ( isset($user['LLAbout']) && isset($user['LLAbout']['AllowPublish']) ) {
-	            if ( $user['LLAbout']['AllowPublish'] ) {
+			} else if ( isset($user['AllowPublish']) ) {
+	            if ( $user['AllowPublish'] ) {
 					$result = true;
 	            } else {
 					$result = false;

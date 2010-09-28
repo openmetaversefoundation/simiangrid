@@ -54,7 +54,7 @@ class SimianGrid
 	        }
 	        return $result;
 	    }
-	    return null;
+	    return array();
 	}
 	
 	function user_delete($user_id)

@@ -187,7 +187,7 @@ END;
 		if ( $user == null ) {
 			$result = 'N/A';
 		} else {
-			if ( $ci->sg_auth->is_searchable($user_id) ) {
+			if ( $ci->sg_auth->is_user_searchable($user_id) ) {
 				$result = anchor(site_url("user/view/$user_id"), $user['Name']);
 			} else {
 				$result = $user['Name'];

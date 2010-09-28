@@ -14,6 +14,7 @@ $lang['sg_search'] = 'Search';
 $lang['sg_results_found'] = 'Results Found';
 $lang['sg_raw'] = 'Raw Data';
 $lang['sg_actions'] = 'Actions';
+$lang['sg_admin_actions'] = 'Admin Actions';
 $lang['sg_login'] = 'Login';
 $lang['sg_password'] = 'Password';
 $lang['sg_password_confirm'] = 'Confirm Password';
@@ -52,6 +53,8 @@ $lang['sg_user_identifier'] = 'Identifier';
 $lang['sg_user_not_found'] = 'User %s not found';
 $lang['sg_avatar_reset_fail'] = 'Unable to reset avatar : %s';
 $lang['sg_avatar_reset'] = 'Avatar Reset';
+$lang['sg_user_search_public'] = 'Public';
+$lang['sg_user_search_private'] = 'Private';
 //auth
 $lang['username_check'] = 'Username must be alphanumeric or dashes with first and fast name separated by a space.';
 $lang['username_exists_check'] = 'Username already exists. Please choose another username.';
