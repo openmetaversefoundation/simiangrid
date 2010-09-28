@@ -187,7 +187,7 @@
                 $count++;
             }
         }
-        if ( $count == count($dbCheckTables) ) {
+        if ( ($count == count($dbCheckTables)) || ($count == 0) ) {
             userMessage("Database Migration Pending");
             dbMigration($db);
             return TRUE;
@@ -218,7 +218,7 @@
         }
     }
 
-    function dbDoFrontendMigration($db) {
+    function dbDoMigration($db) {
 	# determine current migration level with a sql query to the migrations table
 	# if no rows exist, apply all migrations present
 	# otherwise, apply all migrations greater than the latest version in the migrations table
