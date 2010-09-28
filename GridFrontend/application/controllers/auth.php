@@ -59,7 +59,7 @@ class Auth extends Controller
 	{
 		$result = $this->simiangrid->get_user_by_email($email);
 		if ( $result != null ) {
-			$this->form_validation->set_message('email', lang('sg_auth_email_exists') );
+			$this->form_validation->set_message('email_check', lang('sg_auth_email_exists') );
 			return false;
 		} else {
 			return true;
@@ -72,7 +72,7 @@ class Auth extends Controller
 		if ( $result != null ) {
 			return true;
 		} else {
-			$this->form_validation->set_message('email', lang('sg_auth_email_not_exist') );
+			$this->form_validation->set_message('email_exists', lang('sg_auth_email_not_exist') );
 			return false;
 		}
 	}
