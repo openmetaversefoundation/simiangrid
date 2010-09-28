@@ -270,6 +270,7 @@
     }
 
     function dbFlush($db) {
+	var_dump(debug_backtrace());
         $done = FALSE;
         while ( ! $done ) {
             $result = mysqli_store_result($db);
@@ -281,7 +282,6 @@
                 if ( mysqli_errno($db) != 0 ) {
                     userMessage("warn", "DB Problem - " . mysqli_error($db) );
                 }
-		var_dump(debug_backtrace());
             } else {
                 $done = TRUE;
             }
