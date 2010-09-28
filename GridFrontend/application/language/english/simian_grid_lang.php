@@ -116,4 +116,9 @@ $lang['sg_lang_french'] = 'French';
 $lang['sg_admin_maintenance'] = 'Maintenance';
 $lang['sg_admin_add_user'] = 'Add User';
 $lang['sg_admin_add_user_success'] = 'User account %s successfully created';
+$lang['sg_stat_name'] = 'Stat Name';
+$lang['sg_stat_value'] = 'Value';
+$lang['sg_stat_total_users'] = 'Total Users';
+$lang['sg_stat_total_scenes'] = 'Total Scenes';
+
 ?>

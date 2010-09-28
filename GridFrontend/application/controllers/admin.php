@@ -95,6 +95,8 @@ class Admin extends Controller {
 		}
 		$data = array();
 		$data['page'] = 'admin';
+		$data['total_users'] = $this->simiangrid->total_user_count();
+		$data['total_scenes'] = $this->simiangrid->total_scene_count();
 		return parse_template('admin/maintenance', $data, true);
 	}
 

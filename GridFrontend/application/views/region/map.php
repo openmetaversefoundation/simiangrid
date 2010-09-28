@@ -21,7 +21,7 @@
 	<table class="display" id="search_results">
 		<thead>
 			<tr>
-				<th>Region Name</th>
+				<th><?php echo lang('sg_region_name'); ?></th>
 			</tr>
 		</thead>
 		<tbody>
