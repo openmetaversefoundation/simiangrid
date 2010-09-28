@@ -212,13 +212,13 @@
                 $_SESSION['db_version']['skip_schema'] = TRUE;
                 return TRUE;
             } else {
-                userMessage("error", "Database not empty");
+                userMessage("error", "Database contains non-simian tables");
                 return FALSE;
             }
         }
     }
 
-    function dbDoMigration($db) {
+    function dbDoFrontendMigration($db) {
 	# determine current migration level with a sql query to the migrations table
 	# if no rows exist, apply all migrations present
 	# otherwise, apply all migrations greater than the latest version in the migrations table
@@ -318,10 +318,12 @@
         if ( ! dbSelect($db) ) {
             return FALSE;
         }
-        foreach ( $dbSchemas as $schema ) {
-            dbQueriesFromFile($db, $schema);
-        }
+        # foreach ( $dbSchemas as $schema ) {
+        #    dbQueriesFromFile($db, $schema);
+        # }
         
+	dbDoMigration($db);
+
         foreach ( $dbFixtures as $fixture ) {
             $result = mysqli_multi_query($db, file_get_contents($fixture) );
             if ( $result === FALSE || mysqli_errno($db) != 0 ) {
