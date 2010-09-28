@@ -415,6 +415,8 @@ $config['email_activation'] = false;
 $config['email_from'] = 'noreply@localhost';
 //whether to allow registration
 $config['allow_registration'] = true;
+//whether to force email validation
+$config['validation_required'] = false;
 
 //imagemagick is used to render textures in a way browsers can digest them
 //requires an extra php mod

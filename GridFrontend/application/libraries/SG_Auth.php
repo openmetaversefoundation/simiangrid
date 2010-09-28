@@ -23,6 +23,7 @@ class SG_Auth
 		$this->admin_access_level = $this->ci->config->item('admin_access_level');
 		$this->allow_registration = $this->ci->config->item('allow_registration');
 		
+		$this->config = $this->ci->config;
 		$this->session = $this->ci->session;
 		$this->simiangrid = $this->ci->simiangrid;
 		$this->user_session = $this->ci->user_session;
@@ -142,6 +143,20 @@ class SG_Auth
 				push_message(lang('sg_auth_banned_login'), 'error');
 				return false;
 			} else {
+				if ( $this->config->item('validation_required') ) {
+					if ( $this->access_level() < $this->config->item('admin_access_level') ) {
+						$user_flags = $this->_get_user_flags($user_id);
+						if (
+							 ( isset($user_flags['Validated']) && $user_flags['Validated'] === false ) ||
+							! isset($user_flags['Validated'])
+							) {
+							log_message('debug', "SG_Auth User $user_id has not validated email in _login_finish");
+							return false;
+						}
+					} else {
+						log_message('debug', "SG_Auth User $user_id is admin so not checking email validation status in _login_finish");
+					}
+				}
 				log_message('debug', "SG_Auth _login__finish success for $user_id");
 				$this->_login_session($user_id, $remember);
 				return true;
@@ -248,7 +263,7 @@ class SG_Auth
 
 	function is_searchable($user_id)
 	{
-		$result = $this->ci->config->item('user_search_default');
+		$result = $this->config->item('user_search_default');
 		$user = $this->simiangrid->get_user($user_id);
 
 		if ( $user != null ) {
