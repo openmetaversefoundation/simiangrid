@@ -2,7 +2,7 @@
 	<table class="display" id="search_results">
 		<thead>
 			<tr>
-				<th<?php echo lang('sg_name'); ?></th>
+				<th><?php echo lang('sg_name'); ?></th>
 			</tr>
 		</thead>
 		<tbody>
