@@ -88,6 +88,7 @@ class Auth extends Controller
 					if ( $this->sg_auth->login_facebook($fb_id) ) {
 						return redirect('', 'location');
 					} else {
+						log_message('debug', "unable to authenticate fb user $fb_id" );
 						push_message(lang('sg_auth_facebook_error_login'), 'error');
 					}
 				}
@@ -108,7 +109,8 @@ class Auth extends Controller
         		if ($this->sg_auth->login_openid($openid)) {
     				// Redirect to homepage
     				return redirect('', 'location');
-    			} else {
+    			} else {	
+					log_message('debug', "unable to authenticate openid user" );
 					push_message(lang('sg_auth_openid_error_login'), 'error');
 				}
     		}

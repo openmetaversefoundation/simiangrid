@@ -133,13 +133,16 @@ class SG_Auth
 
 	function _login_finish($user_id, $remember=false) {
 		if ( $user_id === null ) {
+			log_message('debug', "SG_Auth No user_id in _login_finish");
 			push_message(lang('sg_auth_invalid_login'), 'error');
 			return false;
 		} else {
 			if ( $this->is_banned($user_id) ) {
+				log_message('debug', "SG_Auth User $user_id is banned in _login_finish");
 				push_message(lang('sg_auth_banned_login'), 'error');
 				return false;
 			} else {
+				log_message('debug', "SG_Auth _login__finish success for $user_id");
 				$this->_login_session($user_id, $remember);
 				return true;
 			}
@@ -156,6 +159,7 @@ class SG_Auth
 		}
 
 		$user_id = $this->simiangrid->auth_facebook($fb_id);
+		log_message('debug', "SG_Auth login_facebook $fb_id -> $user_id");
 		return $this->_login_finish($user_id);
 	}
 	
@@ -169,7 +173,7 @@ class SG_Auth
 		}
 		
 		$user_id = $this->simiangrid->auth_openid($openid);
-
+		log_message('debug', "SG_Auth login_openid -> $user_id");
 		return $this->_login_finish($user_id);
 	}
 
@@ -183,6 +187,7 @@ class SG_Auth
 		}
 		
 		$user_id = $this->simiangrid->auth_user($username, $password);
+		log_message('debug', "SG_Auth login -> $user_id");
 		return $this->_login_finish($user_id, $remember);
 	}
 	
@@ -191,6 +196,7 @@ class SG_Auth
 		$this->_delete_autologin();
 		$this->_set_uuid(null);
 		$this->session->sess_destroy();
+		log_message('debug', "SG_Auth logout called");
 	}
 	
 	function set_password($user_id, $password)
@@ -200,10 +206,10 @@ class SG_Auth
 		$md5result = $this->simiangrid->identity_set($user_id, 'md5hash', $username, '$1$' . md5($password));
 		$a1result = $this->simiangrid->identity_set($user_id, 'a1hash', $username, md5($username . ':Inventory:' . $password));
 		if ( ! $md5result ) {
-			log_message('error', "Unable to set md5hash for $user_id");
+			log_message('error', "SG_Auth Unable to set md5hash for $user_id");
 		}
 		if ( ! $a1result ) {
-			log_message('error', "Unable to set a1hash for $user_id");
+			log_message('error', "SG_Auth Unable to set a1hash for $user_id");
 		}
 		return $md5result && $a1result;
 	}
@@ -216,24 +222,26 @@ class SG_Auth
 				if ( $this->simiangrid->create_avatar($user_id, $avtype) ) {
 					if ($this->email_activation) {
 						if ( ! $this->reset_validation($user_id) ) {
-							log_message('warning', "Unable to send validation email for $user_id");
+							log_message('warning', "SG_Auth Unable to send validation email for $user_id");
 						}
 						$message = lang('sg_auth_register_success_validation');
 					} else {					
 						$message = set_message('sg_auth_register_success', anchor(site_url() + "/auth/login", 'Login'));
 					}		
 					push_message($message, 'info');
-					log_message('debug', "Succesfully created user $user_id");
+					log_message('debug', "SG_Auth Succesfully created user $user_id");
 					return $user_id;
 				} else {
-					log_message('error', "Unable to create avatar type $avtype for $user_id");
+					log_message('error', "SG_Auth Unable to create avatar type $avtype for $user_id");
 				}
 			}
+		} else {
+			log_message('debug', "SG_Auth unable to register user");
 		}
 		if ( $user_id != null ) {
 			//user created but broken somehow
 			//TODO : account rollback
-			log_message('info', "This is where we would have rolled back user $user_id");
+			log_message('info', "SG_Auth This is where we would have rolled back user $user_id");
 		}
 		return null;
 	}
@@ -349,6 +357,7 @@ class SG_Auth
 			if ( ! send_email($email, set_message('sg_auth_validaion_subject', get_site_title()), set_message('sg_auth_validation_body', site_url("auth/validate/$code") ) ) ) {
 				push_message(set_message('sg_email_fail', $email), 'error');
 			} else {
+				log_message('debug', "SG_Auth Resent/Reset email validation for $user_id");
 				$result = true;
 			}
 		}
@@ -360,6 +369,7 @@ class SG_Auth
 		$user_flags = $this->_get_user_flags($user_id);
 		$user_flags['Validated'] = true;
 		$this->user_validation->clear_validation('email', $user_id);
+		log_message('debug', "SG_Auth User $user_id set as validated");
 		return $this->_set_user_flags($user_id, $user_flags);
 	}
 	
@@ -370,6 +380,7 @@ class SG_Auth
 		if ( $user_id != null ) {
 			$result = $this->set_valid($user_id);
 			$this->user_validation->clear_validation('email', $user_id);
+			log_message('debug', "SG_Auth Successfully validated user");
 		}
 		return $result;
 	}
