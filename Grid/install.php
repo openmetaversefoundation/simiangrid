@@ -44,7 +44,7 @@
     $configOptions['user_service']['file'] = "config/config.php";
     
     $configOptions['grid_service']['name'] = "Grid Server";
-    $configOptions['grid_service']['description'] = "The URL of the Grod Server";
+    $configOptions['grid_service']['description'] = "The URL of the Grid Server";
     $configOptions['grid_service']['default'] = "http://localhost/Grid/";
     $configOptions['grid_service']['string'] = "@@GRID_SERVICE@@";
     $configOptions['grid_service']['file'] = "config/config.php";
