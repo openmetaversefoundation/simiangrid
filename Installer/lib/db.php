@@ -189,7 +189,8 @@
         }
         if ( ($count == count($dbCheckTables)) || ($count == 0) ) {
             userMessage("Database Migration Pending");
-            dbMigration($db);
+            dbDoMigration($db);
+
             return TRUE;
         } else {
             return FALSE;
