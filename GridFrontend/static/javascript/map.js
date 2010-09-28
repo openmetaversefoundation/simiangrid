@@ -66,7 +66,7 @@ function convert_grid_pos(x, y)
 {
     var real_x = ( x * 2 ) * scale;
     var real_y = ( y * 2 ) * scale;
-    return new google.maps.LatLng(-real_x, real_y);
+    return new google.maps.LatLng(-real_y, real_x);
 }
 
 function handle_click(event)
