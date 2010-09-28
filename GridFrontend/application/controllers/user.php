@@ -569,7 +569,7 @@ class User extends Controller {
 	function actions($uuid, $action=null)
 	{
 		if ( ! $this->_me_or_admin($uuid) ) {
-			return redirect('user/index');
+			return redirect('about');
 		}
 		$user = $this->simiangrid->get_user($uuid);
 		if ( $user == null ) {

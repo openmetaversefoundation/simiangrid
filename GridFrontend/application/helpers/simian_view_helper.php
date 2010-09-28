@@ -67,8 +67,8 @@
 <script type="text/javascript">
 	$().ready(function() {
 		setTimeout(function() {
-			$(".flash_message").hide('explode', {}, 1000);
-		}, 5000);
+			$(".flash_message").hide('puff', {}, 5000);
+		}, 25000);
 	});
 </script>
 END;

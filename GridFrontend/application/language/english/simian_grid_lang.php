@@ -111,4 +111,8 @@ $lang['tooltip_menu_register'] = 'Sign up to access this SimianGrid powered site
 //languages
 $lang['sg_lang_english'] = 'English';
 $lang['sg_lang_french'] = 'French';
+//admin
+$lang['sg_admin_maintenance'] = 'Maintenance';
+$lang['sg_admin_add_user'] = 'Add User';
+$lang['sg_admin_add_user_success'] = 'User account %s successfully created';
 ?>
