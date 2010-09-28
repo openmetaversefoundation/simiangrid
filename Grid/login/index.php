@@ -703,18 +703,20 @@ function process_login($method_name, $params, $user_data)
 			$login_success = false;
 			log_message('debug', "User " . $user['Name'] . " is banned.");
 		} else {
-			if ( $config['validation_required'] ) {
-				if ( ! empty($userflags['Validated']) ) {
-					$login_success = $userflags['Validated'];
-				} else {
-					$login_success = false;
-				}
-				if ( ! $login_success ) {
-					log_message('debug', "User " . $user['Name'] . " has not validated their email.");
+			if ( $user['AccessLevel'] < $config['access_level_minimum'] ) {
+				if ( $config['validation_required'] ) {
+					if ( ! empty($userflags['Validated']) ) {
+						$login_success = $userflags['Validated'];
+					} else {
+						$login_success = false;
+					}
+					if ( ! $login_success ) {
+						log_message('debug', "User " . $user['Name'] . " has not validated their email.");
+					}
 				}
 			}
 		}
-	} else if ( $config['validation_required'] ) {
+	} else if ( $user['AccessLevel'] < $config['access_level_minimum'] && $config['validation_required'] ) {
 		$login_success = false;
 		log_message('debug', "User " . $user['Name'] . " has not validated their email.");
 	}
