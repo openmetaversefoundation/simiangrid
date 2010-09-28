@@ -194,7 +194,7 @@
             } else {
                 $write_result = fwrite($handle, $file_scratch);
                 if ( $write_result === FALSE || $write_result < strlen($file_scratch) ) {
-                    userMessage("error", "Problem writing $config_file");
+                    userMessage("error", "Problem writing " . getcwd() . "/$config_file");
                     return FALSE;
                 } else {
                     fclose($handle);
