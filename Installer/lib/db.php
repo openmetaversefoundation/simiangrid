@@ -84,23 +84,24 @@
         return $result;
     }
 
-	function dbRequirementsMet()
-	{
-		if ( $_SESSION['db_version']['check'] === TRUE && $_SESSION['db_version']['db_check'] === TRUE ) {
-			return TRUE;
-		} else {
-			return FALSE;
-		}
-	}
-	
-	function dbHandle()
-	{	
-	    if ( ! isset($_SESSION['db_config']) ) {
-	        return FALSE;
-	    }
-	    $user = $_SESSION['db_config']['user'];
-	    $password = $_SESSION['db_config']['password'];
-	    $host = $_SESSION['db_config']['host'];
+    function dbRequirementsMet()
+
+    {
+        if ( $_SESSION['db_version']['check'] === TRUE && $_SESSION['db_version']['db_check'] === TRUE ) {
+            return TRUE;
+        } else {
+            return FALSE;
+        }
+    }
+    
+    function dbHandle()
+    {    
+        if ( ! isset($_SESSION['db_config']) ) {
+            return FALSE;
+        }
+        $user = $_SESSION['db_config']['user'];
+        $password = $_SESSION['db_config']['password'];
+        $host = $_SESSION['db_config']['host'];
         error_reporting(E_ERROR);
         $db = mysqli_init();
         $check = mysqli_real_connect($db, $host, $user, $password);
@@ -109,16 +110,16 @@
             userMessage("error", "DB Error - " . mysqli_connect_error($db));
             return FALSE;
         }
-		return $db;
-	}
-	
-	function dbVersionCheck()
-	{
-		$db = dbHandle();
+        return $db;
+    }
+    
+    function dbVersionCheck()
+    {
+        $db = dbHandle();
         $result = array();
-		$result['required'] = MYSQL_VERSION;
+        $result['required'] = MYSQL_VERSION;
         if ( ! $db ) {
-			unset($_SESSION['db_version']);
+            unset($_SESSION['db_version']);
             $result['connect'] = FALSE;
         } else {
             $result['connect'] = TRUE;
@@ -130,90 +131,142 @@
             } else {
                 $result['check'] = FALSE;
             }
-			$result['db_check'] = dbSelect($db);
-			mysqli_close($db);
+            $result['db_check'] = dbSelect($db);
+            mysqli_close($db);
         }
-		if ( ! isset($_SESSION['db_version']) ) {
-			$_SESSION['db_version'] = array();
-		}
-		$_SESSION['db_version'] = array_merge($_SESSION['db_version'], $result);
-		return $result;
-	}
-	
-	function dbSelect($db)
-	{
+        if ( ! isset($_SESSION['db_version']) ) {
+            $_SESSION['db_version'] = array();
+        }
+        $_SESSION['db_version'] = array_merge($_SESSION['db_version'], $result);
+        return $result;
+    }
+    
+    function dbSelect($db)
+    {
         if ( ! isset($_SESSION['db_config']) ) {
-	        return FALSE;
-	    }
-	    if ( $db === FALSE ) { 
-	        return FALSE;
-	    }
-	    $schema = $_SESSION['db_config']['db'];
-	    $check = mysqli_select_db($db, $schema);
-	    if ( $check === FALSE ) {
+            return FALSE;
+        }
+        if ( $db === FALSE ) { 
+            return FALSE;
+        }
+        $schema = $_SESSION['db_config']['db'];
+        $check = mysqli_select_db($db, $schema);
+        if ( $check === FALSE ) {
             userMessage("error", "Problem selecting database " . $schema . " - " . mysqli_error($db));
             return FALSE;
         } else {
             return dbEmpty($db);
         }
-	}
-	
-	function dbListRelevantTables($db)
-	{
-		global $dbCheckTables;
-	    $result = mysqli_query($db, "SHOW TABLES");
-		if ( ! $result ) {
-			return null;
-		}
-		$table_list = array();
-		$schema  = $_SESSION['db_config']['db'];
-		$table_key = "Tables_in_$schema";
-		while ( $table = mysqli_fetch_assoc($result) ) {
-			if ( array_search($table[$table_key], $dbCheckTables) !== FALSE ) {
-				array_push($table_list, $table[$table_key]);
-			}
-		}
-		return $table_list;
+    }
+    
+    function dbListRelevantTables($db)
+    {
+        global $dbCheckTables;
+        $result = mysqli_query($db, "SHOW TABLES");
+        if ( ! $result ) {
+            return null;
+        }
+        $table_list = array();
+        $schema  = $_SESSION['db_config']['db'];
+        $table_key = "Tables_in_$schema";
+        while ( $table = mysqli_fetch_assoc($result) ) {
+            if ( array_search($table[$table_key], $dbCheckTables) !== FALSE ) {
+                array_push($table_list, $table[$table_key]);
+            }
+        }
+        return $table_list;
 
+    }
+
+    function dbComplete($tables)
+    {
+        global $dbCheckTables;
+        $count = 0;
+        foreach ( $tables as $table ) {
+            if ( array_search($table, $dbCheckTables) !== FALSE ) {
+                $count++;
+            }
+        }
+        if ( $count == count($dbCheckTables) ) {
+            userMessage("Database Migration Pending");
+            dbMigration($db);
+            return TRUE;
+        } else {
+            return FALSE;
+        }
+    }
+        
+    function dbEmpty($db)
+    {
+        $_SESSION['db_version']['skip_schema'] = FALSE;
+        $tables = dbListRelevantTables($db);
+        if ( $tables === null ) {
+            userMessage("error", "Problem scanning database - " . mysqli_error($db) );
+            return FALSE;
+        }
+        if ( count($tables) == 0 ) {
+            return TRUE;
+        } else {
+            if ( dbComplete($tables) ) {
+                userMessage("warn", "Database already populated");
+                $_SESSION['db_version']['skip_schema'] = TRUE;
+                return TRUE;
+            } else {
+                userMessage("error", "Database not empty");
+                return FALSE;
+            }
+        }
+    }
+
+    function dbDoMigration($db) {
+	# determine current migration level with a sql query to the migrations table
+	# if no rows exist, apply all migrations present
+	# otherwise, apply all migrations greater than the latest version in the migrations table
+        if ( ! dbSelect($db) ) {
+            return FALSE;
+        }
+
+	$mig_query = 'SELECT MAX(version) FROM `migrations`';
+        $result = mysqli_query($db, $current_query);
+        if ( mysqli_errno($db) != 0 ) {
+            userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
+            return FALSE;
+        }
+	if ($result === FALSE) {
+	    # no result means no rows so run all migrations
+	    $todo = 0;
+	} else {
+
+	    # result evaluates TRUE so we have to access the migration version number from the 
+	    # query results and execute all migrations with a version that is greater
+	    # first access the current migration version and store that + 1 in $todo
+	    $row = mysql_fetch_array($result, MYSQL_NUM);
+    	    $todo = $row[0] + 1;  
 	}
 
-	function dbComplete($tables)
-	{
-		global $dbCheckTables;
-		$count = 0;
-		foreach ( $tables as $table ) {
-			if ( array_search($table, $dbCheckTables) !== FALSE ) {
-				$count++;
-			}
+	dbMigrate($db, $todo, 'grid');
+    }
+
+    function dbMigrate($db, $todo, $store) {
+	# sync the database version with that described by the files contained in the Installer/migrations/ directory. Do this by applying each file matching 
+	# '###-' . $store . '.sql' and applying (executing) any with a ### value equal to or greater than $todo
+
+        # to iterate over migrations directory, packing an array of names that match '###-grid*.sql'
+	$migrations = array();
+
+        if ($dh = opendir('Installer/migrations/')) {
+            while (($file = readdir($dh)) !== false) {
+		$file_version = substr($file,0,strpos($file,'-')-1);
+		if (($file_version >= $todo) && (substr($file,$store))) {
+		    # omfg execute the sql already :p
+		    dbQueriesFromFile($db,'Installer/migrations/' . $file);
+                    userMessage("warn","Migration: " . $file_version);
 		}
-		if ( $count == count($dbCheckTables) ) {
-			return TRUE;
-		} else {
-			return FALSE;
-		}
-	}
-		
-	function dbEmpty($db)
-	{
-		$_SESSION['db_version']['skip_schema'] = FALSE;
-		$tables = dbListRelevantTables($db);
-		if ( $tables === null ) {
-			userMessage("error", "Problem scanning database - " . mysqli_error($db) );
-			return FALSE;
-		}
-	    if ( count($tables) == 0 ) {
-	        return TRUE;
-	    } else {
-			if ( dbComplete($tables) ) {
-				userMessage("warn", "Database already populated");
-				$_SESSION['db_version']['skip_schema'] = TRUE;
-				return TRUE;
-			} else {
-		        userMessage("error", "Database not empty");
-		        return FALSE;
-			}
-	    }
-	}
+
+            }
+            closedir($dh);
+        }
+    }
 
     function dbFlush($db) {
         $done = FALSE;
@@ -256,15 +309,15 @@
 
     function dbWrite()
     {
-		if ( $_SESSION['db_version']['skip_schema'] === TRUE ) {
-			userMessage("warn", "Skipped loading of schema and fixtures");
-			return TRUE;
-		}
+        if ( $_SESSION['db_version']['skip_schema'] === TRUE ) {
+            userMessage("warn", "Skipped loading of schema and fixtures");
+            return TRUE;
+        }
         global $dbSchemas, $dbFixtures;
-		$db = dbHandle();
-		if ( ! dbSelect($db) ) {
-		    return FALSE;
-		}
+        $db = dbHandle();
+        if ( ! dbSelect($db) ) {
+            return FALSE;
+        }
         foreach ( $dbSchemas as $schema ) {
             dbQueriesFromFile($db, $schema);
         }
