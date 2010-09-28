@@ -749,7 +749,7 @@ class Sabre_DAV_Server {
 
         if (strpos($uri,$this->baseUri)===0) {
 
-            return trim(urldecode(substr($uri,strlen($this->baseUri))),'/');
+            return urldecode(substr($uri,strlen($this->baseUri)));
 
         } else {
 
@@ -984,9 +984,9 @@ class Sabre_DAV_Server {
 
             }
          
-            $this->broadcastEvent('afterGetProperties',array(trim($myPath,'/'),&$newProperties));
+            $this->broadcastEvent('afterGetProperties',array($myPath,&$newProperties));
 
-            $newProperties['href'] = trim($myPath,'/'); 
+            $newProperties['href'] = $myPath;
 
             //if (!$properties || in_array('{http://www.apple.com/webdav_fs/props/}appledoubleheader',$properties)) $newProps['{http://www.apple.com/webdav_fs/props/}appledoubleheader'] = base64_encode(str_repeat(' ',82)); 
             $returnPropertyList[] = $newProperties;
