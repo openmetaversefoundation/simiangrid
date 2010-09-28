@@ -317,7 +317,7 @@ class Auth extends Controller
 	
 	function validate($code)
 	{
-		if ( ! $this->sg_auth->validate('email', $code) ) {
+		if ( ! $this->sg_auth->validate($code) ) {
 			push_message(set_message('sg_auth_validation_fail'), 'error');
 		} else {
 			push_message(lang('sg_auth_validation_success'), 'info');

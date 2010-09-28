@@ -695,26 +695,38 @@ function process_login($method_name, $params, $user_data)
         	"Sorry! We couldn't log you in. User account information could not be retrieved. If this problem persists, please contact the grid operator.");
     }
 
+	$login_success = true;
     if ( ! empty($user['UserFlags']) ) {
-		$success = true;
-		if ( ! empty($user['UserFlags']['Suspended']) && $user['UserFlags']['Suspended'] == true ) {
-			$success = false;
-		}
-		if ( $config['validation_required'] ) {
-			if ( ! empty($user['UserFlags']['Validated']) ) {
-				if ( ! $user['UserFlags']['Validated'] ) {
-					$success = false;
+
+		$userflags = json_decode($user['UserFlags'], TRUE);
+		if ( ! empty($userflags['Suspended']) && (bool) $userflags['Suspended'] === true ) {
+			$login_success = false;
+			log_message('debug', "User " . $user['Name'] . " is banned.");
+		} else {
+			if ( $config['validation_required'] ) {
+				if ( ! empty($userflags['Validated']) ) {
+					$login_success = $userflags['Validated'];
+				} else {
+					$login_success = false;
 				}
-			} else {
-				$success = false;
+				if ( ! $login_success ) {
+					log_message('debug', "User " . $user['Name'] . " has not validated their email.");
+				}
 			}
 		}
-		if ( ! $success ) {
-        	return array('reason' => 'key', 'login' => 'false', 'message' =>
-            	"Sorry!  We couldn't log you in.  User account has been suspended or is not yet activated.  If this problem persists, please contact the grid operator.");
-		}
+	} else if ( $config['validation_required'] ) {
+		$login_success = false;
+		log_message('debug', "User " . $user['Name'] . " has not validated their email.");
 	}
     
+	if ( ! $login_success ) {
+    	return array(
+			'reason' => 'key', 
+			'login' => 'false', 
+			'message' => "Sorry!  We couldn't log you in.  User account has been suspended or is not yet activated.  If this problem persists, please contact the grid operator."
+		);
+	}
+
     $lastLocation = null;
     if (isset($user['LastLocation']))
         $lastLocation = SceneLocation::fromOSD($user['LastLocation']);
