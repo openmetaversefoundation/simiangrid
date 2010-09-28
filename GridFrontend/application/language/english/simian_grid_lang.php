@@ -34,6 +34,7 @@ $lang['sg_region_unknown'] = 'Region %s Not Found';
 $lang['sg_region_info'] = 'Region Info';
 $lang['sg_region_details'] = 'Details';
 $lang['sg_region_stats'] = 'Stats';
+$lang['sg_region_map'] = 'Full Map';
 //user
 $lang['sg_user_view'] = 'User View';
 $lang['sg_user_identities'] = 'Identities';

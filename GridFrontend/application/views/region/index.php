@@ -11,8 +11,8 @@
 	</table>
 </div>
 <div style="margin-bottom: 10px; padding: 5px;" class="ui-widget ui-widget-content" >
-<a href="#" id="search_button">Search</a>
-<a href="{site_url}/map">Full Map</a>
+<a href="#" id="search_button"><?php echo lang('sg_search'); ?></a>
+<a href="{site_url}/map"><?php echo lang('sg_region_map'); ?></a>
 </div>
 <div id="map_canvas" style="width:700px; height:350px; background-color: #1D475F; "></div>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
@@ -20,25 +20,7 @@
 
 <script>
 
-    function load_region_by_pos(x, y)
-    {
-        var data = {
-            'x' : x,
-            'y' : y
-        };
-        load_via_post("{site_url}/region/view_coord", "#region_info", data);
-		$("#search_results").dialog('close');
-		$("#region_info").dialog('open');
-    }
-
-    function load_search_result(scene_id)
-    {
-		var data = {
-			'is_search' : true
-		};
-        load_via_post("{site_url}/region/details/" + scene_id + "/inline", "#region_info", data);
-		$("#region_info").dialog('open');
-    }
+	var div_loader = post_div_loader("<?php echo "$site_url/region/" ; ?>");
 
     $().ready(function() {
 		$("#search_popup").dialog({
