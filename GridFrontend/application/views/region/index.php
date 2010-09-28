@@ -10,7 +10,9 @@
 		</tbody>
 	</table>
 </div>
+<div style="margin-bottom: 10px; padding: 5px;" class="ui-widget ui-widget-content" >
 <a href="#" id="search_button">Search</a>
+</div>
 <div id="map_canvas" style="width:700px; height:350px; background-color: #1D475F; "></div>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 <script type="text/javascript" src="{base_url}/static/javascript/map.js"></script>
