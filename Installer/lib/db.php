@@ -164,7 +164,7 @@
         global $dbCheckTables;
         $result = mysqli_query($db, "SHOW TABLES");
         if ( ! $result ) {
-            return null;
+            return FALSE;
         }
         $table_list = array();
         $schema  = $_SESSION['db_config']['db'];
@@ -200,7 +200,7 @@
     {
         $_SESSION['db_version']['skip_schema'] = FALSE;
         $tables = dbListRelevantTables($db);
-        if ( $tables === null ) {
+        if ( $tables === FALSE ) {
             userMessage("error", "Problem scanning database - " . mysqli_error($db) );
             return FALSE;
         }
