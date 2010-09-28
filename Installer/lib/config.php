@@ -6,7 +6,7 @@
 		$result = FALSE;
         foreach ( $config_files as $config_file ) {
             if ( is_file($config_file) ) {
-				userMessage('warn', "Config file $config_file already exists.");
+				userMessage('warn', "Config file " . getcwd() . "/$config_file already exists.");
 				if ( $result == FALSE ) {
 					$result = TRUE;
 				}
