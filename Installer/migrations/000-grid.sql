@@ -131,3 +131,11 @@ CREATE  TABLE IF NOT EXISTS `Generic` (
   `Value` MEDIUMTEXT NULL ,
   PRIMARY KEY (`OwnerID`, `Type`, `Key`) )
 ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `migrations` (
+        `name` VARCHAR(100) NOT NULL,
+        `version` INT(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+INSERT INTO sgf_migrations name,version VALUES ('migrations',1);
+
