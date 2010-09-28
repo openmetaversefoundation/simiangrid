@@ -244,7 +244,7 @@
     	    $todo = $row[0] + 1;  
 	}
 
-	dbMigrate($db, $todo, 'grid');
+	dbMigrate($db, $todo, 'frontend');
     }
 
     function dbMigrate($db, $todo, $store) {
