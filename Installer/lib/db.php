@@ -260,7 +260,7 @@
 	if($handle = opendir($dir)) { 
     	    while($file = readdir($handle)) { 
 	        clearstatcache(); 
-        	if(is_file($dir.'/'.$file)) 
+        	if(is_file($dir.'/'.$file)) {
 		    $file_version = substr($file,0,strpos($file,'-')-1);
 		    if (($file_version >= $todo) && (substr($file,$store))) {
 		        # omfg execute the sql already :p
