@@ -31,5 +31,5 @@ CREATE TABLE IF NOT EXISTS `migrations` (
 	`version` INT(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
-INSERT INTO sgf_migrations name,version VALUES ('migrations',1);
+INSERT INTO migrations name,version VALUES ('migrations',1);
 
