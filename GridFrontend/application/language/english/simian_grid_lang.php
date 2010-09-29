@@ -34,6 +34,7 @@ $lang['sg_region_unknown'] = 'Region %s Not Found';
 $lang['sg_region_info'] = 'Region Info';
 $lang['sg_region_details'] = 'Details';
 $lang['sg_region_stats'] = 'Stats';
+$lang['sg_region_map'] = 'Full Map';
 //user
 $lang['sg_user_view'] = 'User View';
 $lang['sg_user_identities'] = 'Identities';
@@ -111,4 +112,13 @@ $lang['tooltip_menu_register'] = 'Sign up to access this SimianGrid powered site
 //languages
 $lang['sg_lang_english'] = 'English';
 $lang['sg_lang_french'] = 'French';
+//admin
+$lang['sg_admin_maintenance'] = 'Maintenance';
+$lang['sg_admin_add_user'] = 'Add User';
+$lang['sg_admin_add_user_success'] = 'User account %s successfully created';
+$lang['sg_stat_name'] = 'Stat Name';
+$lang['sg_stat_value'] = 'Value';
+$lang['sg_stat_total_users'] = 'Total Users';
+$lang['sg_stat_total_scenes'] = 'Total Scenes';
+
 ?>

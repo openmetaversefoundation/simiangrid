@@ -235,16 +235,6 @@ class SG_Auth
 		if ( $user_id != null ) {
 			if ( $this->set_password($user_id, $password) ) {
 				if ( $this->simiangrid->create_avatar($user_id, $avtype) ) {
-					if ($this->email_activation) {
-						if ( ! $this->reset_validation($user_id) ) {
-							log_message('warning', "SG_Auth Unable to send validation email for $user_id");
-						}
-						$message = lang('sg_auth_register_success_validation');
-					} else {					
-						$message = set_message('sg_auth_register_success', anchor(site_url() + "/auth/login", 'Login'));
-					}		
-					push_message($message, 'info');
-					log_message('debug', "SG_Auth Succesfully created user $user_id");
 					return $user_id;
 				} else {
 					log_message('error', "SG_Auth Unable to create avatar type $avtype for $user_id");

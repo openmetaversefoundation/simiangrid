@@ -129,6 +129,6 @@ function load_search_result(scene_id)
 	var data = {
 		'is_search' : true
 	};
-    div_loader("info/" + scene_id + "/inline", "#region_info", data);
+    div_loader("details/" + scene_id + "/inline", "#region_info", data);
 	$("#region_info").dialog('open');
 }

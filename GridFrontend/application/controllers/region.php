@@ -141,7 +141,7 @@ class Region extends Controller {
 
 	function _render_region_popup($scene)
 	{
-		return anchor('region/view/' . $scene['id'], $scene['name'], array('class'=>'search_result','onclick' => 'load_search_result(\'' . $scene['id'] . '\', ' . $scene['x'] . ', ' . $scene['y'] . '); return false;'));
+		return anchor('region/view/' . $scene['id'], $scene['name'], array('class'=>'search_result','onclick' => 'load_search_result(\'' . $scene['id'] . '\'); return false;'));
 	}
 
 	function _truncate_search($search_results, $offset, $page_count)
@@ -150,7 +150,7 @@ class Region extends Controller {
 		$offset_count = 0;
 		$result_count = 0;
 		foreach ( $search_results as $search_result ) {
-			if ( $offset_count >= $offset && $result_count <= $page_count ) {
+			if ( $offset_count >= $offset && $result_count < $page_count ) {
 				$search_item = array(
 					$this->_render_region_popup($search_result)
 				);
