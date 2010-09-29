@@ -243,7 +243,7 @@
     function dbMigrate($db, $todo) {
 	global $dbSchemas;
 
-	if($handle = opendir($dbSchemas)) { 
+	if($handle = opendir($dbSchemas[0])) { 
     	    while($file = readdir($handle)) { 
 	        clearstatcache(); 
         	if(is_file($dbSchemas . '/' . $file)) {
