@@ -224,7 +224,7 @@
         }
 
 	$mig_query = 'SELECT MAX(version) FROM `migrations`';
-        $result = mysqli_query($db, $current_query);
+        $result = mysqli_query($db, $mig_query);
         if ( mysqli_errno($db) != 0 ) {
             userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
             return FALSE;
