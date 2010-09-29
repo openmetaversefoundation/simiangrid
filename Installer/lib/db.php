@@ -221,30 +221,27 @@
         #    return FALSE;
         #}
 
-	$mig_query = 'SELECT MAX(version) FROM `migrations`';
-        $result = mysqli_query($db, $mig_query);
-	$mserr = mysqli_error($db);
-        if ( mysqli_errno($db) != 0 ) {
-	    if (strpos($mserr,"doesn't exist")) {
-		$todo = 0;
-	    } else {
-	        userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
-        	return FALSE;
-	    }
-        }
-	if ($result === FALSE) {
-	    $todo = 0;
-	} else {
-	    $row = mysql_fetch_array($result, MYSQL_NUM);
-    	    $todo = $row[0] + 1;  
-	}
-
-	dbMigrate($db, $todo);
-    }
-
-    function dbMigrate($db, $todo) {
 	global $dbSchemas;
         $dir = $dbSchemas[0];
+	$todo = 0;
+	$mig_query = 'SELECT MAX(version) FROM `migrations`';
+        if (($result = mysqli_query($db, $mig_query)) === TRUE)
+	{
+	    $row = mysql_fetch_array($result, MYSQL_NUM);
+    	    $todo = $row[0] + 1;  
+	} else {
+	    $mserr = mysqli_error($db);
+
+	    if ( mysqli_errno($db) != 0 ) {
+		if (strpos($mserr,"doesn't exist")) {
+		    $todo = 0;
+		} else {
+		    userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
+		    return FALSE;
+		}
+	    }
+        }
+
 	if($handle = opendir($dir)) { 
     	    while($file = readdir($handle)) { 
 	        clearstatcache(); 
