@@ -225,7 +225,7 @@
         $dir = $dbSchemas[0];
 	$todo = 0;
 	$mig_query = 'SELECT MAX(version) FROM `migrations`';
-        if (($result = mysqli_query($db, $mig_query)) === TRUE)
+        if (($result = mysqli_query($db, $mig_query)) != FALSE)
 	{
 	    $row = mysql_fetch_array($result, MYSQL_NUM);
     	    $todo = $row[0] + 1;  
