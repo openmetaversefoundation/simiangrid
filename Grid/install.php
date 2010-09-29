@@ -19,19 +19,20 @@
     $defaultDB['host'] = '127.0.0.1';
     $defaultDB['db'] = 'Simian';
 
-	$dbCheckTables = array(
-		'AssetData',
-		'Capabilities',
-		'Generic',
-		'Identities',
-		'Inventory',
-		'Scenes',
-		'Sessions',
-		'UserData',
-		'Users'
-	);
+    $dbCheckTables = array(
+        'AssetData',
+        'Capabilities',
+        'Generic',
+        'Identities',
+        'Inventory',
+        'Scenes',
+        'Sessions',
+        'UserData',
+        'Users',
+	'Migrations'
+    );
     
-    $dbSchemas = array('sql/database.mysql.sql');
+    # $dbSchemas = array('sql/database.mysql.sql');
     
     $dbFixtures = array('sql/default_assets.sql');
     

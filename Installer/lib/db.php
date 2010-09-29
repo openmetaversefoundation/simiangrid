@@ -1,5 +1,4 @@
 <?php if ( ! defined('BASEPATH') or !defined('SIMIAN_INSTALLER') ) exit('No direct script access allowed');
-    
     function dbGetConfig()
     {
         $db_session = $_SESSION['db_config'];
@@ -164,7 +163,7 @@
         global $dbCheckTables;
         $result = mysqli_query($db, "SHOW TABLES");
         if ( ! $result ) {
-            return null;
+            return FALSE;
         }
         $table_list = array();
         $schema  = $_SESSION['db_config']['db'];
@@ -187,9 +186,10 @@
                 $count++;
             }
         }
-        if ( $count == count($dbCheckTables) ) {
+        if ( ($count == count($dbCheckTables)) || ($count == 0) ) {
             userMessage("Database Migration Pending");
-            dbMigration($db);
+            dbDoMigration($db);
+
             return TRUE;
         } else {
             return FALSE;
@@ -200,7 +200,7 @@
     {
         $_SESSION['db_version']['skip_schema'] = FALSE;
         $tables = dbListRelevantTables($db);
-        if ( $tables === null ) {
+        if ( $tables === FALSE ) {
             userMessage("error", "Problem scanning database - " . mysqli_error($db) );
             return FALSE;
         }
@@ -212,16 +212,13 @@
                 $_SESSION['db_version']['skip_schema'] = TRUE;
                 return TRUE;
             } else {
-                userMessage("error", "Database not empty");
+                userMessage("error", "Database contains non-simian tables");
                 return FALSE;
             }
         }
     }
 
     function dbDoMigration($db) {
-	# determine current migration level with a sql query to the migrations table
-	# if no rows exist, apply all migrations present
-	# otherwise, apply all migrations greater than the latest version in the migrations table
         if ( ! dbSelect($db) ) {
             return FALSE;
         }
@@ -233,38 +230,35 @@
             return FALSE;
         }
 	if ($result === FALSE) {
-	    # no result means no rows so run all migrations
 	    $todo = 0;
 	} else {
 
-	    # result evaluates TRUE so we have to access the migration version number from the 
-	    # query results and execute all migrations with a version that is greater
-	    # first access the current migration version and store that + 1 in $todo
 	    $row = mysql_fetch_array($result, MYSQL_NUM);
     	    $todo = $row[0] + 1;  
 	}
 
-	dbMigrate($db, $todo, 'frontend');
+	dbMigrate($db, $todo,configGetDBValue('db_name') );
     }
 
     function dbMigrate($db, $todo, $store) {
-	# sync the database version with that described by the files contained in the Installer/migrations/ directory. Do this by applying each file matching 
-	# '###-' . $store . '.sql' and applying (executing) any with a ### value equal to or greater than $todo
-
-        # to iterate over migrations directory, packing an array of names that match '###-grid*.sql'
 	$migrations = array();
 
-        if ($dh = opendir('Installer/migrations/')) {
-            while (($file = readdir($dh)) !== false) {
-		$file_version = substr($file,0,strpos($file,'-')-1);
-		if (($file_version >= $todo) && (substr($file,$store))) {
-		    # omfg execute the sql already :p
-		    dbQueriesFromFile($db,'Installer/migrations/' . $file);
-                    userMessage("warn","Migration: " . $file_version);
+	$dir = "../Installer/migrations/"; 
+
+	if($handle = opendir($dir)) { 
+    	    while($file = readdir($handle)) { 
+	        clearstatcache(); 
+        	if(is_file($dir.'/'.$file)) {
+		    $file_version = substr($file,0,strpos($file,'-')-1);
+		    if (($file_version >= $todo) && (strpos($file,$store))) {
+		        # omfg execute the sql already :p
+		        dbQueriesFromFile($db,$dir . $file);
+                        userMessage("warn","Migration: " . $file_version);
+		    }
 		}
 
             }
-            closedir($dh);
+            closedir($handle);
         }
     }
 
@@ -275,10 +269,12 @@
             if ( mysqli_more_results($db) ) {
                 if ( mysqli_errno($db) != 0 ) {
                     userMessage("warn", "DB Problem - " . mysqli_error($db) );
+                    userMessage("warn", var_dump(debug_backtrace()));
                 }
                 mysqli_next_result($db);
                 if ( mysqli_errno($db) != 0 ) {
                     userMessage("warn", "DB Problem - " . mysqli_error($db) );
+                    userMessage("warn", var_dump(debug_backtrace()));
                 }
             } else {
                 $done = TRUE;
@@ -318,10 +314,12 @@
         if ( ! dbSelect($db) ) {
             return FALSE;
         }
-        foreach ( $dbSchemas as $schema ) {
-            dbQueriesFromFile($db, $schema);
-        }
+        # foreach ( $dbSchemas as $schema ) {
+        #    dbQueriesFromFile($db, $schema);
+        # }
         
+	dbDoMigration($db);
+
         foreach ( $dbFixtures as $fixture ) {
             $result = mysqli_multi_query($db, file_get_contents($fixture) );
             if ( $result === FALSE || mysqli_errno($db) != 0 ) {
