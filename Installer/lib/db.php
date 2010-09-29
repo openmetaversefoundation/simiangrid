@@ -223,6 +223,7 @@
             return FALSE;
         }
 
+	$mig_path = 
 	$mig_query = 'SELECT MAX(version) FROM `migrations`';
         $result = mysqli_query($db, $mig_query);
         if ( mysqli_errno($db) != 0 ) {
@@ -246,16 +247,14 @@
     }
 
     function dbMigrate($db, $todo, $store) {
-	$migrations = array();
+	global $dbSchemas;
 
-	$dir = "../Installer/migrations/"; 
-
-	if($handle = opendir($dir)) { 
+	if($handle = opendir($dbSchemas)) { 
     	    while($file = readdir($handle)) { 
 	        clearstatcache(); 
-        	if(is_file($dir.'/'.$file)) {
+        	if(is_file($dbSchemas . '/' . $file)) {
 		    $file_version = substr($file,0,strpos($file,'-')-1);
-		    if (($file_version >= $todo) && (strpos($file,$store))) {
+		    if ($file_version >= $todo) {
 		        # omfg execute the sql already :p
 		        dbQueriesFromFile($db,$dir . $file);
                         userMessage("warn","Migration: " . $file_version);
