@@ -223,7 +223,6 @@
             return FALSE;
         }
 
-	$mig_path = 
 	$mig_query = 'SELECT MAX(version) FROM `migrations`';
         $result = mysqli_query($db, $current_query);
         if ( mysqli_errno($db) != 0 ) {
@@ -238,10 +237,10 @@
     	    $todo = $row[0] + 1;  
 	}
 
-	dbMigrate($db, $todo,configGetDBValue('db_name') );
+	dbMigrate($db, $todo) );
     }
 
-    function dbMigrate($db, $todo, $store) {
+    function dbMigrate($db, $todo) {
 	global $dbSchemas;
 
 	if($handle = opendir($dbSchemas)) { 
