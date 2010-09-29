@@ -243,7 +243,7 @@
     function dbMigrate($db, $todo, $store) {
 	$migrations = array();
 
-	$dir = "..Installer/migrations"; 
+	$dir = "../Installer/migrations"; 
 
 	if($handle = opendir($dir)) { 
     	    while($file = readdir($handle)) { 
