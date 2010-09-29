@@ -236,7 +236,7 @@
     	    $todo = $row[0] + 1;  
 	}
 
-	dbMigrate($db, $todo, $_SESSION['db_config']['db']));
+	dbMigrate($db, $todo, $_SESSION['db_config']['db']);
     }
 
     function dbMigrate($db, $todo, $store) {
