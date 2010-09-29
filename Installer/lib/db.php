@@ -187,8 +187,6 @@
             }
         }
         if ( ($count == count($dbCheckTables)) || ($count == 0) ) {
-            userMessage("warn","Database Migration Pending");
-            dbDoMigration($db);
 
             return TRUE;
         } else {
@@ -209,6 +207,8 @@
         } else {
             if ( dbComplete($tables) ) {
                 userMessage("warn", "Database already populated");
+                userMessage("warn","Database Migration Pending");
+                dbDoMigration($db);
                 $_SESSION['db_version']['skip_schema'] = TRUE;
                 return TRUE;
             } else {
