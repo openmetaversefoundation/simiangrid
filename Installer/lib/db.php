@@ -226,8 +226,13 @@
 	$mig_query = 'SELECT MAX(version) FROM `migrations`';
         $result = mysqli_query($db, $mig_query);
         if ( mysqli_errno($db) != 0 ) {
-            userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
-            return FALSE;
+	    $mserr = mysqli_error($db);
+	    if(strpos($mserr,"Table") && strpos($mserr,"doesn't exist") {
+		$todo = 0;
+	    } else {
+                userMessage("error", "Problem checking migration version - " . $mserr) );
+		return FALSE;
+	    }
         }
 	if ($result === FALSE) {
 	    $todo = 0;
