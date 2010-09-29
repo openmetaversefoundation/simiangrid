@@ -244,11 +244,7 @@
     	    $todo = $row[0] + 1;  
 	}
 
-<<<<<<< HEAD
 	dbMigrate($db, $todo,configGetDBValue('db_name') );
-=======
-	dbMigrate($db, $todo, 'frontend');
->>>>>>> afb44bb... Fixed migrations?
     }
 
     function dbMigrate($db, $todo, $store) {
