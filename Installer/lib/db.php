@@ -237,7 +237,6 @@
 	if ($result === FALSE) {
 	    $todo = 0;
 	} else {
-
 	    $row = mysql_fetch_array($result, MYSQL_NUM);
     	    $todo = $row[0] + 1;  
 	}
