@@ -250,7 +250,7 @@
 	        clearstatcache(); 
         	if(is_file($dir.'/'.$file)) {
 		    $file_version = substr($file,0,strpos($file,'-')-1);
-		    if (($file_version >= $todo) && (substr($file,$store))) {
+		    if (($file_version >= $todo) && (strpos($file,$store))) {
 		        # omfg execute the sql already :p
 		        dbQueriesFromFile($db,'../migrations/' . $file);
                         userMessage("warn","Migration: " . $file_version);
