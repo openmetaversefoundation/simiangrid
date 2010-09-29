@@ -227,7 +227,7 @@
         $result = mysqli_query($db, $mig_query);
 	$mserr = mysqli_error($db);
         if ( mysqli_errno($db) != 0 ) {
-	    if (strpos($mserr,"doesn't exist"))
+	    if (strpos($mserr,"doesn't exist")) {
 	        userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
         	return FALSE;
 	    } else {
