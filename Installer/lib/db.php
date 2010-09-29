@@ -219,57 +219,42 @@
     }
 
     function dbDoMigration($db) {
-	# determine current migration level with a sql query to the migrations table
-	# if no rows exist, apply all migrations present
-	# otherwise, apply all migrations greater than the latest version in the migrations table
         if ( ! dbSelect($db) ) {
             return FALSE;
         }
 
 	$mig_query = 'SELECT MAX(version) FROM `migrations`';
-        $result = mysqli_query($db, $current_query);
+        $result = mysqli_query($db, $mig_query);
         if ( mysqli_errno($db) != 0 ) {
             userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
             return FALSE;
         }
 	if ($result === FALSE) {
-	    # no result means no rows so run all migrations
 	    $todo = 0;
 	} else {
-
-	    # result evaluates TRUE so we have to access the migration version number from the 
-	    # query results and execute all migrations with a version that is greater
-	    # first access the current migration version and store that + 1 in $todo
-	    $row = mysql_fetch_array($result, MYSQL_NUM);
+	    $row = mysqli_fetch_row($result);
     	    $todo = $row[0] + 1;  
 	}
 
-	dbMigrate($db, $todo, 'frontend');
+	dbMigrate($db, $todo, $_SESSION['db_config']['db']));
     }
 
     function dbMigrate($db, $todo, $store) {
-	# sync the database version with that described by the files contained in the Installer/migrations/ directory. Do this by applying each file matching 
-	# '###-' . $store . '.sql' and applying (executing) any with a ### value equal to or greater than $todo
-
-        # to iterate over migrations directory, packing an array of names that match '###-grid*.sql'
-	$migrations = array();
-
-	$dir = "../migrations"; 
+	$dir = "../Installer/migrations/"; 
 
 	if($handle = opendir($dir)) { 
     	    while($file = readdir($handle)) { 
 	        clearstatcache(); 
         	if(is_file($dir.'/'.$file)) {
 		    $file_version = substr($file,0,strpos($file,'-')-1);
-		    if (($file_version >= $todo) && (substr($file,$store))) {
-		        # omfg execute the sql already :p
-		        dbQueriesFromFile($db,'../migrations/' . $file);
+		    if (($file_version >= $todo) && (strpos($file,$store))) {
+		        dbQueriesFromFile($db,$dir . $file);
                         userMessage("warn","Migration: " . $file_version);
 		    }
 		}
 
             }
-            closedir($dh);
+            closedir($handle);
         }
     }
 
