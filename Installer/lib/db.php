@@ -246,19 +246,19 @@
 
     function dbMigrate($db, $todo) {
 	global $dbSchemas;
-
-	if($handle = opendir($dbSchemas[0])) { 
+        $dir = $dbSchemas[0];
+	if($handle = opendir($dir)) { 
     	    while($file = readdir($handle)) { 
 	        clearstatcache(); 
-        	if(is_file($dbSchemas[0] . '/' . $file)) {
-		    $file_version = substr($file,0,strpos($file,'-')-1);
-		    if ($file_version >= $todo) {
-		        # omfg execute the sql already :p
-		        dbQueriesFromFile($db,$dbSchemas . '/' . $file);
-                        userMessage("warn","Migration: " . $file_version);
+        	if(is_file($dir . '/' . $file)) {
+		    if($file_version = substr($file,0,strpos($file,'-')-1)) {
+		    	if ($file_version >= $todo) {
+		            # omfg execute the sql already :p
+		            dbQueriesFromFile($db,$dir . '/' . $file);
+                            userMessage("warn","Migration: " . $file_version);
+			}
 		    }
 		}
-
             }
             closedir($handle);
         }
