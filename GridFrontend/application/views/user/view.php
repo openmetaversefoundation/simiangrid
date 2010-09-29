@@ -11,9 +11,6 @@
          <li><?php echo anchor("$site_url/user/identities/" . $uuid, lang('sg_user_identities')); ?></li>
         <li><?php echo anchor("$site_url/user/actions/" . $uuid, lang('sg_actions')); ?></li>
     <?php endif ; ?>
-	<?php if ( $this->sg_auth->is_admin() ): ?>
-        <li><?php echo anchor("$site_url/user/admin_actions/" . $uuid, lang('sg_admin_actions')); ?></li>
-	<?php endif ; ?>
 <?php endif ; ?>
      </ul>
 </div>
@@ -34,7 +31,5 @@
 		menu.tabs('select', 1);
 	} else if ( tab == 'actions' ) {
 		menu.tabs('select', 2);
-	} else if ( tab == 'admin_actions' ) {
-		menu.tabs('select', 3);
 	}
 </script>

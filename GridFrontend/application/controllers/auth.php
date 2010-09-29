@@ -18,7 +18,6 @@ class Auth extends Controller
 		$this->load->helper('form');
 		$this->load->helper('simian_openid_helper');
 		$this->load->helper('simian_facebook_helper');
-		$this->load->helper('simian_form_helper');
 
 		$this->lang->load('simian_grid', get_language() );
 		$this->lang->load('openid', get_language() );
@@ -31,6 +30,52 @@ class Auth extends Controller
 	}
 	
 	/* Callback function */
+	
+	function username_check($username)
+	{
+		$result = false;
+		$space_pos = strpos($username, ' ');
+		if ( $space_pos !== false ) {
+			$first_name = substr($username, 0, $space_pos);
+			$last_name = substr($username, $space_pos);
+			if ( $this->form_validation->alpha_dash($first_name) && $this->form_validation->alpha_dash($first_name) ) {
+				$result = true;
+			}
+		}
+		return $result;
+	}
+	
+	function username_exists_check($username)
+	{
+		$result = $this->simiangrid->get_user_by_name($username);
+		if ( $result != null ) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	function email_check($email)
+	{
+		$result = $this->simiangrid->get_user_by_email($email);
+		if ( $result != null ) {
+			$this->form_validation->set_message('email', lang('sg_auth_email_exists') );
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	function email_exists($email)
+	{
+		$result = $this->simiangrid->get_user_by_email($email);
+		if ( $result != null ) {
+			return true;
+		} else {
+			$this->form_validation->set_message('email', lang('sg_auth_email_not_exist') );
+			return false;
+		}
+	}
 
 	function login_facebook()
 	{
@@ -43,7 +88,6 @@ class Auth extends Controller
 					if ( $this->sg_auth->login_facebook($fb_id) ) {
 						return redirect('', 'location');
 					} else {
-						log_message('debug', "unable to authenticate fb user $fb_id" );
 						push_message(lang('sg_auth_facebook_error_login'), 'error');
 					}
 				}
@@ -64,8 +108,7 @@ class Auth extends Controller
         		if ($this->sg_auth->login_openid($openid)) {
     				// Redirect to homepage
     				return redirect('', 'location');
-    			} else {	
-					log_message('debug', "unable to authenticate openid user" );
+    			} else {
 					push_message(lang('sg_auth_openid_error_login'), 'error');
 				}
     		}
@@ -120,16 +163,6 @@ class Auth extends Controller
 		if ($val->run() ) {
 			$user_id = $this->sg_auth->register($val->set_value('username'), $val->set_value('password'), $val->set_value('email'), $val->set_value('avatar_type', 'DefaultAvatar'));
 			if ( $user_id != null ) {
-				if ($this->email_activation) {
-					if ( ! $this->reset_validation($user_id) ) {
-						log_message('warning', "SG_Auth Unable to send validation email for $user_id");
-					}
-					$message = lang('sg_auth_register_success_validation');
-				} else {					
-					$message = set_message('sg_auth_register_success', anchor(site_url() + "/auth/login", 'Login'));
-				}		
-				push_message($message, 'info');
-				log_message('debug', "SG_Auth Succesfully created user $user_id");
 				return $user_id;
 			}
 		} else {
@@ -284,7 +317,7 @@ class Auth extends Controller
 	
 	function validate($code)
 	{
-		if ( ! $this->sg_auth->validate($code) ) {
+		if ( ! $this->sg_auth->validate('email', $code) ) {
 			push_message(set_message('sg_auth_validation_fail'), 'error');
 		} else {
 			push_message(lang('sg_auth_validation_success'), 'info');

@@ -19,12 +19,8 @@
     </table>
     <h2>Extensions</h2>           
     <table>
-		<tr>
-        	<th>Package</th><th>Installed</th>
-		<tr>
-		<tr>
+        <th>Package</th><th>Installed</th>
 		<th colspan="2">Required Modules</th>
-		</tr>
         <?php
             foreach ( $result['modules']['required'] as $module => $enabled ) {
                 if ( $enabled ) {
@@ -38,9 +34,7 @@
             </tr>";
             }
         ?>
-		<tr>
 		<th colspan="2">Optional Modules</th>
-		</tr>
         <?php
             foreach ( $result['modules']['optional'] as $module => $enabled ) {
                 if ( $enabled ) {

@@ -43,9 +43,6 @@
 	<li><a id="menu_join" class="ui-state-default ui-corner-all ui-widget"  title='menu_register' href="{site_url}/auth/register"><?php echo lang('sg_register'); ?></a></li>
 	<?php endif; ?>
 	<li><a id="menu_about" class="ui-state-default ui-corner-all ui-widget"  href="{site_url}/about"><?php echo lang('sg_menu_about'); ?></a></li>
-	<?php if ( $this->sg_auth->is_admin() ): ?>
-	<li><a id="menu_admin" class="ui-state-default ui-corner-all ui-widget" title='menu_admin' href="{site_url}/admin"><?php echo lang('sg_admin'); ?></a></li>
-	<?php endif; ?>
 	</ul></div>
 </div>
 
@@ -76,8 +73,6 @@
 			select_menu('#menu_join');
 		} else if ( current_page == 'account' ) {
 			select_menu('#menu_account');
-		} else if ( current_page == 'admin' ) {
-			select_menu('#menu_admin');
 		}
 	});
 </script>

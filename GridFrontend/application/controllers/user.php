@@ -205,15 +205,12 @@ class User extends Controller {
 		$result_count = 0;
 		foreach ( $search_results as $search_result ) {
 			if ( $offset_count >= $offset && $result_count < $page_count ) {
-				$user_id = $search_result['id'];
-				if ( $this->sg_auth->is_user_searchable($user_id) ) {
-					$search_item = array(
-						render_user_link($user_id)
-					);
-					array_push($results, $search_item);
-					$result_count = $result_count + 1;
-				}
-			} else if ( $offset_count < $offset ) {
+				$search_item = array(
+					render_user_link($search_result['id'])
+				);
+				array_push($results, $search_item);
+				$result_count = $result_count + 1;
+			} else if ( $offset_count < $offset ){
 				$offset_count = $offset_count + 1;
 			}
 		}
@@ -228,15 +225,17 @@ class User extends Controller {
 		$search = $_GET['sSearch'];
 		if ( $search == '' ) {
 			$trunc_count = 0;
+			$total_count = 0;
 			$trunc_results = array();
 		} else {
 			$search_results = $this->simiangrid->search_user($search);
+			$total_count = count($search_results);
 			$trunc_results = $this->_truncate_search($search_results, $offset, $limit);
-			$trunc_count = count($search_results);
+			$trunc_count = count($trunc_results);
 		}
 		$result = array(
 			"sEcho" => $_GET['sEcho'],
-			"iTotalRecords" => $this->simiangrid->total_user_count(),
+			"iTotalRecords" => $total_count,
 			"iTotalDisplayRecords" => $trunc_count,
 			"aaData" => $trunc_results
 		);
@@ -282,8 +281,6 @@ class User extends Controller {
 			$data['tab'] = 'actions';
 		} else if ( $extra == 'identities' ) {
 			$data['tab'] = 'identities';
-		} else if ( $extra == 'admin_actions' ) {
-			$data['tab'] = 'admin_actions';
 		}
 		$data['title'] = $user['Name'];
 		parse_template('user/view', $data);
@@ -467,54 +464,6 @@ class User extends Controller {
             }
         }
 	}
-	
-	function _get_search_flag($uuid)
-	{
-		$user = $this->simiangrid->get_user($uuid);
-		$search_flag = $this->config->item('user_search_default');
-		if ( isset($user['AllowPublish']) ) {
-			$search_flag = $user['AllowPublish'];
-		}
-		return $search_flag;
-	}
-
-	function _change_search_flag($uuid)
-	{
-		$val = $this->form_validation;
-		$val->set_rules('value', '', 'trim|required|xss_clean');
-		
-		if ( $val->run() ) {
-			$raw_flag = $val->set_value('value');
-			if ( $raw_flag == "true" ) {
-				$flag = true;
-			} else if ( $raw_flag == "false" ) {
-				$flag = false;
-			} else {
-				log_message('error', "_change_search_flag unknown flag $flag");
-				return;
-			}
-			$this->simiangrid->set_user_data($uuid, 'AllowPublish', $flag);
-			if ( $flag ) {
-				echo lang('sg_user_search_public');
-			} else {
-				echo lang('sg_user_search_private');
-			}
-        }
-	}
-
-	function _load_search_flag($uuid)
-	{
-		$search_flags = array(
-			'true' => lang('sg_user_search_public'),
-			'false' => lang('sg_user_search_private')
-		);
-		if ( $this->_get_search_flag($uuid) ) {
-			$search_flags['selected'] = 'true';
-		} else {
-			$search_flags['selected'] = 'false';
-		}
-		echo json_encode($search_flags);
-	}
 
 	function _reset_avatar($uuid)
 	{
@@ -524,9 +473,9 @@ class User extends Controller {
 		return redirect('user/view/' . $uuid, 'location');
 	}
 
-	function admin_actions($uuid, $action=null)
+	function actions($uuid, $action=null)
 	{
-		if ( ! $this->sg_auth->is_admin($uuid) ) {
+		if ( ! $this->_me_or_admin($uuid) ) {
 			return redirect('user/index');
 		}
 		$user = $this->simiangrid->get_user($uuid);
@@ -534,7 +483,9 @@ class User extends Controller {
 			push_message(set_message('sg_user_not_found', $uuid), 'error');
 			return redirect('user/');
 		}
-		if ( $action == "change_access_level" && $this->sg_auth->is_admin() ) {
+		if ( $action == "change_password" ) {
+			return $this->_change_password($uuid);
+		} else if ( $action == "change_access_level" && $this->sg_auth->is_admin() ) {
 			return $this->_change_access_level($uuid);
 		} else if ( $action == "load_access_level" && $this->sg_auth->is_admin() ) {
 			return $this->_load_access_level($uuid);
@@ -546,6 +497,10 @@ class User extends Controller {
 			return $this->_change_validation_status($uuid);
 		} else if ( $action == "load_validation_status" ) {
 			return $this->_load_validation_status($uuid);
+		} else if ( $action == "change_language" ) {
+			return $this->_change_language($uuid);
+		} else if ( $action == "load_language") {
+			return $this->_load_language($uuid);
 		} else if ( $action == "reset_avatar" ) {
 			return $this->_reset_avatar($uuid);
 		} else {
@@ -562,40 +517,7 @@ class User extends Controller {
 			} else {
 				$data['validation'] = lang('sg_auth_not_validated');
 			}
-			return parse_template('user/admin_actions', $data, true);
-		}
-	}
-
-	function actions($uuid, $action=null)
-	{
-		if ( ! $this->_me_or_admin($uuid) ) {
-			return redirect('about');
-		}
-		$user = $this->simiangrid->get_user($uuid);
-		if ( $user == null ) {
-			push_message(set_message('sg_user_not_found', $uuid), 'error');
-			return redirect('user/');
-		}
-		if ( $action == "change_password" ) {
-			return $this->_change_password($uuid);
-		} else if ( $action == "change_language" ) {
-			return $this->_change_language($uuid);
-		} else if ( $action == "load_language") {
-			return $this->_load_language($uuid);
-		} else if ( $action == "change_search_flag" ) {
-			return $this->_change_search_flag($uuid);
-		} else if ( $action == "load_search_flag" ) {
-			return $this->_load_search_flag($uuid);
-		} else {
-			$data['user_id'] = $uuid;
-			$data['user_data'] = $this->simiangrid->get_user($uuid);
-		    $data['my_uuid'] = $this->sg_auth->get_uuid();
 			$data['language'] = $this->_get_language($uuid);
-			if ( $this->_get_search_flag($uuid) ) {
-				$data['search_visibility'] = lang('sg_user_search_public');
-			} else {
-				$data['search_visibility'] = lang('sg_user_search_private');
-			}
 			return parse_template('user/actions', $data, true);
 		}
 	}
