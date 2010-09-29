@@ -255,13 +255,18 @@
         # to iterate over migrations directory, packing an array of names that match '###-grid*.sql'
 	$migrations = array();
 
-        if ($dh = opendir('../migrations/')) {
-            while (($file = readdir($dh)) !== false) {
-		$file_version = substr($file,0,strpos($file,'-')-1);
-		if (($file_version >= $todo) && (substr($file,$store))) {
-		    # omfg execute the sql already :p
-		    dbQueriesFromFile($db,'../migrations/' . $file);
-                    userMessage("warn","Migration: " . $file_version);
+	$dir = "../files"; 
+
+	if($handle = opendir($dir)) { 
+    	    while($file = readdir($handle)) { 
+	        clearstatcache(); 
+        	if(is_file($dir.'/'.$file)) 
+		    $file_version = substr($file,0,strpos($file,'-')-1);
+		    if (($file_version >= $todo) && (substr($file,$store))) {
+		        # omfg execute the sql already :p
+		        dbQueriesFromFile($db,'../migrations/' . $file);
+                        userMessage("warn","Migration: " . $file_version);
+		    }
 		}
 
             }
