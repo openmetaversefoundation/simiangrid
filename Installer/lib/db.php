@@ -84,7 +84,6 @@
     }
 
     function dbRequirementsMet()
-
     {
         if ( $_SESSION['db_version']['check'] === TRUE && $_SESSION['db_version']['db_check'] === TRUE ) {
             return TRUE;
@@ -189,7 +188,6 @@
         if ( ($count == count($dbCheckTables)) || ($count == 0) ) {
             userMessage("warn","Database Migration Pending");
             dbDoMigration($db);
-
             return TRUE;
         } else {
             return FALSE;
@@ -219,9 +217,9 @@
     }
 
     function dbDoMigration($db) {
-        if ( ! dbSelect($db) ) {
-            return FALSE;
-        }
+        #if ( ! dbSelect($db) ) {
+        #    return FALSE;
+        #}
 
 	$mig_query = 'SELECT MAX(version) FROM `migrations`';
         $result = mysqli_query($db, $mig_query);
