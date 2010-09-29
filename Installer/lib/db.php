@@ -228,10 +228,10 @@
 	$mserr = mysqli_error($db);
         if ( mysqli_errno($db) != 0 ) {
 	    if (strpos($mserr,"doesn't exist")) {
+		$todo = 0;
+	    } else {
 	        userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
         	return FALSE;
-	    } else {
-		$todo = 0;
 	    }
         }
 	if ($result === FALSE) {
