@@ -230,7 +230,7 @@
 	    if(strpos($mserr,"Table") && strpos($mserr,"doesn't exist")) {
 		$todo = 0;
 	    } else {
-                userMessage("error", "Problem checking migration version - " . $mserr) );
+                userMessage("error", "Problem checking migration version - " . $mserr);
 		return FALSE;
 	    }
         }
