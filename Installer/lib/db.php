@@ -237,7 +237,7 @@
     	    $todo = $row[0] + 1;  
 	}
 
-	dbMigrate($db, $todo) );
+	dbMigrate($db, $todo);
     }
 
     function dbMigrate($db, $todo) {
