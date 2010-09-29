@@ -1,5 +1,4 @@
 <?php if ( ! defined('BASEPATH') or !defined('SIMIAN_INSTALLER') ) exit('No direct script access allowed');
-    
     function dbGetConfig()
     {
         $db_session = $_SESSION['db_config'];
@@ -255,7 +254,7 @@
         # to iterate over migrations directory, packing an array of names that match '###-grid*.sql'
 	$migrations = array();
 
-	$dir = "../files"; 
+	$dir = "../migrations"; 
 
 	if($handle = opendir($dir)) { 
     	    while($file = readdir($handle)) { 
