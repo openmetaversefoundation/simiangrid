@@ -249,13 +249,12 @@
 
 	if($handle = opendir($dbSchemas[0])) { 
     	    while($file = readdir($handle)) { 
-		echo "file: " . 
 	        clearstatcache(); 
         	if(is_file($dbSchemas[0] . '/' . $file)) {
 		    $file_version = substr($file,0,strpos($file,'-')-1);
 		    if ($file_version >= $todo) {
 		        # omfg execute the sql already :p
-		        dbQueriesFromFile($db,$dir . $file);
+		        dbQueriesFromFile($db,$dbSchemas . '/' . $file);
                         userMessage("warn","Migration: " . $file_version);
 		    }
 		}
