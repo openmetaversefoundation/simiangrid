@@ -252,7 +252,7 @@
 		    $file_version = substr($file,0,strpos($file,'-')-1);
 		    if (($file_version >= $todo) && (strpos($file,$store))) {
 		        # omfg execute the sql already :p
-		        dbQueriesFromFile($db,'../migrations/' . $file);
+		        dbQueriesFromFile($db,$dir . $file);
                         userMessage("warn","Migration: " . $file_version);
 		    }
 		}
