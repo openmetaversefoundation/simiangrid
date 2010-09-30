@@ -1,6 +1,8 @@
 <?php if ( !defined('SIMIAN_INSTALLER') ) exit('No direct script access allowed');
 
     define("BASEPATH", str_replace("\\", "/", realpath(dirname(__FILE__)) . '/'));
+	
+	define("INSTALL_LOCK_FILE", "SimianInstallerLock_" . str_replace(' ', '_', INSTALLER_PROJECT));
 
     require 'lib/common.php';
 
@@ -62,7 +64,7 @@
             transitionNextStep();
             redirectSelf();
         }
-    } else if ( installerStep() === STEP_DONE ) { 
+    } else if ( installerStep() === STEP_DONE ) {
         $result['page'] = 'Done';
     } else {
         installerStepSet(STEP_PHP_REQUIREMENTS);
@@ -70,7 +72,6 @@
     } 
 
     $result = resultPolish($result);
-    
     session_write_close();
     
     if ( installerStep() === STEP_PHP_REQUIREMENTS ) {

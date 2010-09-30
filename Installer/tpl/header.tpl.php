@@ -14,12 +14,10 @@
         <div id="main">
         <div id="user_message">
 <?php
-                if ( isset($result['user_message']) ) {
-                    foreach ( $result['user_message'] as $message ) {
-                        echo "<div class=\"message_" . $message['level'] ."\">";
-                        imageLink("dialog-" . $message['level'] . ".png");
-                        echo $message['text'] . "</div>";
-                    }
-                }
+                 foreach ( $result['user_message'] as $message ) {
+                     echo "<div class=\"message_" . $message['level'] ."\">";
+                     imageLink("dialog-" . $message['level'] . ".png");
+                     echo $message['text'] . "</div>";
+                 }
 ?>
         </div>
