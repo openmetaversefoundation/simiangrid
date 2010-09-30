@@ -217,10 +217,6 @@
     }
 
     function dbDoMigration($db) {
-        #if ( ! dbSelect($db) ) {
-        #    return FALSE;
-        #}
-
 	global $dbSchemas;
         $dir = $dbSchemas[0];
 	$todo = 0;
@@ -267,12 +263,10 @@
             if ( mysqli_more_results($db) ) {
                 if ( mysqli_errno($db) != 0 ) {
                     userMessage("warn", "DB Problem - " . mysqli_error($db) );
-                    userMessage("warn", var_dump(debug_backtrace()));
                 }
                 mysqli_next_result($db);
                 if ( mysqli_errno($db) != 0 ) {
                     userMessage("warn", "DB Problem - " . mysqli_error($db) );
-                    userMessage("warn", var_dump(debug_backtrace()));
                 }
             } else {
                 $done = TRUE;
