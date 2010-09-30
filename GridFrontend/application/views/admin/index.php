@@ -1,6 +1,6 @@
 <div id="admin_menu">
-     <ul>	
-	     <li><?php echo anchor("$site_url/admin/maintenance/tab", lang('sg_admin_maintenance') ); ?></li>
+     <ul>   
+         <li><?php echo anchor("$site_url/admin/maintenance/tab", lang('sg_admin_maintenance') ); ?></li>
          <li><?php echo anchor("$site_url/admin/add_user/tab", lang('sg_admin_add_user') ); ?></li>
      </ul>
 </div>
@@ -16,10 +16,10 @@
         ajaxOptions: { async: false },
         load: handle_tab
     });
-	var tab = "<?php echo $tab; ?>";
-	if ( tab == 'maintenance' ) {
-		menu.tabs('select', 0);
-	} else if ( tab == 'add_user' ) {
-		menu.tabs('select', 1);
-	}
+    var tab = "<?php echo $tab; ?>";
+    if ( tab == 'maintenance' ) {
+        menu.tabs('select', 0);
+    } else if ( tab == 'add_user' ) {
+        menu.tabs('select', 1);
+    }
 </script>

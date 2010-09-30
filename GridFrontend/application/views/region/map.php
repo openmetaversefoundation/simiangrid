@@ -16,14 +16,14 @@
 <div id="map_canvas" style="background-color: #1D475F; height: 100%; width: 100%;"></div>
 
 <script>
-	var div_loader = post_div_loader("<?php echo "$site_url/region/" ; ?>");
+    var div_loader = post_div_loader("<?php echo "$site_url/region/" ; ?>");
 
     $().ready(function() {
-		$("#region_info").dialog({ 
-			autoOpen: false, 
-			position: ['right', 'center'],
-			title: "<?php echo lang('sg_region_info'); ?>" 
-		});
+        $("#region_info").dialog({ 
+            autoOpen: false, 
+            position: ['right', 'center'],
+            title: "<?php echo lang('sg_region_info'); ?>" 
+        });
         <?php
             echo "initialize_map(\"" . $tile_host. "\", " 
                                    . $x . ", " 

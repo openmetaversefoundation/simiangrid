@@ -15,11 +15,11 @@ SimianGrid is provided by the <a href="http://www.openmetaverse.org/">Open Metav
 
 <script type="text/javascript">
 
-	$().ready(function() {
+    $().ready(function() {
 <?php if ( $this->config->item('enable_tooltips') ): ?>
-		scan_tooltips("<?php echo site_url('about/tooltip/'); ?>");
+        scan_tooltips("<?php echo site_url('about/tooltip/'); ?>");
 <?php endif; ?>
-	});
+    });
 </script>
 
 </body>

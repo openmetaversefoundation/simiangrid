@@ -1,7 +1,7 @@
 <?php
-	$my_url = "$site_url/user/view/" . $uuid;
-	generate_like_button($my_url);
-	generate_tweet_button($my_url);
+    $my_url = "$site_url/user/view/" . $uuid;
+    generate_like_button($my_url);
+    generate_tweet_button($my_url);
 ?>
 <div id="user_menu">
      <ul>
@@ -26,10 +26,10 @@
         ajaxOptions: { async: false },
         load: handle_tab
     });
-	var tab = "<?php echo $tab; ?>";
-	if ( tab == 'identities' ) {
-		menu.tabs('select', 1);
-	} else if ( tab == 'actions' ) {
-		menu.tabs('select', 2);
-	}
+    var tab = "<?php echo $tab; ?>";
+    if ( tab == 'identities' ) {
+        menu.tabs('select', 1);
+    } else if ( tab == 'actions' ) {
+        menu.tabs('select', 2);
+    }
 </script>

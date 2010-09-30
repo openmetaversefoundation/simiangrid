@@ -10,15 +10,15 @@ function parse_template($template, $data = array(), $unadorned=false)
     $CI =& get_instance();
     
     $data['site_url'] = site_url();
-	$data['base_url'] = base_url();
-	
-	if ( ! $unadorned ) {
-    	$CI->parser->parse('header', $data);
-	}
+    $data['base_url'] = base_url();
+    
+    if ( ! $unadorned ) {
+        $CI->parser->parse('header', $data);
+    }
     $CI->parser->parse($template, $data);
-	if ( ! $unadorned ) {
-    	$CI->parser->parse('footer', $data);
-	}
+    if ( ! $unadorned ) {
+        $CI->parser->parse('footer', $data);
+    }
 }
 
 function random_uuid()
@@ -44,9 +44,9 @@ function create_asset($assetID, $creatorID, $contentType, $filename)
     $filename = rtrim(set_realpath($filename), '/');
     
     $params = array(
-		'AssetID' => $assetID,
-		'CreatorID' => $creatorID,
-		'Asset' => "@$filename;type=$contentType"
+        'AssetID' => $assetID,
+        'CreatorID' => $creatorID,
+        'Asset' => "@$filename;type=$contentType"
     );
     
     echo 'Posting ' . $filename . ' to ' . $CI->config->item('asset_service') . '<br/>';
@@ -57,10 +57,10 @@ function create_asset($assetID, $creatorID, $contentType, $filename)
     $curl->option(CURLOPT_POSTFIELDS, $params);
     $curl->http_method('post');
     $response = json_decode($curl->execute(), TRUE);
-	
-	if (!isset($response))
-	    $response = array('Message' => 'Invalid or missing response. ' . $curl->error_string);
-	
+    
+    if (!isset($response))
+        $response = array('Message' => 'Invalid or missing response. ' . $curl->error_string);
+    
     return $response;
 }
 
@@ -68,12 +68,12 @@ function import_asset_folder($folder)
 {
     $uuidRegex = '/^([\w+\d+\s]+\-\s*?)??([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})\.(\w+)$/';
     $mimeMap = array(
-    	'bodypart' => 'application/vnd.ll.bodypart',
-		'ogg' => 'application/ogg',
-		'j2c' => 'image/x-j2c',
-		'animation' => 'application/vnd.ll.animation',
-		'clothing' => 'application/vnd.ll.clothing',
-		'lsl' => 'application/vnd.ll.lsltext'
+        'bodypart' => 'application/vnd.ll.bodypart',
+        'ogg' => 'application/ogg',
+        'j2c' => 'image/x-j2c',
+        'animation' => 'application/vnd.ll.animation',
+        'clothing' => 'application/vnd.ll.clothing',
+        'lsl' => 'application/vnd.ll.lsltext'
     );
     
     if (!ends_with($folder, '/'))
@@ -140,33 +140,33 @@ function decode_recursive_json($json)
 
 function send_email($to, $subject, $message)
 {
-	$ci =& get_instance();
-	$ci->load->library('Email');
+    $ci =& get_instance();
+    $ci->load->library('Email');
 
-	$email = $ci->email;
+    $email = $ci->email;
 
-	$email->from($ci->config->item('email_from'));
-	$email->to($to);
-	$email->subject($subject);
-	$email->message($message);
+    $email->from($ci->config->item('email_from'));
+    $email->to($to);
+    $email->subject($subject);
+    $email->message($message);
 
-	log_message('debug', "sent email to $to : $subject");
+    log_message('debug', "sent email to $to : $subject");
 
-	return $email->send();
+    return $email->send();
 }
 
 function get_language($user_id=null)
 {
-	$ci =& get_instance();
-	$language = $ci->config->item('language');
-	if ( $user_id == null ) {
-		$user_id = $ci->sg_auth->get_uuid();
-	}
-	if ( $user_id != null ) {
-		$user_language = $ci->user_settings->get_language($user_id);
-		if ( $user_language != null ) {
-			$language = $user_language;
-		}
-	}
-	return $language;
+    $ci =& get_instance();
+    $language = $ci->config->item('language');
+    if ( $user_id == null ) {
+        $user_id = $ci->sg_auth->get_uuid();
+    }
+    if ( $user_id != null ) {
+        $user_language = $ci->user_settings->get_language($user_id);
+        if ( $user_language != null ) {
+            $language = $user_language;
+        }
+    }
+    return $language;
 }

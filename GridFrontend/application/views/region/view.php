@@ -21,8 +21,8 @@
         ajaxOptions: { async: false },
         load: handle_tab
     });
-	var tab = "{tab}";
-	if ( tab == 'actions' ) {
-		menu.tabs('select', 1);
-	}
+    var tab = "{tab}";
+    if ( tab == 'actions' ) {
+        menu.tabs('select', 1);
+    }
 </script>
