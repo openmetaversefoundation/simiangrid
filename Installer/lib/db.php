@@ -1,14 +1,48 @@
 <?php if ( ! defined('BASEPATH') or !defined('SIMIAN_INSTALLER') ) exit('No direct script access allowed');
+
+    function getDbFile()
+    {
+        if ( defined('DB_CONFIG_FILE') ) {
+            $config_file = DB_CONFIG_FILE;
+        } else {
+            $config_files = configFileList();
+            if ( count($config_files) != 1 ) {
+                echo "unable to auto-determine config file, please specify DB_CONFIG_FILE in install.php";
+                exit(1);
+            } 
+            $config_file = $config_files[0];
+        }
+        return getcwd() . '/' . $config_file;
+    }
+
     function dbGetConfig()
     {
         $db_session = $_SESSION['db_config'];
         
+        $db_config = null;
         if ( $db_session != null ) {
-            return $db_session;
+            $db_config = $db_session;
         } else {
-            global $defaultDB;
-            return $defaultDB;
+            $config_file = getDbFile();
+            if ( file_exists($config_file) ) {
+                include $config_file;
+                if ( isset($config['db_username']) && isset($config['db_database']) && isset($config['db_hostname']) ) {
+                    $db_config['user'] = $config['db_username'];
+                    $db_config['db'] = $config['db_database'];
+                    $db_config['host'] = $config['db_hostname'];
+                }
+                if ( ! empty($config['db_password']) ) {
+                    $db_config['pass'] = $config['db_password'];
+                } else {
+                    $db_config['pass'] = '';
+                }
+            }
         }
+        if ( $db_config == null ) {
+            global $defaultDB;
+            $db_config = $defaultDB;
+        }
+        return $db_config;
     }
     
     function configGetDBValue($key) {
@@ -31,14 +65,16 @@
         $result = array();
         $dbconf = dbGetConfig();
         
-        $result['db_user']['default'] = $dbconf['user'];
-        $result['db_user']['string'] = "@@DB_USER@@";
-        $result['db_pass']['default'] = $dbconf['password'];
-        $result['db_pass']['string'] = "@@DB_PASSWORD@@";
-        $result['db_name']['default'] = $dbconf['db'];
-        $result['db_name']['string'] = "@@DB_NAME@@";
-        $result['db_host']['default'] = $dbconf['host'];
-        $result['db_host']['string'] = "@@DB_HOST@@";
+        $db_file = getDbFile();
+        
+        $result['db_username']['default'] = $dbconf['user'];
+        $result['db_username']['string'] = "@@DB_USER@@";
+        $result['db_password']['default'] = $dbconf['password'];
+        $result['db_password']['string'] = "@@DB_PASSWORD@@";
+        $result['db_database']['default'] = $dbconf['db'];
+        $result['db_database']['string'] = "@@DB_NAME@@";
+        $result['db_hostname']['default'] = $dbconf['host'];
+        $result['db_hostname']['string'] = "@@DB_HOST@@";
         
         return $result;
     }
@@ -217,43 +253,47 @@
     }
 
     function dbDoMigration($db) {
-    global $dbSchemas;
+        global $dbSchemas;
         $dir = $dbSchemas[0];
-    $todo = 0;
-    $mig_query = 'SELECT MAX(version) FROM `migrations`';
-        if (($result = mysqli_query($db, $mig_query)) != FALSE)
-    {
-        $row = mysql_fetch_array($result, MYSQL_NUM);
+        $todo = 0;
+        $mig_query = 'SELECT MAX(version) FROM `migrations`';
+        if (($result = mysqli_query($db, $mig_query)) != FALSE) {
+            $row = mysql_fetch_array($result, MYSQL_NUM);
             $todo = $row[0] + 1;  
-    } else {
-        $mserr = mysqli_error($db);
-
-        if ( mysqli_errno($db) != 0 ) {
-        if (strpos($mserr,"doesn't exist")) {
-            $todo = 0;
         } else {
-            userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
-            return FALSE;
-        }
-        }
-        }
+            $mserr = mysqli_error($db);
 
-    if($handle = opendir($dir)) { 
-            while($file = readdir($handle)) { 
-            clearstatcache(); 
-            if(is_file($dir . '/' . $file)) {
-            if(($delimpos = strpos($file,'-')) <= 0) continue;
-                    $file_version = substr($file,0,$delimpos);
-            if ($file_version >= $todo) {
-                # omfg execute the sql already :p
-                dbQueriesFromFile($db,$dir . '/' . $file);
-                        userMessage("warn","Migration: " . $file_version . ": " . $file);
+            if ( mysqli_errno($db) != 0 ) {
+            if (strpos($mserr,"doesn't exist")) {
+                    $todo = 0;
+                } else {
+                    userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
+                    return FALSE;
+                }
             }
         }
+
+        if($handle = opendir($dir)) { 
+            while($file = readdir($handle)) { 
+                clearstatcache(); 
+                if(is_file($dir . '/' . $file)) {
+                    if(($delimpos = strpos($file,'-')) <= 0) continue;
+                    $file_version = substr($file,0,$delimpos);
+                    if ($file_version >= $todo) {
+                        $updates[] = $dir . '/' . $file;
+                    }
+                }
             }
             closedir($handle);
+
+            sort($updates);
+            foreach($updates as $schema) {
+                # omfg execute the sql already :p
+                dbQueriesFromFile($db,$schema);
+                userMessage("warn","Migration: " . $schema);   
+            }
+            return TRUE;
         }
-    return TRUE;
     }
 
     function dbFlush($db) {
