@@ -15,6 +15,19 @@
         return $result;
     }
 
+    function configFindValue($name, $config_entry)
+    {
+        $config_file = getcwd() . "/" . $config_entry['file'];
+        $config_value = $config_entry['default'];
+        if ( file_exists($config_file) ) {
+            include $config_file;
+            if ( isset($config[$name]) ) {
+                $config_value = $config[$name];
+            }
+        }
+        return $config_value;
+    }
+
     function configGetValue($name)
     {
         global $configOptions;
@@ -23,7 +36,7 @@
         } else {
             foreach ( $configOptions as $key => $config ) {
                 if ( $key == $name ) {
-                    return $config['default'];
+                    return configFindValue($key, $config);
                 }
             }
         }
@@ -37,7 +50,7 @@
         foreach ( $configOptions as $key => $options ) {
             $entry = array();
             $entry['name'] = $key;
-            $entry['value'] = configGetValue($key);
+            $entry['value'] = configGetValue($key, $key);
             $entry['label'] = $options['name'];
             array_push($result, $entry);
         }
