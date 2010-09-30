@@ -142,7 +142,7 @@
                     userMessage("error", "Unable to find directory $path.");
                 }
             } else {
-                $check = is_writable($check);
+                $check = is_writable($path);
                 if ( ! $check ) {
                     userMessage("error", "File $path is not writable (It must be writeable by the account the webserver runs under).");
                 }
