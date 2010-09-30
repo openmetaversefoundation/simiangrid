@@ -245,13 +245,18 @@
 		    if(($delimpos = strpos($file,'-')) <= 0) continue;
                     $file_version = substr($file,0,$delimpos);
 	  	    if ($file_version >= $todo) {
-		        # omfg execute the sql already :p
-		        dbQueriesFromFile($db,$dir . '/' . $file);
-                        userMessage("warn","Migration: " . $file_version . ": " . $file);
+			$updates[] = $dir . '/' . $file;
 		    }
 		}
             }
             closedir($handle);
+
+	    sort($updates);
+	    foreach($updates as $schema) {
+		# omfg execute the sql already :p
+		dbQueriesFromFile($db,$schema);
+                userMessage("warn","Migration: " . $schema);
+	    }	
         }
 	return TRUE;
     }
