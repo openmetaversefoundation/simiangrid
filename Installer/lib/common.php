@@ -161,10 +161,11 @@
             }
         } else if ( installerStep() === STEP_PERMISSION ) {
             if ( permissionCheck() ) {
-				if ( ! getLock() ) {
-                	installerStepSet(nextStep(STEP_PERMISSION) );
+				$lock_file = getcwd() . INSTALL_LOCK_FILE;
+				if ( getLock() || ! is_writable($lock_file) ) {
+					userMessage('error', "Insufficient permission on lockfile " . $lock_file);
 				} else {
-					userMessage('error', "Insufficient permission on lockfile " . getcwd() . INSTALL_LOCK_FILE);
+                	installerStepSet(nextStep(STEP_PERMISSION) );
 				}
             }
         } else if ( installerStep() === STEP_WRITE ) {
