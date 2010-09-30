@@ -44,7 +44,6 @@ require_once(BASEPATH . 'common/Class.InventoryFile.php');
 require_once(BASEPATH . 'common/Class.InventoryDirectory.php');
 require_once(BASEPATH . 'common/Class.RootDirectory.php');
 
-$config =& get_config();
 
 // Fetch the "a1hash" identity from SimianGrid for a given username
 function get_a1_hash($userName, &$userID)
@@ -103,7 +102,7 @@ if (!$hash || !$auth->validateA1($hash))
 $rootDirectory = new RootDirectory($userID);
 $tree = new Sabre_DAV_ObjectTree($rootDirectory);
 $server = new Sabre_DAV_Server($tree);
-$server->setBaseUri($config['webdav_url_base_path']);
+$server->setBaseUri('/');
 
 // Setup the WebDAV locking plugin
 $lockBackend = new Sabre_DAV_Locks_Backend_FS('tmp');

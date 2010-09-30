@@ -71,7 +71,10 @@
                     when : {
                         event : 'mouseout'
                     }
-                }
+                },
+				style: {
+					name: 'red'
+				}
             });
             thing.attr('title', '');
         }
@@ -96,5 +99,4 @@
 		$("link[media='screen'][id='jquery_ui']").attr("href", "static/styles/" + style + "/jquery-ui.css");
 		$("link[media='screen'][id='jquery_qtip']").attr("href", "static/styles/" + style + "/jquery.qtip.css");
 	}
-
 }

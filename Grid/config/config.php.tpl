@@ -195,7 +195,3 @@ $config['cloud_texture_id'] = "dc4b9f0b-d008-45c6-96a4-01dd947ac621";
 
 //whether to require email validation for login
 $config['validation_required'] = true;
-
-//User Access Level at which Users will not be blocked by
-//Either email validation or closed grids
-$config['access_level_minimum'] = 200;

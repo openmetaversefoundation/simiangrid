@@ -29,7 +29,7 @@
     $defaultDB['host'] = '127.0.0.1';
     $defaultDB['db'] = 'SimianFrontend';
     
-    $dbSchemas = array('schema.sql');
+    $dbSchemas = array('sql/');
     
     $dbFixtures = array();
     

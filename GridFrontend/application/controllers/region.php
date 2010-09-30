@@ -141,7 +141,7 @@ class Region extends Controller {
 
 	function _render_region_popup($scene)
 	{
-		return anchor('region/view/' . $scene['id'], $scene['name'], array('class'=>'search_result','onclick' => 'load_search_result(\'' . $scene['id'] . '\'); return false;'));
+		return anchor('region/view/' . $scene['id'], $scene['name'], array('class'=>'search_result','onclick' => 'load_search_result(\'' . $scene['id'] . '\', ' . $scene['x'] . ', ' . $scene['y'] . '); return false;'));
 	}
 
 	function _truncate_search($search_results, $offset, $page_count)
@@ -150,7 +150,7 @@ class Region extends Controller {
 		$offset_count = 0;
 		$result_count = 0;
 		foreach ( $search_results as $search_result ) {
-			if ( $offset_count >= $offset && $result_count < $page_count ) {
+			if ( $offset_count >= $offset && $result_count <= $page_count ) {
 				$search_item = array(
 					$this->_render_region_popup($search_result)
 				);
@@ -171,15 +171,17 @@ class Region extends Controller {
 		$search = $_GET['sSearch'];
 		if ( $search == '' ) {
 			$trunc_count = 0;
+			$total_count = 0;
 			$trunc_results = array();
 		} else {
 			$search_results = $this->simiangrid->search_scene($search);
+			$total_count = count($search_results);
 			$trunc_results = $this->_truncate_search($search_results, $offset, $limit);
-			$trunc_count = count($search_results);
+			$trunc_count = count($trunc_results);
 		}
 		$result = array(
 			"sEcho" => $_GET['sEcho'],
-			"iTotalRecords" => $this->simiangrid->total_scene_count(),
+			"iTotalRecords" => $total_count,
 			"iTotalDisplayRecords" => $trunc_count,
 			"aaData" => $trunc_results
 		);
