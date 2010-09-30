@@ -246,11 +246,12 @@
     	    while($file = readdir($handle)) { 
 	        clearstatcache(); 
         	if(is_file($dir . '/' . $file)) {
-		    if(($file_version = substr($file,0,strpos($file,"-")-1)) === FALSE) next;
+		    if(($delimpos = strpos($file,'-')) <= 0) continue;
+                    $file_version = substr($file,0,$delimpos);
 	  	    if ($file_version >= $todo) {
 		        # omfg execute the sql already :p
 		        dbQueriesFromFile($db,$dir . '/' . $file);
-                        userMessage("warn","Migration: " . $file_version);
+                        userMessage("warn","Migration: " . $file_version . ": " . $file);
 		    }
 		}
             }
