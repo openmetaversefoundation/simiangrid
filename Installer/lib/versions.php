@@ -2,23 +2,23 @@
 
     function phpModuleList()
     {
-		global $requiredModules, $optionalModules;
+        global $requiredModules, $optionalModules;
         $result = array();
-		$result['optional'] = array();
-		$result['required'] = array();
+        $result['optional'] = array();
+        $result['required'] = array();
         foreach ( $requiredModules as $module ) {
             $check = extension_loaded($module);
             $result['required'][$module] = $check;
         }
         
-		if ( ! isset($optionalModules) || $optionalModules == null ) {
-			$optionalModules = array();
-		}
+        if ( ! isset($optionalModules) || $optionalModules == null ) {
+            $optionalModules = array();
+        }
         foreach ( $optionalModules as $module ) {
             $check = extension_loaded($module);
-			if ( ! $check ) {
-				userMessage('warn', "The module $module is not required for basic operation.");
-			}
+            if ( ! $check ) {
+                userMessage('warn', "The module $module is not required for basic operation.");
+            }
             $result['optional'][$module] = $check;
         }
 

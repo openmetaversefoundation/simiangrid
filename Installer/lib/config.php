@@ -3,13 +3,13 @@
     function configExists()
     {
         $config_files = configFileList();
-		$result = FALSE;
+        $result = FALSE;
         foreach ( $config_files as $config_file ) {
             if ( is_file($config_file) ) {
-				userMessage('warn', "Config file " . getcwd() . "/$config_file already exists.");
-				if ( $result == FALSE ) {
-					$result = TRUE;
-				}
+                userMessage('warn', "Config file " . getcwd() . "/$config_file already exists.");
+                if ( $result == FALSE ) {
+                    $result = TRUE;
+                }
             }
         }
         return $result;
@@ -106,10 +106,10 @@
         $writableFiles = configFileList();
         
         foreach ( $writableDirectories as $directory ) {
-	    $check_result = is_writable($directory);
-	    if ( ! $check_result ) {
-		userMessage("error", "Directory " . getcwd() . "/$directory is not writable (It must be writeable by the account the webserver runs under).");
-	    }
+            $check_result = is_writable($directory);
+            if ( ! $check_result ) {
+                userMessage("error", "Directory " . getcwd() . "/$directory is not writable (It must be writeable by the account the webserver runs under).");
+            }
             $item = array (
                 'name' => $directory,
                 'check' => $check_result,
@@ -122,17 +122,17 @@
                 $path_dir = dirname($path);
                 if ( is_dir($path_dir) ) {
                     $check = is_writable($path_dir);
-		    if ( ! $check ) {
-			userMessage("error", "Directory " . getcwd() . "/$path_dir is not writable (It must be writeable by the account the webserver runs under).");
-		    }
+                    if ( ! $check ) {
+                        userMessage("error", "Directory " . getcwd() . "/$path_dir is not writable (It must be writeable by the account the webserver runs under).");
+                    }
                 } else {
-		    userMessage("error", "Unable to find directory $path.");
-		}
+                    userMessage("error", "Unable to find directory $path.");
+                }
             } else {
                 $check = is_writable($check);
-		if ( ! $check ) {
-		    userMessage("error", "File $file is not writable (It must be writeable by the account the webserver runs under).");
-		}
+                if ( ! $check ) {
+                    userMessage("error", "File $path is not writable (It must be writeable by the account the webserver runs under).");
+                }
             }
             $item = array (
                 'name' => $path,

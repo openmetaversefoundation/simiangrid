@@ -146,7 +146,7 @@
     {
         if ( installerStep() === STEP_PHP_REQUIREMENTS ) {
             if ( phpRequirementsMet() ) {
-            	installerStepSet(nextStep(STEP_PHP_REQUIREMENTS));
+                installerStepSet(nextStep(STEP_PHP_REQUIREMENTS));
             }
         } else if ( installerStep() === STEP_DB_CONFIG ) {
             if ( dbConfigValid() ) {
@@ -162,16 +162,15 @@
             }
         } else if ( installerStep() === STEP_PERMISSION ) {
             if ( permissionCheck() ) {
-				$lock_file = getcwd() . INSTALL_LOCK_FILE;
-				if ( getLock() || ! is_writable($lock_file) ) {
-					userMessage('error', "Insufficient permission on lockfile " . $lock_file);
-				} else {
-                	installerStepSet(nextStep(STEP_PERMISSION) );
-				}
+                if ( ! is_writable(dirname(INSTALL_LOCK_FILE)) ) {
+                    userMessage('error', "Insufficient permission for lockfile " . INSTALL_LOCK_FILE);
+                } else {
+                    installerStepSet(nextStep(STEP_PERMISSION) );
+                }
             }
         } else if ( installerStep() === STEP_WRITE ) {
             installerStepSet(nextStep(STEP_WRITE));
-			setLock();
+            setLock();
         }
     }
     
@@ -216,7 +215,7 @@
     {
         sessionInit();
         
-		//handle streamed content first
+        //handle streamed content first
         if ( isset($_SERVER['PATH_INFO']) ) {
             $path_bits = preg_split('/\//', $_SERVER['PATH_INFO']);
             $path_bits = cleanPath($path_bits);
@@ -230,10 +229,10 @@
         }
 
         $result = array();
-		if ( installerStep() !== STEP_DONE && getLock() ) {
-        	installerStepSet(STEP_DONE);
-			redirectSelf();
-		}
+        if ( installerStep() !== STEP_DONE && getLock() ) {
+            installerStepSet(STEP_DONE);
+            redirectSelf();
+        }
 
         $is_redirect = FALSE;
         
@@ -261,21 +260,21 @@
         return $result;
     }
 
-	function resultPolish($results)
-	{
-		$results['user_message'] = userMessageList();
-		return $results;
-	}
+    function resultPolish($results)
+    {
+        $results['user_message'] = userMessageList();
+        return $results;
+    }
 
-	function userMessageList()
-	{
-		$results = array();
-		if ( isset($_SESSION['user_message']) ) {
-			$results = $_SESSION['user_message'];
-			unset($_SESSION['user_message']);
-		}
-		return $results;
-	}
+    function userMessageList()
+    {
+        $results = array();
+        if ( isset($_SESSION['user_message']) ) {
+            $results = $_SESSION['user_message'];
+            unset($_SESSION['user_message']);
+        }
+        return $results;
+    }
     
     function userMessage($level, $text) 
     {
@@ -295,23 +294,22 @@
         
         array_push($_SESSION['user_message'], $message);
     }
-	
-	function getLock($check_write=false)
-	{
-		$lockfile = getcwd() . INSTALL_LOCK_FILE;
-		if ( file_exists($lockfile) ) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	function setLock()
-	{
-		if ( getLock() ) {
-			return true;
-		}
-		return touch(getcwd() . INSTALL_LOCK_FILE);
-	}
+    
+    function getLock()
+    {
+        if ( file_exists(INSTALL_LOCK_FILE) ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    function setLock()
+    {
+        if ( getLock() ) {
+            return true;
+        }
+        return touch(INSTALL_LOCK_FILE);
+    }
 
 ?>

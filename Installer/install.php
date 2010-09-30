@@ -1,8 +1,8 @@
 <?php if ( !defined('SIMIAN_INSTALLER') ) exit('No direct script access allowed');
 
     define("BASEPATH", str_replace("\\", "/", realpath(dirname(__FILE__)) . '/'));
-	
-	define("INSTALL_LOCK_FILE", "SimianInstallerLock_" . str_replace(' ', '_', INSTALLER_PROJECT));
+    
+    define("INSTALL_LOCK_FILE", getcwd() . "/SimianInstallerLock_" . str_replace(' ', '_', INSTALLER_PROJECT) );
 
     require 'lib/common.php';
 
@@ -30,7 +30,7 @@
     } else if ( installerStep() === STEP_DB_REQUIREMENTS ) {
         if ( isRedirect() ) {
             redirectSelf();
-        }	
+        }   
         $result['page'] = "DB Requirements";
         $result['mysql_check'] = dbVersionCheck();
         $result['db_config'] = dbGetConfig();
@@ -51,10 +51,10 @@
         if ( isRedirect() ) {
             redirectSelf();
         }
-		$result['page'] = 'Check Permission';
+        $result['page'] = 'Check Permission';
         $result['permission'] = permissionProcess();
     } else if ( installerStep() === STEP_WRITE ) {
-		$result['page'] = 'Write Files';
+        $result['page'] = 'Write Files';
         if ( isRedirect() ) {
             redirectSelf();
         }

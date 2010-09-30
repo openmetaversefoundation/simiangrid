@@ -217,43 +217,43 @@
     }
 
     function dbDoMigration($db) {
-	global $dbSchemas;
+    global $dbSchemas;
         $dir = $dbSchemas[0];
-	$todo = 0;
-	$mig_query = 'SELECT MAX(version) FROM `migrations`';
+    $todo = 0;
+    $mig_query = 'SELECT MAX(version) FROM `migrations`';
         if (($result = mysqli_query($db, $mig_query)) != FALSE)
-	{
-	    $row = mysql_fetch_array($result, MYSQL_NUM);
-    	    $todo = $row[0] + 1;  
-	} else {
-	    $mserr = mysqli_error($db);
+    {
+        $row = mysql_fetch_array($result, MYSQL_NUM);
+            $todo = $row[0] + 1;  
+    } else {
+        $mserr = mysqli_error($db);
 
-	    if ( mysqli_errno($db) != 0 ) {
-		if (strpos($mserr,"doesn't exist")) {
-		    $todo = 0;
-		} else {
-		    userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
-		    return FALSE;
-		}
-	    }
+        if ( mysqli_errno($db) != 0 ) {
+        if (strpos($mserr,"doesn't exist")) {
+            $todo = 0;
+        } else {
+            userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
+            return FALSE;
+        }
+        }
         }
 
-	if($handle = opendir($dir)) { 
-    	    while($file = readdir($handle)) { 
-	        clearstatcache(); 
-        	if(is_file($dir . '/' . $file)) {
-		    if(($delimpos = strpos($file,'-')) <= 0) continue;
+    if($handle = opendir($dir)) { 
+            while($file = readdir($handle)) { 
+            clearstatcache(); 
+            if(is_file($dir . '/' . $file)) {
+            if(($delimpos = strpos($file,'-')) <= 0) continue;
                     $file_version = substr($file,0,$delimpos);
-	  	    if ($file_version >= $todo) {
-		        # omfg execute the sql already :p
-		        dbQueriesFromFile($db,$dir . '/' . $file);
+            if ($file_version >= $todo) {
+                # omfg execute the sql already :p
+                dbQueriesFromFile($db,$dir . '/' . $file);
                         userMessage("warn","Migration: " . $file_version . ": " . $file);
-		    }
-		}
+            }
+        }
             }
             closedir($handle);
         }
-	return TRUE;
+    return TRUE;
     }
 
     function dbFlush($db) {
@@ -310,7 +310,7 @@
         #    dbQueriesFromFile($db, $schema);
         # }
         
-	dbDoMigration($db);
+    dbDoMigration($db);
 
         foreach ( $dbFixtures as $fixture ) {
             $result = mysqli_multi_query($db, file_get_contents($fixture) );
