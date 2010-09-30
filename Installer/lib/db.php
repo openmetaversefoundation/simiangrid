@@ -32,9 +32,9 @@
                     $db_config['host'] = $config['db_hostname'];
                 }
                 if ( ! empty($config['db_password']) ) {
-                    $db_config['pass'] = $config['db_password'];
+                    $db_config['password'] = $config['db_password'];
                 } else {
-                    $db_config['pass'] = '';
+                    $db_config['password'] = '';
                 }
             }
         }
@@ -47,13 +47,13 @@
     
     function configGetDBValue($key) {
         $dbconf = dbGetConfig();
-        if ( $key === "db_user" ) {
+        if ( $key === "db_username" ) {
             return $dbconf['user'];
-        } else if ( $key === "db_pass" ) {
+        } else if ( $key === "db_password" ) {
             return $dbconf['password'];
-        } else if ( $key === "db_host" ) {
+        } else if ( $key === "db_hostname" ) {
             return $dbconf['host'];
-        } else if ( $key === "db_name" ) {
+        } else if ( $key === "db_database" ) {
             return $dbconf['db'];
         } else {
             return null;
@@ -69,12 +69,16 @@
         
         $result['db_username']['default'] = $dbconf['user'];
         $result['db_username']['string'] = "@@DB_USER@@";
+        $result['db_username']['file'] = $db_file;
         $result['db_password']['default'] = $dbconf['password'];
         $result['db_password']['string'] = "@@DB_PASSWORD@@";
+        $result['db_password']['file'] = $db_file;
         $result['db_database']['default'] = $dbconf['db'];
         $result['db_database']['string'] = "@@DB_NAME@@";
+        $result['db_database']['file'] = $db_file;
         $result['db_hostname']['default'] = $dbconf['host'];
         $result['db_hostname']['string'] = "@@DB_HOST@@";
+        $result['db_hostname']['file'] = $db_file;
         
         return $result;
     }
