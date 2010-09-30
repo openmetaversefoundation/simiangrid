@@ -34,13 +34,18 @@
 | the active record class
 */
 
+$config['db_username'] = "@@DB_USER@@";
+$config['db_password'] = "@@DB_PASSWORD@@";
+$config['db_hostname'] = "@@DB_HOST@@";
+$config['db_database'] = "@@DB_NAME@@";
+
 $active_group = "default";
 $active_record = TRUE;
 
-$db['default']['hostname'] = "@@DB_HOST@@";
-$db['default']['username'] = "@@DB_USER@@";
-$db['default']['password'] = "@@DB_PASSWORD@@";
-$db['default']['database'] = "@@DB_NAME@@";
+$db['default']['hostname'] = $config['db_hostname'];
+$db['default']['username'] = $config['db_username'];
+$db['default']['password'] = $config['db_password'];
+$db['default']['database'] = $config['db_database'];
 $db['default']['dbdriver'] = "mysql";
 $db['default']['dbprefix'] = "";
 $db['default']['pconnect'] = TRUE;
