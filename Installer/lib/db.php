@@ -246,17 +246,17 @@
     	    while($file = readdir($handle)) { 
 	        clearstatcache(); 
         	if(is_file($dir . '/' . $file)) {
-		    if(($file_version = substr($file,0,strpos($file,"-")-1)) === TRUE) {
-		    	if ($file_version >= $todo) {
-		            # omfg execute the sql already :p
-		            dbQueriesFromFile($db,$dir . '/' . $file);
-                            userMessage("warn","Migration: " . $file_version);
-			}
+		    if(($file_version = substr($file,0,strpos($file,"-")-1)) === TRUE) next;
+	  	    if ($file_version >= $todo) {
+		        # omfg execute the sql already :p
+		        dbQueriesFromFile($db,$dir . '/' . $file);
+                        userMessage("warn","Migration: " . $file_version);
 		    }
 		}
             }
             closedir($handle);
         }
+	return TRUE;
     }
 
     function dbFlush($db) {
