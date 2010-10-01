@@ -228,8 +228,9 @@
                 $_SESSION['db_version']['skip_schema'] = TRUE;
                 return TRUE;
             } else {
-                userMessage("error", "Database contains non-simian tables");
-                return FALSE;
+                userMessage("warn", "Database contains non-simian tables");
+                $_SESSION['db_version']['skip_schema'] = FALSE;
+                return TRUE;
             }
         }
     }
