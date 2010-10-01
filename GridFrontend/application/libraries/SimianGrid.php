@@ -448,10 +448,14 @@ class SimianGrid
 		}
 		$details = decode_recursive_json($result);
 		$result = array(
-			'sim_fps' => $details['SimFPS'],
-			'phys_fps' => $details['PhyFPS'],
+			'simulation_fps' => $details['SimFPS'],
+			'physics_fps' => $details['PhyFPS'],
 			'version' => $details['Version'],
-			'uptime' => $details['Uptime']
+			'uptime' => $details['Uptime'],
+			'dilation' => $details['Dilatn'],
+			'prim_count' => $details['Prims'],
+			'agents' => $details['RootAg'],
+			'child_agents' => $details['ChldAg']
 		);
 		return $result;
 	}

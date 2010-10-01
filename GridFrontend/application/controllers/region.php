@@ -90,6 +90,7 @@ class Region extends Controller {
 		if ( $extra == "stats" ) {
 			$data['tab'] = 'stats';
 		}
+		$this->_scene_extra_info($uuid, $data);
 		$data['title'] = $data['scene_data']['Name'];
 		$data['page'] = 'regions';
 		parse_template('region/view', $data);
@@ -102,6 +103,19 @@ class Region extends Controller {
 	    $this->_scene_extra_info($uuid, $data);
 	    
 		$data['inline'] = false;
+		$sim_details = $this->simiangrid->simulator_details($uuid);
+		if ( $sim_details != null ) {
+		    $data['region_version'] = $sim_details['version'];
+		    $data['region_uptime'] = $sim_details['uptime'];
+		} else {
+		    $data['region_version'] = 'N/A';
+		    $data['region_uptime'] = 'N/A';
+		}
+		if ( $data['scene_data']['Enabled'] ) {
+		    $data['online'] = lang('sg_region_online');
+		} else {
+		    $data['online'] = lang('sg_region_offline');
+		}
 		if ( $extra == "inline" ) {
 			if ( $this->input->post('is_search') !== null ) {
 				$data['center_map'] = true;
@@ -117,17 +131,16 @@ class Region extends Controller {
 		$data = array();
 		$data['scene_id'] = $uuid;
 	    $data['scene_data'] = $this->simiangrid->get_scene($uuid);
-		$details = $this->simiangrid->simulator_details($uuid);
-		if ( $details != null ) {
-			$data['sim_details'] = $details;
-			if ( $extra == 'feed' ) {
-				$result = array(
-					'sim_fps' => (float) $details['sim_fps'],
-					'phys_fps' => (float) $details['phys_fps']
-				);
-				echo json_encode($result);
-				return;
-			}
+		
+		$this->table->set_heading(lang('sg_region_stat_name'), lang('sg_region_stat_value'));
+		
+		if ( $data['scene_data']['Enabled'] ) {
+    		$details = $this->simiangrid->simulator_details($uuid);
+		    foreach ( $details as $key => $value ) {
+		        if ( $key != 'version' && $key != 'uptime' ) {
+		            $this->table->add_row(lang("sg_stat_$key"), $value);
+		        }
+		    }
 		}
 		return parse_template('region/stats', $data, true);
 	}
