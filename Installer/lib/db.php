@@ -221,7 +221,6 @@
                 if(is_file($dir . $file)) {
                     if(($delimpos = strpos($file,'-')) <= 0) continue;
                     $file_version = substr($file,0,$delimpos);
-userMessage("warn","file version: " . $file_version . " DB version: " . $todo);
                     if ($file_version >= $todo) {
                         $updates[] = $dir . $file;
                     }
