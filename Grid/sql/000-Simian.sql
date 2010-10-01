@@ -132,11 +132,6 @@ CREATE  TABLE IF NOT EXISTS `Generic` (
   PRIMARY KEY (`OwnerID`, `Type`, `Key`) )
 ENGINE = InnoDB;
 
-CREATE TABLE IF NOT EXISTS `Configuration` (
-	`Key` CHAR(50) NOT NULL,
-	`Data` MEDIUMTEXT NOT NULL)
-ENGINE = InnoDB;
-
 CREATE TABLE IF NOT EXISTS `migrations` (
         `name` VARCHAR(100) NOT NULL,
         `version` INT(11) NOT NULL
