@@ -187,14 +187,14 @@ class User extends Controller {
 	        'name' => $grid_user['Name'],
 	        'email' => $grid_user['Email']
 	    );
-		if ( $this->config->item('use_imagick') && extension_loaded('imagick') ) {
-		    if ( isset($grid_user['LLAbout'] ) ) {
-		        $this->user_info['about'] = $grid_user['LLAbout']['About'];
-		        if ( isset($grid_user['LLAbout']['Image']) ) {
-		            $data['avatar_image'] = $uuid;
-		        }
-		    }
-		}
+	    if ( isset($grid_user['LLAbout']) ) {
+	        if ( isset($grid_user['LLAbout']['About']) ) {
+	            $data['user_info']['about'] = $grid_user['LLAbout']['About'];
+            }
+            if ( $this->config->item('use_imagick') && extension_loaded('imagick') && isset($grid_user['LLAbout']['Image']) ) {
+                $data['avatar_image'] = $uuid;
+            }
+	    }
 	    parse_template('user/profile', $data, true);
 	}
 
