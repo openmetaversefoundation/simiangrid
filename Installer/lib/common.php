@@ -62,7 +62,6 @@
             $fh = fopen($real_file, "r");
             fpassthru($fh);
             fclose($fh);
-            echo $data;
         } else {
             errorOut("Invalid Static Content", 404, array("Filename - $real_file"));
         }

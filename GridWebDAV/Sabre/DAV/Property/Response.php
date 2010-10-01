@@ -82,7 +82,7 @@ class Sabre_DAV_Property_Response extends Sabre_DAV_Property  {
         $xresponse = $document->createElementNS('DAV:','d:response');
         $dom->appendChild($xresponse); 
 
-        $uri = explode('/',trim($this->href,'/'));
+        $uri = explode('/',rtrim($this->href,'/'));
 
         // Decoding the uri part-by-part, for instance to make sure we got spaces, and not %20
         foreach($uri as $k=>$item) $uri[$k] = rawurlencode($item);

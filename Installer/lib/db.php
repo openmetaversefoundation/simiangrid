@@ -21,39 +21,23 @@
         
         $db_config = null;
         if ( $db_session != null ) {
-            $db_config = $db_session;
+            return $db_session;
         } else {
-            $config_file = getDbFile();
-            if ( file_exists($config_file) ) {
-                include $config_file;
-                if ( isset($config['db_username']) && isset($config['db_database']) && isset($config['db_hostname']) ) {
-                    $db_config['user'] = $config['db_username'];
-                    $db_config['db'] = $config['db_database'];
-                    $db_config['host'] = $config['db_hostname'];
-                }
-                if ( ! empty($config['db_password']) ) {
-                    $db_config['password'] = $config['db_password'];
-                } else {
-                    $db_config['password'] = '';
-                }
-            }
-        }
-        if ( $db_config == null ) {
             global $defaultDB;
-            $db_config = $defaultDB;
+            return $defaultDB;
         }
         return $db_config;
     }
     
     function configGetDBValue($key) {
         $dbconf = dbGetConfig();
-        if ( $key === "db_username" ) {
+        if ( $key === "db_user" ) {
             return $dbconf['user'];
-        } else if ( $key === "db_password" ) {
+        } else if ( $key === "db_pass" ) {
             return $dbconf['password'];
-        } else if ( $key === "db_hostname" ) {
+        } else if ( $key === "db_host" ) {
             return $dbconf['host'];
-        } else if ( $key === "db_database" ) {
+        } else if ( $key === "db_name" ) {
             return $dbconf['db'];
         } else {
             return null;
@@ -65,20 +49,14 @@
         $result = array();
         $dbconf = dbGetConfig();
         
-        $db_file = getDbFile();
-        
-        $result['db_username']['default'] = $dbconf['user'];
-        $result['db_username']['string'] = "@@DB_USER@@";
-        $result['db_username']['file'] = $db_file;
-        $result['db_password']['default'] = $dbconf['password'];
-        $result['db_password']['string'] = "@@DB_PASSWORD@@";
-        $result['db_password']['file'] = $db_file;
-        $result['db_database']['default'] = $dbconf['db'];
-        $result['db_database']['string'] = "@@DB_NAME@@";
-        $result['db_database']['file'] = $db_file;
-        $result['db_hostname']['default'] = $dbconf['host'];
-        $result['db_hostname']['string'] = "@@DB_HOST@@";
-        $result['db_hostname']['file'] = $db_file;
+        $result['db_user']['default'] = $dbconf['user'];
+        $result['db_user']['string'] = "@@DB_USER@@";
+        $result['db_pass']['default'] = $dbconf['password'];
+        $result['db_pass']['string'] = "@@DB_PASSWORD@@";
+        $result['db_name']['default'] = $dbconf['db'];
+        $result['db_name']['string'] = "@@DB_NAME@@";
+        $result['db_host']['default'] = $dbconf['host'];
+        $result['db_host']['string'] = "@@DB_HOST@@";
         
         return $result;
     }
@@ -124,6 +102,7 @@
     }
 
     function dbRequirementsMet()
+
     {
         if ( $_SESSION['db_version']['check'] === TRUE && $_SESSION['db_version']['db_check'] === TRUE ) {
             return TRUE;
@@ -226,7 +205,7 @@
             }
         }
         if ( ($count == count($dbCheckTables)) || ($count == 0) ) {
-            userMessage("warn","Database Migration Pending");
+            userMessage("Database Migration Pending");
             dbDoMigration($db);
             return TRUE;
         } else {
@@ -257,36 +236,48 @@
     }
 
     function dbDoMigration($db) {
-        global $dbSchemas;
-        $dir = $dbSchemas[0];
-        $todo = 0;
-        $mig_query = 'SELECT MAX(version) FROM `migrations`';
-        if (($result = mysqli_query($db, $mig_query)) != FALSE) {
-            $row = mysql_fetch_array($result, MYSQL_NUM);
-            $todo = $row[0] + 1;  
-        } else {
-            $mserr = mysqli_error($db);
-
-            if ( mysqli_errno($db) != 0 ) {
-            if (strpos($mserr,"doesn't exist")) {
-                    $todo = 0;
-                } else {
-                    userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
-                    return FALSE;
-                }
-            }
+        if ( ! dbSelect($db) ) {
+            return FALSE;
         }
 
-        if($handle = opendir($dir)) { 
-            while($file = readdir($handle)) { 
-                clearstatcache(); 
-                if(is_file($dir . '/' . $file)) {
-                    if(($delimpos = strpos($file,'-')) <= 0) continue;
-                    $file_version = substr($file,0,$delimpos);
-                    if ($file_version >= $todo) {
-                        $updates[] = $dir . '/' . $file;
-                    }
-                }
+	$mig_path = 
+	$mig_query = 'SELECT MAX(version) FROM `migrations`';
+        $result = mysqli_query($db, $mig_query);
+        if ( mysqli_errno($db) != 0 ) {
+	    $mserr = mysqli_error($db);
+	    if(strpos($mserr,"Table") && strpos($mserr,"doesn't exist")) {
+		$todo = 0;
+	    } else {
+                userMessage("error", "Problem checking migration version - " . $mserr);
+		return FALSE;
+	    }
+        }
+	if ($result === FALSE) {
+	    $todo = 0;
+	} else {
+
+	    $row = mysql_fetch_array($result, MYSQL_NUM);
+    	    $todo = $row[0] + 1;  
+	}
+
+	dbMigrate($db, $todo,configGetDBValue('db_name') );
+    }
+
+    function dbMigrate($db, $todo, $store) {
+	global $dbSchemas;
+
+	if($handle = opendir($dbSchemas)) { 
+    	    while($file = readdir($handle)) { 
+	        clearstatcache(); 
+        	if(is_file($dbSchemas . '/' . $file)) {
+		    $file_version = substr($file,0,strpos($file,'-')-1);
+		    if ($file_version >= $todo) {
+		        # omfg execute the sql already :p
+		        dbQueriesFromFile($db,$dir . $file);
+                        userMessage("warn","Migration: " . $file_version);
+		    }
+		}
+
             }
             closedir($handle);
 
@@ -354,7 +345,7 @@
         #    dbQueriesFromFile($db, $schema);
         # }
         
-    dbDoMigration($db);
+        dbDoMigration($db);
 
         foreach ( $dbFixtures as $fixture ) {
             $result = mysqli_multi_query($db, file_get_contents($fixture) );

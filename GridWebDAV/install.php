@@ -27,6 +27,13 @@
     $configOptions['inventory_service']['default'] = "http://localhost/Grid/";
     $configOptions['inventory_service']['string'] = "@@INVENTORY_SERVICE@@";
     $configOptions['inventory_service']['file'] = "config/config.php";
+
+    $configOptions['base_url']['name'] = "Base URL Path";
+    $configOptions['base_url']['description'] = "The base URL path to use when constructing URLs.  Presently 'index.php' is a required suffix.";
+    $configOptions['base_url']['default'] = "/GridWebDAV/index.php";
+    $configOptions['base_url']['string'] = "@@BASE_URL_PATH@@";
+    $configOptions['base_url']['file'] = "config/config.php";
+
     
     require '../Installer/install.php';
 

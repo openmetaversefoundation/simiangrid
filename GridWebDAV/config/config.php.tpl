@@ -14,6 +14,24 @@ $config['asset_service'] = '@@ASSET_SERVICE@@';
 
 /*
 |--------------------------------------------------------------------------
+| WebDAV service base URL path
+|--------------------------------------------------------------------------
+|
+| Set the base path of your WebDAV URL here.  E.g. if you want the webdav
+| service to be accessible via:
+|
+|   http://foo.example.com/GridWebDAV/index.php
+|
+| then set webdav_url_base_path to "/GridWebDAV/index.php" below.
+|
+| Presently the 'index.php' bit is required, both here and in the URL
+| used by clients.
+|
+*/
+$config['webdav_url_base_path'] = '@@BASE_URL_PATH@@';
+
+/*
+|--------------------------------------------------------------------------
 | Error Logging Threshold
 |--------------------------------------------------------------------------
 |
