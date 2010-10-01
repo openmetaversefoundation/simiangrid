@@ -120,8 +120,8 @@ class Auth extends Controller
 		if ($val->run() ) {
 			$user_id = $this->sg_auth->register($val->set_value('username'), $val->set_value('password'), $val->set_value('email'), $val->set_value('avatar_type', 'DefaultAvatar'));
 			if ( $user_id != null ) {
-				if ($this->email_activation) {
-					if ( ! $this->reset_validation($user_id) ) {
+				if ($this->sg_auth->email_activation) {
+					if ( ! $this->sg_auth->reset_validation($user_id) ) {
 						log_message('warning', "SG_Auth Unable to send validation email for $user_id");
 					}
 					$message = lang('sg_auth_register_success_validation');
