@@ -206,7 +206,6 @@
         }
         if ( ($count == count($dbCheckTables)) || ($count == 0) ) {
             userMessage("Database Migration Pending");
-            dbDoMigration($db);
             return TRUE;
         } else {
             return FALSE;
@@ -332,6 +331,9 @@
         if ( ! dbSelect($db) ) {
             return FALSE;
         }
+
+        dbDoMigration($db);
+
         foreach ( $dbFixtures as $fixture ) {
             $result = mysqli_multi_query($db, file_get_contents($fixture) );
             if ( $result === FALSE || mysqli_errno($db) != 0 ) {
