@@ -203,7 +203,7 @@
         if (($result = mysqli_query($db, $mig_query)) != FALSE)
         {
             $row = mysql_fetch_array($result, MYSQL_NUM);
-            $todo = $row[1];
+            $todo = $row[0];
         } else {
             $mserr = mysqli_error($db);
 
