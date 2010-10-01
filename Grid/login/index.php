@@ -696,6 +696,7 @@ function process_login($method_name, $params, $user_data)
     }
 
     $login_success = true;
+    //ensure username has the same case as in the database
     $fullname = $user['Name'];
     if ( ! empty($user['UserFlags']) ) {
 
