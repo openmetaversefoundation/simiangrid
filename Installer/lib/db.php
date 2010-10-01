@@ -244,7 +244,7 @@
         if (($result = mysqli_query($db, $mig_query)) != FALSE)
         {
             $row = mysql_fetch_array($result, MYSQL_NUM);
-            $todo = $row[0];
+            $todo = $row[1];
         } else {
             $mserr = mysqli_error($db);
 
@@ -264,7 +264,6 @@
                 if(is_file($dir . '/' . $file)) {
                     if(($delimpos = strpos($file,'-')) <= 0) continue;
                     $file_version = substr($file,0,$delimpos);
-	echo("DB Ver: " . $todo . " File Ver: " . $file_version);
                     if ($file_version >= $todo) {
                         $updates[] = $dir . '/' . $file;
                     }
