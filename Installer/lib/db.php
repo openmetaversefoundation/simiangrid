@@ -202,7 +202,7 @@
         $mig_query = 'SELECT MAX(version) FROM `migrations`';
         if (($result = mysqli_query($db, $mig_query)) != FALSE)
         {
-            $row = mysql_fetch_array($result, MYSQL_NUM);
+            $row = mysqli_fetch_array($result, MYSQL_NUM);
             $todo = $row[0];
         } else {
             $mserr = mysqli_error($db);
