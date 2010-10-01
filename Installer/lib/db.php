@@ -264,7 +264,7 @@
                 if(is_file($dir . '/' . $file)) {
                     if(($delimpos = strpos($file,'-')) <= 0) continue;
                     $file_version = substr($file,0,$delimpos);
-		userMessage("warn","DB Ver: " . $todo . " File Ver: " . $file_version);
+	echo("DB Ver: " . $todo . " File Ver: " . $file_version);
                     if ($file_version >= $todo) {
                         $updates[] = $dir . '/' . $file;
                     }
