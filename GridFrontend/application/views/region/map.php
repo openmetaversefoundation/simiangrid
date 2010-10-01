@@ -15,7 +15,7 @@
 	<a href="#" id="search_button"><?php echo lang('sg_search'); ?></a>
 	<a href="{site_url}/region"><?php echo lang('sg_menu_regions'); ?></a>
 </div>
-<div style="width: 100%;">
+<div>
 <div id="region_info"></div>
 <div id="search_popup">
 	<table class="display" id="search_results">
