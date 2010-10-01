@@ -235,49 +235,39 @@
         }
     }
 
+
     function dbDoMigration($db) {
-        if ( ! dbSelect($db) ) {
-            return FALSE;
+        global $dbSchemas;
+        $dir = $dbSchemas[0];
+        $todo = 0;
+        $mig_query = 'SELECT MAX(version) FROM `migrations`';
+        if (($result = mysqli_query($db, $mig_query)) != FALSE)
+        {
+            $row = mysql_fetch_array($result, MYSQL_NUM);
+            $todo = $row[0] + 1;
+        } else {
+            $mserr = mysqli_error($db);
+
+            if ( mysqli_errno($db) != 0 ) {
+                if (strpos($mserr,"doesn't exist")) {
+                    $todo = 0;
+                } else {
+                    userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
+                    return FALSE;
+                }
+            }
         }
 
-	$mig_path = 
-	$mig_query = 'SELECT MAX(version) FROM `migrations`';
-        $result = mysqli_query($db, $mig_query);
-        if ( mysqli_errno($db) != 0 ) {
-	    $mserr = mysqli_error($db);
-	    if(strpos($mserr,"Table") && strpos($mserr,"doesn't exist")) {
-		$todo = 0;
-	    } else {
-                userMessage("error", "Problem checking migration version - " . $mserr);
-		return FALSE;
-	    }
-        }
-	if ($result === FALSE) {
-	    $todo = 0;
-	} else {
-
-	    $row = mysql_fetch_array($result, MYSQL_NUM);
-    	    $todo = $row[0] + 1;  
-	}
-
-	dbMigrate($db, $todo,configGetDBValue('db_name') );
-    }
-
-    function dbMigrate($db, $todo, $store) {
-	global $dbSchemas;
-
-	if($handle = opendir($dbSchemas)) { 
-    	    while($file = readdir($handle)) { 
-	        clearstatcache(); 
-        	if(is_file($dbSchemas . '/' . $file)) {
-		    $file_version = substr($file,0,strpos($file,'-')-1);
-		    if ($file_version >= $todo) {
-		        # omfg execute the sql already :p
-		        dbQueriesFromFile($db,$dir . $file);
-                        userMessage("warn","Migration: " . $file_version);
-		    }
-		}
-
+        if($handle = opendir($dir)) {
+            while($file = readdir($handle)) {
+                clearstatcache();
+                if(is_file($dir . '/' . $file)) {
+                    if(($delimpos = strpos($file,'-')) <= 0) continue;
+                    $file_version = substr($file,0,$delimpos);
+                    if ($file_version >= $todo) {
+                        $updates[] = $dir . '/' . $file;
+                    }
+                }
             }
             closedir($handle);
 
@@ -285,11 +275,12 @@
             foreach($updates as $schema) {
                 # omfg execute the sql already :p
                 dbQueriesFromFile($db,$schema);
-                userMessage("warn","Migration: " . $schema);   
+                userMessage("warn","Migration: " . $schema);
             }
-            return TRUE;
         }
+        return TRUE;
     }
+
 
     function dbFlush($db) {
         $done = FALSE;
