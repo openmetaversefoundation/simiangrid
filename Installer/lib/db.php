@@ -332,12 +332,6 @@
         if ( ! dbSelect($db) ) {
             return FALSE;
         }
-        # foreach ( $dbSchemas as $schema ) {
-        #    dbQueriesFromFile($db, $schema);
-        # }
-        
-        dbDoMigration($db);
-
         foreach ( $dbFixtures as $fixture ) {
             $result = mysqli_multi_query($db, file_get_contents($fixture) );
             if ( $result === FALSE || mysqli_errno($db) != 0 ) {
