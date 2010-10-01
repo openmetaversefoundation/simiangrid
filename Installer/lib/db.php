@@ -172,7 +172,7 @@
             userMessage("error", "Problem selecting database " . $schema . " - " . mysqli_error($db));
             return FALSE;
         } else {
-            return dbEmpty($db);
+            return TRUE;
         }
     }
     
@@ -194,47 +194,6 @@
         return $table_list;
 
     }
-
-    function dbComplete($tables)
-    {
-        global $dbCheckTables;
-        $count = 0;
-        foreach ( $tables as $table ) {
-            if ( array_search($table, $dbCheckTables) !== FALSE ) {
-                $count++;
-            }
-        }
-        if ( ($count == count($dbCheckTables)) || ($count == 0) ) {
-            userMessage("warn","Database Migration Pending");
-            return TRUE;
-        } else {
-            return FALSE;
-        }
-    }
-        
-    function dbEmpty($db)
-    {
-        $_SESSION['db_version']['skip_schema'] = FALSE;
-        $tables = dbListRelevantTables($db);
-        if ( $tables === FALSE ) {
-            userMessage("error", "Problem scanning database - " . mysqli_error($db) );
-            return FALSE;
-        }
-        if ( count($tables) == 0 ) {
-            return TRUE;
-        } else {
-            if ( dbComplete($tables) ) {
-                userMessage("warn", "Database already populated");
-                $_SESSION['db_version']['skip_schema'] = TRUE;
-                return TRUE;
-            } else {
-                userMessage("warn", "Database contains non-simian tables");
-                $_SESSION['db_version']['skip_schema'] = FALSE;
-                return TRUE;
-            }
-        }
-    }
-
 
     function dbDoMigration($db) {
         global $dbSchemas;
