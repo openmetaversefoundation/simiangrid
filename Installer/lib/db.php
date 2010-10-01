@@ -208,9 +208,7 @@
             $mserr = mysqli_error($db);
 
             if ( mysqli_errno($db) != 0 ) {
-                if (strpos($mserr,"doesn't exist")) {
-                    $todo = 0;
-                } else {
+                if (!strpos($mserr,"doesn't exist")) {
                     userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
                     return FALSE;
                 }
@@ -220,11 +218,12 @@
         if($handle = opendir($dir)) {
             while($file = readdir($handle)) {
                 clearstatcache();
-                if(is_file($dir . '/' . $file)) {
+                if(is_file($dir . $file)) {
                     if(($delimpos = strpos($file,'-')) <= 0) continue;
                     $file_version = substr($file,0,$delimpos);
+userMessage("warn","file version: " . $file_version . " DB version: " . $todo);
                     if ($file_version >= $todo) {
-                        $updates[] = $dir . '/' . $file;
+                        $updates[] = $dir . $file;
                     }
                 }
             }
