@@ -54,9 +54,9 @@ function osd_val($key, $value)
   else if (is_numeric($value))
     {
       if (in_array($value, $nums))
-	$out .= $value;
+    $out .= $value;
       else
-	$out .= js_escape_string($value);
+    $out .= js_escape_string($value);
     }
   else if ($key == "ExtraData")
     {
@@ -75,7 +75,7 @@ function osd_val($key, $value)
       $out .= sprintf("?%s?", js_escape_string($value));
     }
   return $out;
-		
+        
 }
 
 class InventoryFolder extends Inventory implements IOSD
@@ -102,7 +102,7 @@ class InventoryFolder extends Inventory implements IOSD
             }
             else
             {
-	      $out.= osd_val($key, $value);
+          $out.= osd_val($key, $value);
             }
             
             $out .= ',' . "";
@@ -146,7 +146,7 @@ class InventoryItem extends Inventory implements IOSD
             }
             else
             {
-	      $out .= osd_val($key, $value);
+          $out .= osd_val($key, $value);
             }
             
             $out .= ',' . "";

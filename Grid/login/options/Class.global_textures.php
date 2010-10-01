@@ -44,9 +44,9 @@ class global_textures
         $config =& get_config();
         
         $result[] = array(
-        	'sun_texture_id' => $config['sun_texture_id'],
-        	'moon_texture_id' => $config['moon_texture_id'],
-        	'cloud_texture_id' => $config['cloud_texture_id']);
+            'sun_texture_id' => $config['sun_texture_id'],
+            'moon_texture_id' => $config['moon_texture_id'],
+            'cloud_texture_id' => $config['cloud_texture_id']);
         
         return $result;
     }

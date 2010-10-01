@@ -75,9 +75,9 @@ class GetScenes implements IGridService
             Vector3::TryParse($params["MaxPosition"], $this->MaxPosition))
         {
             $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
-					CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,
-					CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
-					FROM Scenes WHERE MBRIntersects(GeomFromText(:XY), XYPlane)";
+                    CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,
+                    CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
+                    FROM Scenes WHERE MBRIntersects(GeomFromText(:XY), XYPlane)";
             
             if (isset($params["Enabled"]) && $params["Enabled"])
                 $sql .= " AND Enabled=1";

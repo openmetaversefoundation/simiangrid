@@ -42,8 +42,8 @@ class AddGeneric implements IGridService
         if (isset($params["OwnerID"], $params["Type"], $params["Key"], $params["Value"]) && UUID::TryParse($params["OwnerID"], $ownerID))
         {
             $sql = "INSERT INTO Generic (`OwnerID`, `Type`, `Key`, `Value`)
-            		VALUES (:OwnerID, :Type, :Key, :Value)
-            		ON DUPLICATE KEY UPDATE `Type`=VALUES(`Type`), `Key`=VALUES(`Key`), `Value`=VALUES(`Value`)";
+                    VALUES (:OwnerID, :Type, :Key, :Value)
+                    ON DUPLICATE KEY UPDATE `Type`=VALUES(`Type`), `Key`=VALUES(`Key`), `Value`=VALUES(`Value`)";
             
             $sth = $db->prepare($sql);
             

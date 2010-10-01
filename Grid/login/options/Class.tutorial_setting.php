@@ -43,8 +43,8 @@ class tutorial_setting
     public function GetResults()
     {
         $result[] = array(
-        	'tutorial_url' => "http://help.simian.org/orientation",
-        	'use_tutorial' => ''
+            'tutorial_url' => "http://help.simian.org/orientation",
+            'use_tutorial' => ''
         );
         
         return $result;

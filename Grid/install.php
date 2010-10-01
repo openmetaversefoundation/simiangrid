@@ -30,7 +30,7 @@
         'Sessions',
         'UserData',
         'Users',
-	'migrations'
+    'migrations'
     );
     
     $dbSchemas = array('sql/');

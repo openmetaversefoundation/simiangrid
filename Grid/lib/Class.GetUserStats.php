@@ -38,22 +38,22 @@ class GetUserStats implements IGridService
 
     public function Execute($db, $params)
     {
-		$sql = "SELECT COUNT(Users.ID) AS userCount FROM Users";
-		$sth = $db->prepare($sql);
-		if ( $sth->execute() ) {
-			if ( $sth->rowCount() == 1 ) {
-				$obj = $sth->fetchObject();
-				header("Content-Type: application/json", true);
+        $sql = "SELECT COUNT(Users.ID) AS userCount FROM Users";
+        $sth = $db->prepare($sql);
+        if ( $sth->execute() ) {
+            if ( $sth->rowCount() == 1 ) {
+                $obj = $sth->fetchObject();
+                header("Content-Type: application/json", true);
                 echo '{"Success":true,"UserCount":' . $obj->userCount . '}';
                 exit();
-			}
-		} else {
-	        log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-	        log_message('debug', sprintf("Query: %s", $sql));
+            }
+        } else {
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
         
-	        header("Content-Type: application/json", true);
-	        echo '{ "Message": "Database query error" }';
-	        exit();
-		}
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Database query error" }';
+            exit();
+        }
     }
 }

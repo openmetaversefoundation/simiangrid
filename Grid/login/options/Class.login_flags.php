@@ -48,10 +48,10 @@ class login_flags
         $everLoggedIn = isset($this->User->LastLocation);
         
         $result[] = array(
-        	'stipend_since_login' => 'N',
-        	'gendered' => 'Y',
-        	'daylight_savings' => (date('I')) ? 'Y' : 'N',
-        	'ever_logged_in' => ($everLoggedIn) ? 'Y' : 'N'
+            'stipend_since_login' => 'N',
+            'gendered' => 'Y',
+            'daylight_savings' => (date('I')) ? 'Y' : 'N',
+            'ever_logged_in' => ($everLoggedIn) ? 'Y' : 'N'
         );
         
         return $result;

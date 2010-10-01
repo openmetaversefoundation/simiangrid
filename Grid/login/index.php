@@ -100,10 +100,10 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     
     // JSON decode the response
     $response = json_decode($response, TRUE);
-	
-	if (!isset($response))
-	    $response = array('Message' => 'Invalid or missing response');
-	
+    
+    if (!isset($response))
+        $response = array('Message' => 'Invalid or missing response');
+    
     return $response;
 }
 
@@ -115,10 +115,10 @@ function authorize_identity($name, $passHash)
     $userID = NULL;
     
     $response = webservice_post($userService, array(
-    	'RequestMethod' => 'AuthorizeIdentity',
-    	'Identifier' => $name,
-    	'Credential' => $passHash,
-    	'Type' => 'md5hash')
+        'RequestMethod' => 'AuthorizeIdentity',
+        'Identifier' => $name,
+        'Credential' => $passHash,
+        'Type' => 'md5hash')
     );
     
     if (!empty($response['Success']))
@@ -133,8 +133,8 @@ function get_user($userID)
     $userService = $config['user_service'];
     
     $response = webservice_post($userService, array(
-    	'RequestMethod' => 'GetUser',
-    	'UserID' => $userID)
+        'RequestMethod' => 'GetUser',
+        'UserID' => $userID)
     );
     
     if (!empty($response['Success']) && !empty($response['User']))
@@ -165,8 +165,8 @@ function get_session($userID)
     $userService = $config['user_service'];
         
     $response = webservice_post($userService, array(
-    	'RequestMethod' => 'GetSession',
-    	'UserID' => $userID)
+        'RequestMethod' => 'GetSession',
+        'UserID' => $userID)
     );
     
     if (!empty($response['Success']))
@@ -181,8 +181,8 @@ function add_session($userID, &$sessionID, &$secureSessionID)
     $userService = $config['user_service'];
     
     $response = webservice_post($userService, array(
-    	'RequestMethod' => 'AddSession',
-    	'UserID' => $userID)
+        'RequestMethod' => 'AddSession',
+        'UserID' => $userID)
     );
     
     if (!empty($response['Success']) &&
@@ -201,8 +201,8 @@ function remove_session($sessionID)
     $userService = $config['user_service'];
     
     $response = webservice_post($userService, array(
-    	'RequestMethod' => 'RemoveSession',
-    	'SessionID' => $sessionID)
+        'RequestMethod' => 'RemoveSession',
+        'SessionID' => $sessionID)
     );
     
     if (!empty($response['Success']))
@@ -235,9 +235,9 @@ function lookup_scene_by_id($sceneID)
     $gridService = $config['grid_service'];
     
     $response = webservice_post($gridService, array(
-    	'RequestMethod' => 'GetScene',
-    	'SceneID' => $sceneID,
-    	'Enabled' => '1')
+        'RequestMethod' => 'GetScene',
+        'SceneID' => $sceneID,
+        'Enabled' => '1')
     );
     
     if (!empty($response['Success']))
@@ -252,10 +252,10 @@ function lookup_scene_by_name($name)
     $gridService = $config['grid_service'];
     
     $response = webservice_post($gridService, array(
-    	'RequestMethod' => 'GetScenes',
-    	'NameQuery' => $name,
-    	'Enabled' => '1',
-    	'MaxNumber' => '1')
+        'RequestMethod' => 'GetScenes',
+        'NameQuery' => $name,
+        'Enabled' => '1',
+        'MaxNumber' => '1')
     );
     
     if (!empty($response['Success']) && is_array($response['Scenes']) && count($response['Scenes']) > 0)
@@ -270,10 +270,10 @@ function lookup_scene_by_position($position, $findClosest = false)
     $gridService = $config['grid_service'];
     
     $response = webservice_post($gridService, array(
-    	'RequestMethod' => 'GetScene',
-    	'Position' => $position,
+        'RequestMethod' => 'GetScene',
+        'Position' => $position,
         'FindClosest' => ($findClosest ? '1' : '0'),
-    	'Enabled' => '1')
+        'Enabled' => '1')
     );
     
     if (!empty($response['Success']))
@@ -393,7 +393,7 @@ function get_inventory($userID, &$rootFolderID, &$items)
     $rootFolderID = $userID;
     
     $response = webservice_post($inventoryService, array(
-    	'RequestMethod' => 'GetInventoryNode',
+        'RequestMethod' => 'GetInventoryNode',
         'ItemID' => $rootFolderID,
         'OwnerID' => $userID,
         'IncludeFolders' => '1',
@@ -420,8 +420,8 @@ function get_friends($userID)
     
     // Load the list of friends and their granted permissions
     $response = webservice_post($userService, array(
-    	'RequestMethod' => 'GetGenerics',
-    	'OwnerID' => $userID,
+        'RequestMethod' => 'GetGenerics',
+        'OwnerID' => $userID,
         'Type' => 'Friend')
     );
     
@@ -438,8 +438,8 @@ function get_friends($userID)
         
         // Load the permissions those friends have granted to this user
         $response = webservice_post($userService, array(
-        	'RequestMethod' => 'GetGenerics',
-        	'Key' => $userID,
+            'RequestMethod' => 'GetGenerics',
+            'Key' => $userID,
             'Type' => 'Friend')
         );
         
@@ -542,7 +542,7 @@ function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$st
     }
     else
     {
-    	log_message('info', 'No valid default_location set');
+        log_message('info', 'No valid default_location set');
     }
     
     // Last resort lookup
@@ -627,10 +627,10 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
     }
     
     $response = webservice_post($regionUrl, array(
-    	'agent_id' => $userID,
-    	'caps_path' => $capsPath,
-    	'child' => false,
-    	'circuit_code' => $circuitCode,
+        'agent_id' => $userID,
+        'caps_path' => $capsPath,
+        'child' => false,
+        'circuit_code' => $circuitCode,
         'first_name' => $firstName,
         'last_name' => $lastName,
         'session_id' => $sessionID,
@@ -674,7 +674,7 @@ function process_login($method_name, $params, $user_data)
         empty($req["first"]) || empty($req["last"]) || empty($req["passwd"]))
     {
         return array('reason' => 'key' , 'login' => 'false' , 'message' =>
-        	"Login request must contain a first name, last name, and password and they cannot be blank");
+            "Login request must contain a first name, last name, and password and they cannot be blank");
     }
     
     // Authorize the first/last/password and resolve it to a user account UUID
@@ -682,7 +682,7 @@ function process_login($method_name, $params, $user_data)
     if (empty($userID))
     {
         return array('reason' => 'key' , 'login' => 'false' , 'message' =>
-        	"Sorry! We couldn't log you in.\nPlease check to make sure you entered the right\n    * Account name\n    * Password\nAlso, please make sure your Caps Lock key is off.");
+            "Sorry! We couldn't log you in.\nPlease check to make sure you entered the right\n    * Account name\n    * Password\nAlso, please make sure your Caps Lock key is off.");
     }
     
     log_message('debug', sprintf("Authorization success for %s", $userID));
@@ -692,42 +692,43 @@ function process_login($method_name, $params, $user_data)
     if (empty($user))
     {
         return array('reason' => 'key', 'login' => 'false', 'message' =>
-        	"Sorry! We couldn't log you in. User account information could not be retrieved. If this problem persists, please contact the grid operator.");
+            "Sorry! We couldn't log you in. User account information could not be retrieved. If this problem persists, please contact the grid operator.");
     }
 
-	$login_success = true;
+    $login_success = true;
+    $fullname = $user['Name'];
     if ( ! empty($user['UserFlags']) ) {
 
-		$userflags = json_decode($user['UserFlags'], TRUE);
-		if ( ! empty($userflags['Suspended']) && (bool) $userflags['Suspended'] === true ) {
-			$login_success = false;
-			log_message('debug', "User " . $user['Name'] . " is banned.");
-		} else {
-			if ( $user['AccessLevel'] < $config['access_level_minimum'] ) {
-				if ( $config['validation_required'] ) {
-					if ( ! empty($userflags['Validated']) ) {
-						$login_success = $userflags['Validated'];
-					} else {
-						$login_success = false;
-					}
-					if ( ! $login_success ) {
-						log_message('debug', "User " . $user['Name'] . " has not validated their email.");
-					}
-				}
-			}
-		}
-	} else if ( $user['AccessLevel'] < $config['access_level_minimum'] && $config['validation_required'] ) {
-		$login_success = false;
-		log_message('debug', "User " . $user['Name'] . " has not validated their email.");
-	}
+        $userflags = json_decode($user['UserFlags'], TRUE);
+        if ( ! empty($userflags['Suspended']) && (bool) $userflags['Suspended'] === true ) {
+            $login_success = false;
+            log_message('debug', "User " . $user['Name'] . " is banned.");
+        } else {
+            if ( $user['AccessLevel'] < $config['access_level_minimum'] ) {
+                if ( $config['validation_required'] ) {
+                    if ( ! empty($userflags['Validated']) ) {
+                        $login_success = $userflags['Validated'];
+                    } else {
+                        $login_success = false;
+                    }
+                    if ( ! $login_success ) {
+                        log_message('debug', "User " . $user['Name'] . " has not validated their email.");
+                    }
+                }
+            }
+        }
+    } else if ( $user['AccessLevel'] < $config['access_level_minimum'] && $config['validation_required'] ) {
+        $login_success = false;
+        log_message('debug', "User " . $user['Name'] . " has not validated their email.");
+    }
     
-	if ( ! $login_success ) {
-    	return array(
-			'reason' => 'key', 
-			'login' => 'false', 
-			'message' => "Sorry!  We couldn't log you in.  User account has been suspended or is not yet activated.  If this problem persists, please contact the grid operator."
-		);
-	}
+    if ( ! $login_success ) {
+        return array(
+            'reason' => 'key', 
+            'login' => 'false', 
+            'message' => "Sorry!  We couldn't log you in.  User account has been suspended or is not yet activated.  If this problem persists, please contact the grid operator."
+        );
+    }
 
     $lastLocation = null;
     if (isset($user['LastLocation']))
@@ -759,7 +760,7 @@ function process_login($method_name, $params, $user_data)
         {
             log_message('warn', "Failed to remove session for $fullname ($userID)");
             return array('reason' => 'presence', 'login' => 'false',
-        		'message' => "You are already logged in from another location. Please try again later.");
+                'message' => "You are already logged in from another location. Please try again later.");
         }
     }
     else
@@ -774,7 +775,7 @@ function process_login($method_name, $params, $user_data)
     if (!add_session($userID, $sessionID, $secureSessionID))
     {
         return array('reason' => 'presence', 'login' => 'false',
-        	'message' => "Failed to create a login session. Please try again later.");
+            'message' => "Failed to create a login session. Please try again later.");
     }
     
     log_message('debug', sprintf("Session creation success for %s (%s)", $fullname, $userID));
@@ -788,7 +789,7 @@ function process_login($method_name, $params, $user_data)
         !isset($scene->ExtraData['ExternalAddress'], $scene->ExtraData['ExternalPort']))
     {
         return array('reason' => 'presence', 'login' => 'false',
-        	'message' => "Error connecting to the grid. No suitable region to connect to.");
+            'message' => "Error connecting to the grid. No suitable region to connect to.");
     }
     
     $lludpAddress = $scene->ExtraData['ExternalAddress'];
@@ -807,7 +808,7 @@ function process_login($method_name, $params, $user_data)
         $sessionID, $secureSessionID, $startPosition, $seedCapability))
     {
         return array('reason' => 'presence', 'login' => 'false',
-        	'message' => "Failed to establish a presence in the destination region. Please try again later.");
+            'message' => "Failed to establish a presence in the destination region. Please try again later.");
     }
     
     log_message('debug', sprintf("Presence creation success for %s (%s) in %s with seedcap %s",

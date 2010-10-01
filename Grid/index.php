@@ -175,7 +175,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
 {
     if (isset($_FILES['Asset']) && count($_FILES) == 1)
     {
-    	// Asset upload
+        // Asset upload
         $asset = new Asset();
         
         if (!isset($_POST['AssetID']) || !UUID::TryParse($_POST['AssetID'], $asset->ID))
@@ -200,7 +200,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
             else
                 $asset->Public = TRUE;
             
-			$gMethodName = 'AddAsset';
+            $gMethodName = 'AddAsset';
             execute_command('AddAsset', $db, $asset);
             exit();
         }
@@ -214,23 +214,23 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
         }
     }
     else if (isset($_FILES['Tile']) && count($_FILES) == 1 &&
-    	$_FILES['Tile']['type'] == "image/png" &&
-    	isset($_POST['X']) && isset($_POST['Y']))
+        $_FILES['Tile']['type'] == "image/png" &&
+        isset($_POST['X']) && isset($_POST['Y']))
     {
-    	// Map tile upload
+        // Map tile upload
         $tile = new MapTile();
         
         $tile->X = (int)$_POST['X'];
         $tile->Y = (int)$_POST['Y'];
         
-    	if (!empty($_FILES['Tile']['tmp_name']))
+        if (!empty($_FILES['Tile']['tmp_name']))
         {
             $tmpName = $_FILES['Tile']['tmp_name'];
             $fp = fopen($tmpName, 'r');
             $tile->Data = fread($fp, filesize($tmpName));
             fclose($fp);
             
-			$gMethodName = 'AddMapTile';
+            $gMethodName = 'AddMapTile';
             execute_command('AddMapTile', null, $tile);
             exit();
         }
@@ -261,7 +261,7 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'DELETE') !== FALSE)
         // Asset delete
         $asset = new Asset();
         $asset->ID = $uuid;
-		$gMethodName = 'RemoveAsset';
+        $gMethodName = 'RemoveAsset';
         execute_command('RemoveAsset', $db, $asset);
         exit();
     }
