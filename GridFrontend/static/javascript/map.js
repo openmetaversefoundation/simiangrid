@@ -66,15 +66,15 @@ function convert_grid_pos(x, y)
 {
     var real_x = ( x * 2 ) * scale;
     var real_y = ( y * 2 ) * scale;
-    return new google.maps.LatLng(-real_x, real_y);
+    return new google.maps.LatLng(-real_y, real_x);
 }
 
 function handle_click(event)
 {
-    var x = event.latLng.b;
-    var y = event.latLng.c;
-    var real_x = 0 - Math.ceil(( x / scale) / 2);
-    var real_y = Math.floor(( y / scale) / 2);
+    var x = event.latLng.lng();
+    var y = event.latLng.lat();
+    var real_x = Math.ceil(( x / scale) / 2) - 1;
+    var real_y = 0 - Math.floor(( y / scale) / 2) - 1;
     CLICK_HANDLER(real_x, real_y);
 }
 
@@ -129,6 +129,6 @@ function load_search_result(scene_id)
 	var data = {
 		'is_search' : true
 	};
-    div_loader("info/" + scene_id + "/inline", "#region_info", data);
+    div_loader("details/" + scene_id + "/inline", "#region_info", data);
 	$("#region_info").dialog('open');
 }

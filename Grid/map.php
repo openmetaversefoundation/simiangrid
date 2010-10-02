@@ -56,25 +56,25 @@ function getRequestedTileName()
 
 function getMimeType($file)
 {
-	$raw_file = explode(".", $file);
-	if ( $raw_file[1] == "jpg" ) {
-		return "image/jpeg";
-	} else if ( $raw_file[1] == "png" ) {
-		return "image/png";
-	} else {
+    $raw_file = explode(".", $file);
+    if ( $raw_file[1] == "jpg" ) {
+        return "image/jpeg";
+    } else if ( $raw_file[1] == "png" ) {
+        return "image/png";
+    } else {
         header("HTTP/1.1 500 What Is This");
         exit();
-	}
+    }
 }
 
 function drawBlankTile()
 {
-	$image = imagecreate(256,256);
-	$watercolor = imagecolorallocate($image, 29, 71, 95); #1D475F used by frontend map.js
-	imagefill($image, 0, 0 , $watercolor);
-	header("Content-Type: image/png");
-	imagepng($image);
-	imagedestroy($image);
+    $image = imagecreate(256,256);
+    $watercolor = imagecolorallocate($image, 29, 71, 95); #1D475F used by frontend map.js
+    imagefill($image, 0, 0 , $watercolor);
+    header("Content-Type: image/png");
+    imagepng($image);
+    imagedestroy($image);
 }
 
 $config =& get_config();
@@ -85,11 +85,11 @@ $map_dir =  (!empty($config['map_path'])) ? $config['map_path'] : BASEPATH . 'ma
 $filename = $map_dir. "/$map_tile";
 
 if ( file_exists($filename) ) {
-	$mime_type = getMimeType($map_tile);
-	header("Content-Type: $mime_type");
-	readfile($filename);
+    $mime_type = getMimeType($map_tile);
+    header("Content-Type: $mime_type");
+    readfile($filename);
 } else {
-	drawBlankTile();
+    drawBlankTile();
 }
 
 ?>

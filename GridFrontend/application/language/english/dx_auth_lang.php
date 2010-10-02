@@ -1,8 +1,8 @@
 <?php
 
 /*
-	It is recommended for you to change 'auth_login_incorrect_password' and 'auth_login_username_not_exist' into something vague.
-	For example: Username and password do not match.
+    It is recommended for you to change 'auth_login_incorrect_password' and 'auth_login_username_not_exist' into something vague.
+    For example: Username and password do not match.
 */
 
 $lang['auth_login_incorrect_password'] = "Your password was incorrect.";

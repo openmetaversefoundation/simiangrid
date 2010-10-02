@@ -10,7 +10,7 @@
 |
 */
 $mimes = array(
-	'image/x-j2c' => 0,
+    'image/x-j2c' => 0,
     'image/jp2' => 0,
     'application/ogg' => 1,
     'application/vnd.ll.callingcard' => 2,

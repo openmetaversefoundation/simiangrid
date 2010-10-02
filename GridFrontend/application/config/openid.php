@@ -36,8 +36,8 @@ $config['openid_sreg_required'] = array();
 $config['openid_sreg_optional'] = array('fullname', 'email');
 
 $config['openid_ax_required'] = array(
-	'http://axschema.org/contact/email' => 'email',
-	'http://axschema.org/namePerson/first' => 'first',
-	'http://axschema.org/namePerson/last' => 'last'
+    'http://axschema.org/contact/email' => 'email',
+    'http://axschema.org/namePerson/first' => 'first',
+    'http://axschema.org/namePerson/last' => 'last'
 );
 $config['openid_ax_optional'] = array();

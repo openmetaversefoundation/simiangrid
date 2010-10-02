@@ -1,4 +1,5 @@
 {
+
 	function load_via_post(url, destination, data)
 	{
 		var div_loader = post_div_loader();
@@ -95,4 +96,5 @@
 		$("link[media='screen'][id='jquery_ui']").attr("href", "static/styles/" + style + "/jquery-ui.css");
 		$("link[media='screen'][id='jquery_qtip']").attr("href", "static/styles/" + style + "/jquery.qtip.css");
 	}
+
 }

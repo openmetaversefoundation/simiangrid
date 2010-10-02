@@ -72,39 +72,39 @@ class DefaultAvatar implements IAvatarInventoryFolder
   {
     $skeleton =
       array(
-	    array('ID' => $this->RootID, 'ParentID' => UUID::Parse(UUID::Zero), 'Name' => $this->Name,
-		  'PreferredContentType' => 'application/vnd.ll.folder'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Animations',
-		  'PreferredContentType' => 'application/vnd.ll.animation'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Body Parts',
-		  'PreferredContentType' => 'application/vnd.ll.bodypart'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Calling Cards',
-		  'PreferredContentType' => 'application/vnd.ll.callingcard'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Gestures',
-		  'PreferredContentType' => 'application/vnd.ll.gesture'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Landmarks',
-		  'PreferredContentType' => 'application/vnd.ll.landmark'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Lost and Found',
-		  'PreferredContentType' => 'application/vnd.ll.lostandfoundfolder'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Notecards',
-		  'PreferredContentType' => 'application/vnd.ll.notecard'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Objects',
-		  'PreferredContentType' => 'application/vnd.ll.primitive'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Photo Album',
-		  'PreferredContentType' => 'application/vnd.ll.snapshotfolder'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Scripts',
-		  'PreferredContentType' => 'application/vnd.ll.lsltext'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Sounds',
-		  'PreferredContentType' => 'application/ogg'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Textures',
-		  'PreferredContentType' => 'image/x-j2c'),
-	    array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Trash',
-		  'PreferredContentType' => 'application/vnd.ll.trashfolder'),
-	    array('ID' => $this->ClothingID, 'ParentID' => $this->RootID, 'Name' => 'Clothing',
-		  'PreferredContentType' => 'application/vnd.ll.clothing'),
-	    array('ID' => $this->OutfitID, 'ParentID' => $this->ClothingID, 'Name' => 'Default Outfit',
-		  'PreferredContentType' => 'application/octet-stream')
-	    );
+        array('ID' => $this->RootID, 'ParentID' => UUID::Parse(UUID::Zero), 'Name' => $this->Name,
+          'PreferredContentType' => 'application/vnd.ll.folder'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Animations',
+          'PreferredContentType' => 'application/vnd.ll.animation'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Body Parts',
+          'PreferredContentType' => 'application/vnd.ll.bodypart'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Calling Cards',
+          'PreferredContentType' => 'application/vnd.ll.callingcard'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Gestures',
+          'PreferredContentType' => 'application/vnd.ll.gesture'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Landmarks',
+          'PreferredContentType' => 'application/vnd.ll.landmark'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Lost and Found',
+          'PreferredContentType' => 'application/vnd.ll.lostandfoundfolder'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Notecards',
+          'PreferredContentType' => 'application/vnd.ll.notecard'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Objects',
+          'PreferredContentType' => 'application/vnd.ll.primitive'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Photo Album',
+          'PreferredContentType' => 'application/vnd.ll.snapshotfolder'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Scripts',
+          'PreferredContentType' => 'application/vnd.ll.lsltext'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Sounds',
+          'PreferredContentType' => 'application/ogg'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Textures',
+          'PreferredContentType' => 'image/x-j2c'),
+        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Trash',
+          'PreferredContentType' => 'application/vnd.ll.trashfolder'),
+        array('ID' => $this->ClothingID, 'ParentID' => $this->RootID, 'Name' => 'Clothing',
+          'PreferredContentType' => 'application/vnd.ll.clothing'),
+        array('ID' => $this->OutfitID, 'ParentID' => $this->ClothingID, 'Name' => 'Default Outfit',
+          'PreferredContentType' => 'application/octet-stream')
+        );
 
     return $skeleton;
   }
@@ -113,19 +113,19 @@ class DefaultAvatar implements IAvatarInventoryFolder
   {
     $items =
       array(
-	    array('ID' => $this->HairID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Hair',
-		  'AssetID' => 'dc675529-7ba5-4976-b91d-dcb9e5e36188'),
-	    array('ID' => $this->PantsID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Pants',
-		  'AssetID' => '3e8ee2d6-4f21-4a55-832d-77daa505edff'),
-	    array('ID' => $this->ShapeID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Shape',
-		  'AssetID' => '530a2614-052e-49a2-af0e-534bb3c05af0'),
-	    array('ID' => $this->ShirtID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Shirt',
-		  'AssetID' => '6a714f37-fe53-4230-b46f-8db384465981'),
-	    array('ID' => $this->SkinID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Skin',
-		  'AssetID' => '5f787f25-f761-4a35-9764-6418ee4774c4'),
-	    array('ID' => $this->EyesID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Eyes',
-		  'AssetID' => '78d20332-9b07-44a2-bf74-3b368605f4b5')
-	    );
+        array('ID' => $this->HairID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Hair',
+          'AssetID' => 'dc675529-7ba5-4976-b91d-dcb9e5e36188'),
+        array('ID' => $this->PantsID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Pants',
+          'AssetID' => '3e8ee2d6-4f21-4a55-832d-77daa505edff'),
+        array('ID' => $this->ShapeID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Shape',
+          'AssetID' => '530a2614-052e-49a2-af0e-534bb3c05af0'),
+        array('ID' => $this->ShirtID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Shirt',
+          'AssetID' => '6a714f37-fe53-4230-b46f-8db384465981'),
+        array('ID' => $this->SkinID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Skin',
+          'AssetID' => '5f787f25-f761-4a35-9764-6418ee4774c4'),
+        array('ID' => $this->EyesID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Eyes',
+          'AssetID' => '78d20332-9b07-44a2-bf74-3b368605f4b5')
+        );
     
     return $items;
   }
@@ -135,34 +135,34 @@ class DefaultAvatar implements IAvatarInventoryFolder
     // Update this users appearance in the user service
     $appearance =
       array(
-	    'Height' => 1.771488,
-	    'ShapeItem' => $this->ShapeID,
-	    'ShapeAsset' => '530a2614-052e-49a2-af0e-534bb3c05af0',
-	    'EyesItem' => $this->EyesID,
-	    'EyesAsset' => '78d20332-9b07-44a2-bf74-3b368605f4b5',
-	    //'GlovesItem' => '',
-	    //'GlovesAsset' => '',
-	    'HairItem' => $this->HairID,
-	    'HairAsset' => 'dc675529-7ba5-4976-b91d-dcb9e5e36188',
-	    //'JacketItem' => '',
-	    //'JacketAsset' => '',
-	    'PantsItem' => $this->PantsID,
-	    'PantsAsset' => '3e8ee2d6-4f21-4a55-832d-77daa505edff',
-	    'ShirtItem' => $this->ShirtID,
-	    'ShirtAsset' => '6a714f37-fe53-4230-b46f-8db384465981',
-	    //'ShoesItem' => '',
-	    //'ShoesAsset' => '',
-	    'SkinItem' => $this->SkinID,
-	    'SkinAsset' => '5f787f25-f761-4a35-9764-6418ee4774c4'
-	    //'SkirtItem' => '',
-	    //'SkirtAsset' => '',
-	    //'SocksItem' => '',
-	    //'SocksAsset' => '',
-	    //'UnderpantsItem' => '',
-	    //'UnderpantsAsset' => '',
-	    //'UndershirtItem' => '',
-	    //'UndershirtAsset' => ''
-	    );
+        'Height' => 1.771488,
+        'ShapeItem' => $this->ShapeID,
+        'ShapeAsset' => '530a2614-052e-49a2-af0e-534bb3c05af0',
+        'EyesItem' => $this->EyesID,
+        'EyesAsset' => '78d20332-9b07-44a2-bf74-3b368605f4b5',
+        //'GlovesItem' => '',
+        //'GlovesAsset' => '',
+        'HairItem' => $this->HairID,
+        'HairAsset' => 'dc675529-7ba5-4976-b91d-dcb9e5e36188',
+        //'JacketItem' => '',
+        //'JacketAsset' => '',
+        'PantsItem' => $this->PantsID,
+        'PantsAsset' => '3e8ee2d6-4f21-4a55-832d-77daa505edff',
+        'ShirtItem' => $this->ShirtID,
+        'ShirtAsset' => '6a714f37-fe53-4230-b46f-8db384465981',
+        //'ShoesItem' => '',
+        //'ShoesAsset' => '',
+        'SkinItem' => $this->SkinID,
+        'SkinAsset' => '5f787f25-f761-4a35-9764-6418ee4774c4'
+        //'SkirtItem' => '',
+        //'SkirtAsset' => '',
+        //'SocksItem' => '',
+        //'SocksAsset' => '',
+        //'UnderpantsItem' => '',
+        //'UnderpantsAsset' => '',
+        //'UndershirtItem' => '',
+        //'UndershirtAsset' => ''
+        );
 
     return $appearance;
   }

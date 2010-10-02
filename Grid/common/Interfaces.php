@@ -60,9 +60,9 @@ class Asset
 
 class MapTile
 {
-	public $X;
-	public $Y;
-	public $Data;
+    public $X;
+    public $Y;
+    public $Data;
 }
 
 class Inventory
@@ -96,16 +96,16 @@ class AvatarInventoryFolderFactory
         $classFile = BASEPATH . 'avatar/Avatar.' . $type . '.php';
         if (file_exists($classFile))
         {
-    	    include_once $classFile;
-    	    return new $type($name,$userid);
+            include_once $classFile;
+            return new $type($name,$userid);
         }
         else
         {
             log_message('warn', "requested avatar $type not found, using default");
     
-        	$classFile = BASEPATH . 'avatar/Avatar.DefaultAvatar.php';
-    	    include_once $classFile;
-    	    return new $type($name,$userid);
+            $classFile = BASEPATH . 'avatar/Avatar.DefaultAvatar.php';
+            include_once $classFile;
+            return new $type($name,$userid);
         }
     }
 }

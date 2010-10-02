@@ -77,7 +77,7 @@ class GetSession implements IGridService
                     $session->ExtraData = "{}";
                 
                 $output = sprintf(
-                	'{ "Success": true, "UserID": "%s", "SessionID": "%s", "SecureSessionID": "%s", "SceneID": "%s", "ScenePosition": %s, "SceneLookAt": %s, "ExtraData": %s }',
+                    '{ "Success": true, "UserID": "%s", "SessionID": "%s", "SecureSessionID": "%s", "SceneID": "%s", "ScenePosition": %s, "SceneLookAt": %s, "ExtraData": %s }',
                     $session->UserID, $session->SessionID, $session->SecureSessionID, $session->SceneID,
                     $session->ScenePosition->toOSD(), $session->SceneLookAt->toOSD(), $session->ExtraData);
                 

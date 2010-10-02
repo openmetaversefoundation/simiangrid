@@ -46,7 +46,7 @@ class inventory_root
     public function GetResults()
     {
         $folder[] = array(
-        	'folder_id' => $this->User['UserID']
+            'folder_id' => $this->User['UserID']
         );
         
         return $folder;

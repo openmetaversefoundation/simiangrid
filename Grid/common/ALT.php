@@ -59,11 +59,11 @@ class ALT
         if ($inventory instanceof InventoryFolder)
         {
             $sql = "INSERT INTO Inventory (ID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, 
-            			ExtraData, CreationDate, Type, LeftNode, RightNode)
+                        ExtraData, CreationDate, Type, LeftNode, RightNode)
                     VALUES (:ID, :ParentID, :OwnerID, :OwnerID, :Name, '', :ContentType, 1, :ExtraData, CURRENT_TIMESTAMP, 
-                    	'Folder', 0, 0)
+                        'Folder', 0, 0)
                     ON DUPLICATE KEY UPDATE ParentID=VALUES(ParentID), CreatorID=VALUES(CreatorID), Name=VALUES(Name), 
-                    	Description=VALUES(Description), ContentType=VALUES(ContentType), Version=Version+1";
+                        Description=VALUES(Description), ContentType=VALUES(ContentType), Version=Version+1";
             if (!empty($inventory->ExtraData))
                 $sql .= ", ExtraData=VALUES(ExtraData)";
             
@@ -74,11 +74,11 @@ class ALT
             $sth = $this->conn->prepare($sql);
             
             if ($sth->execute(array(
-            	':ID' => $inventory->ID,
-            	':ParentID' => $inventory->ParentID,
-            	':OwnerID' => $inventory->OwnerID,
-            	':Name' => $inventory->Name,
-            	':ContentType' => $inventory->ContentType,
+                ':ID' => $inventory->ID,
+                ':ParentID' => $inventory->ParentID,
+                ':OwnerID' => $inventory->OwnerID,
+                ':Name' => $inventory->Name,
+                ':ContentType' => $inventory->ContentType,
                 ':ExtraData' => $inventory->ExtraData)))
             {
                 if ($inventory->ParentID != NULL)
@@ -112,21 +112,21 @@ class ALT
                 $contentTypeSql = "(SELECT ContentType FROM AssetData WHERE ID=:AssetID)"; 
             
             $sql = "INSERT INTO Inventory (ID, AssetID, ParentID, OwnerID, CreatorID, Name, Description, ContentType, Version, 
-            			ExtraData, CreationDate, Type, LeftNode, RightNode)
+                        ExtraData, CreationDate, Type, LeftNode, RightNode)
                     VALUES (:ID, :AssetID, :ParentID, :OwnerID, " . $creatorIDSql . ", :Name, 
-                    	:Description, " . $contentTypeSql . ", 0, :ExtraData, CURRENT_TIMESTAMP , 'Item', 0, 0)
+                        :Description, " . $contentTypeSql . ", 0, :ExtraData, CURRENT_TIMESTAMP , 'Item', 0, 0)
                     ON DUPLICATE KEY UPDATE AssetID=VALUES(AssetID), ParentID=VALUES(ParentID), CreatorID=VALUES(CreatorID), 
-                    	Name=VALUES(Name), Description=VALUES(Description), ContentType=VALUES(ContentType), Version=Version+1";
+                        Name=VALUES(Name), Description=VALUES(Description), ContentType=VALUES(ContentType), Version=Version+1";
             if (!empty($inventory->ExtraData))
                 $sql .= ", ExtraData=VALUES(ExtraData)";
             
             $dbValues = array(
-            	':ID' => $inventory->ID,
-            	':AssetID' => $inventory->AssetID,
-            	':ParentID' => $inventory->ParentID,
-            	':OwnerID' => $inventory->OwnerID,
-            	':Name' => $inventory->Name,
-            	':Description' => $inventory->Description,
+                ':ID' => $inventory->ID,
+                ':AssetID' => $inventory->AssetID,
+                ':ParentID' => $inventory->ParentID,
+                ':OwnerID' => $inventory->OwnerID,
+                ':Name' => $inventory->Name,
+                ':Description' => $inventory->Description,
                 ':ExtraData' => $inventory->ExtraData);
             if (isset($inventory->CreatorID))
                 $dbValues['CreatorID'] = $inventory->CreatorID;

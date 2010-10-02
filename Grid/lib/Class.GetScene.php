@@ -58,7 +58,7 @@ class GetScene implements IGridService
             if (isset($params["FindClosest"]) && $params["FindClosest"])
             {
                 $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
-                		CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
+                        CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                         CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition,
                         GLength(LineString(GeomFromText('POINT(" . $this->Position->X . " " . $this->Position->Y . ")'), Centroid(XYPlane)))
                         AS dist FROM Scenes";
@@ -71,7 +71,7 @@ class GetScene implements IGridService
             else
             {
                 $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
-                		CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
+                        CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                         CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
                         FROM Scenes WHERE MBRContains(XYPlane, GeomFromText('POINT(" . $this->Position->X . " " . $this->Position->Y . ")'))";
                 

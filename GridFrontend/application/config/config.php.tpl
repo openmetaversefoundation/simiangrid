@@ -102,7 +102,7 @@ $config['index_page'] = "index.php";
 | 'ORIG_PATH_INFO'	Uses the ORIG_PATH_INFO
 |
 */
-$config['uri_protocol']	= "AUTO";
+$config['uri_protocol']	= "PATH_INFO";
 
 /*
 |--------------------------------------------------------------------------
@@ -415,6 +415,8 @@ $config['email_activation'] = false;
 $config['email_from'] = 'noreply@localhost';
 //whether to allow registration
 $config['allow_registration'] = true;
+//whether to force email validation
+$config['validation_required'] = false;
 
 //imagemagick is used to render textures in a way browsers can digest them
 //requires an extra php mod

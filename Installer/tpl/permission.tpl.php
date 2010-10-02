@@ -3,13 +3,11 @@
     <ul>
     <?php
         foreach ( $result['permission'] as $file ) {
-            echo "<li>[" . $file['type'] . "] " . $file['name'] . " - ";
             if ( $file['check'] ) {
+                echo "<li>[" . $file['type'] . "] " . $file['name'] . " - ";
                 echo "<font color=\"green\">OK</font>";
-            } else {
-                echo "<font color=\"red\">CHECK</font>";
+                echo "</li>";
             }
-            echo "</li>";
         }
     ?>
     </ul>

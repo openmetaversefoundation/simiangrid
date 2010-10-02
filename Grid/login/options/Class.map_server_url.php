@@ -46,6 +46,6 @@ class map_server_url
     public function GetResults()
     {
         $config =& get_config();
-	return $config["map_service"];
+    return $config["map_service"];
     }
 }

@@ -48,8 +48,8 @@ class AddSession implements IGridService
             {
                 // Creating or updating a user session
                 $sql = "INSERT INTO Sessions (UserID, SessionID, SecureSessionID, SceneID, ScenePosition, SceneLookAt)
-            			VALUES (:UserID, :SessionID, :SecureSessionID, '00000000-0000-0000-0000-000000000000', '<0, 0, 0>', '<0, 0, 0>')
-            			ON DUPLICATE KEY UPDATE SessionID=VALUES(SessionID), SecureSessionID=VALUES(SecureSessionID)";
+                        VALUES (:UserID, :SessionID, :SecureSessionID, '00000000-0000-0000-0000-000000000000', '<0, 0, 0>', '<0, 0, 0>')
+                        ON DUPLICATE KEY UPDATE SessionID=VALUES(SessionID), SecureSessionID=VALUES(SecureSessionID)";
                 
                 $sth = $db->prepare($sql);
                 
@@ -87,7 +87,7 @@ class AddSession implements IGridService
                 $this->SecureSessionID = UUID::Random();
                 
                 $sql = "INSERT INTO Sessions (UserID, SessionID, SecureSessionID, SceneID, ScenePosition, SceneLookAt)
-            			VALUES (:UserID, :SessionID, :SecureSessionID, '00000000-0000-0000-0000-000000000000', '<0, 0, 0>', '<0, 0, 0>')";
+                        VALUES (:UserID, :SessionID, :SecureSessionID, '00000000-0000-0000-0000-000000000000', '<0, 0, 0>', '<0, 0, 0>')";
                 
                 $sth = $db->prepare($sql);
                 

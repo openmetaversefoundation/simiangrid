@@ -18,20 +18,22 @@
     $defaultDB['user'] = 'root';
     $defaultDB['host'] = '127.0.0.1';
     $defaultDB['db'] = 'Simian';
+    $defaultDB['password'] = '';
 
-	$dbCheckTables = array(
-		'AssetData',
-		'Capabilities',
-		'Generic',
-		'Identities',
-		'Inventory',
-		'Scenes',
-		'Sessions',
-		'UserData',
-		'Users'
-	);
+    $dbCheckTables = array(
+        'AssetData',
+        'Capabilities',
+        'Generic',
+        'Identities',
+        'Inventory',
+        'Scenes',
+        'Sessions',
+        'UserData',
+        'Users',
+    'migrations'
+    );
     
-    $dbSchemas = array('sql/database.mysql.sql');
+    $dbSchemas = array('sql/');
     
     $dbFixtures = array('sql/default_assets.sql');
     
@@ -44,7 +46,7 @@
     $configOptions['user_service']['file'] = "config/config.php";
     
     $configOptions['grid_service']['name'] = "Grid Server";
-    $configOptions['grid_service']['description'] = "The URL of the Grod Server";
+    $configOptions['grid_service']['description'] = "The URL of the Grid Server";
     $configOptions['grid_service']['default'] = "http://localhost/Grid/";
     $configOptions['grid_service']['string'] = "@@GRID_SERVICE@@";
     $configOptions['grid_service']['file'] = "config/config.php";

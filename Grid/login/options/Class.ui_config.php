@@ -42,7 +42,7 @@ class ui_config
     public function GetResults()
     {
         $result[] = array(
-        	'allow_first_life' => 'Y'
+            'allow_first_life' => 'Y'
         );
         
         return $result;

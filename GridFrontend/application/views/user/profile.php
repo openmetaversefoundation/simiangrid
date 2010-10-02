@@ -1,8 +1,8 @@
 <div>
 
-<table>
+<table class="details">
     <tr>
-        <th><Name><?php echo lang('sg_name'); ?></th><td><?php echo $user_info['name']; ?></td>
+        <th><?php echo lang('sg_name'); ?></th><td><?php echo $user_info['name']; ?></td>
     </tr>
 <?php if ( $user_id == $my_uuid || $this->sg_auth->is_admin() ): ?>
     <tr>
@@ -14,7 +14,7 @@
         <th><?php echo lang('sg_user_last_location'); ?></th><td>
         <?php 
             if ( isset($last_scene) ) {
-                render_region_link($last_scene['SceneID']); 
+                echo render_region_link($last_scene['SceneID']); 
             }
         ?>
         </td>

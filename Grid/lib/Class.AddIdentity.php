@@ -42,8 +42,8 @@ class AddIdentity implements IGridService
         if (isset($params["Identifier"], $params["Credential"], $params["Type"], $params["UserID"]) && UUID::TryParse($params["UserID"], $this->UserID))
         {
             $sql = "INSERT INTO Identities (Identifier, Credential, Type, UserID)
-            		VALUES (:Identifier, :Credential, :Type, :UserID)
-            		ON DUPLICATE KEY UPDATE Credential=VALUES(Credential), Type=VALUES(Type), UserID=VALUES(UserID)";
+                    VALUES (:Identifier, :Credential, :Type, :UserID)
+                    ON DUPLICATE KEY UPDATE Credential=VALUES(Credential), Type=VALUES(Type), UserID=VALUES(UserID)";
             
             $sth = $db->prepare($sql);
             

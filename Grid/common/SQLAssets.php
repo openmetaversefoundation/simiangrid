@@ -49,7 +49,7 @@ class SQLAssets
     public function GetAssetMetadata($assetID)
     {
         $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
-				Temporary, LENGTH(Data) as ContentLength FROM AssetData WHERE ID=:ID";
+                Temporary, LENGTH(Data) as ContentLength FROM AssetData WHERE ID=:ID";
         
         $sth = $this->conn->prepare($sql);
         
@@ -86,7 +86,7 @@ class SQLAssets
     public function GetAsset($assetID)
     {
         $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public, Temporary,
-				LENGTH(Data) as ContentLength, Data FROM AssetData WHERE ID=:ID";
+                LENGTH(Data) as ContentLength, Data FROM AssetData WHERE ID=:ID";
         
         $sth = $this->conn->prepare($sql);
         
@@ -126,17 +126,17 @@ class SQLAssets
         $t = ($asset->Temporary) ? '1' : '0';
         
         $sql = "INSERT INTO AssetData (ID, Data, ContentType, CreatorID, SHA256, Public, Temporary)
-        		VALUES (:ID, :Data, :ContentType, :CreatorID, :SHA256, $p, $t)
-        		ON DUPLICATE KEY UPDATE Data=VALUES(Data), SHA256=VALUES(SHA256), Public=VALUES(Public), Temporary=VALUES(Temporary)";
+                VALUES (:ID, :Data, :ContentType, :CreatorID, :SHA256, $p, $t)
+                ON DUPLICATE KEY UPDATE Data=VALUES(Data), SHA256=VALUES(SHA256), Public=VALUES(Public), Temporary=VALUES(Temporary)";
         
         $sth = $this->conn->prepare($sql);
         
         if ($sth->execute(array(
-        	':ID' => $asset->ID,
-        	':Data' => trim($asset->Data),
-        	':ContentType' => $asset->ContentType,
-        	':CreatorID' => $asset->CreatorID,
-        	':SHA256' => $asset->SHA256)))
+            ':ID' => $asset->ID,
+            ':Data' => trim($asset->Data),
+            ':ContentType' => $asset->ContentType,
+            ':CreatorID' => $asset->CreatorID,
+            ':SHA256' => $asset->SHA256)))
         {            
             // 0 = No Update to existing asset
             // 1 = A new asset was created

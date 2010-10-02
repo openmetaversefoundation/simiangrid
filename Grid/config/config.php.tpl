@@ -193,3 +193,9 @@ $config['sun_texture_id'] = "cce0f112-878f-4586-a2e2-a8f104bba271";
 $config['moon_texture_id'] = "d07f6eed-b96a-47cd-b51d-400ad4a1c428";
 $config['cloud_texture_id'] = "dc4b9f0b-d008-45c6-96a4-01dd947ac621";
 
+//whether to require email validation for login
+$config['validation_required'] = true;
+
+//User Access Level at which Users will not be blocked by
+//Either email validation or closed grids
+$config['access_level_minimum'] = 200;

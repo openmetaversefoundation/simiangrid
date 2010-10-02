@@ -57,7 +57,7 @@ class AddCapability implements IGridService
         $expiration = $params["Expiration"];
         
         $sql = "INSERT INTO Capabilities (ID, OwnerID, Resource, ExpirationDate) VALUES (:ID, :OwnerID, :Resource, :ExpirationDate)
-        		ON DUPLICATE KEY UPDATE OwnerID=VALUES(OwnerID), Resource=VALUES(Resource), ExpirationDate=VALUES(ExpirationDate)";
+                ON DUPLICATE KEY UPDATE OwnerID=VALUES(OwnerID), Resource=VALUES(Resource), ExpirationDate=VALUES(ExpirationDate)";
         
         $sth = $db->prepare($sql);
         

@@ -3,16 +3,29 @@
     function configExists()
     {
         $config_files = configFileList();
-		$result = FALSE;
+        $result = FALSE;
         foreach ( $config_files as $config_file ) {
             if ( is_file($config_file) ) {
-				userMessage('warn', "Config file $config_file already exists.");
-				if ( $result == FALSE ) {
-					$result = TRUE;
-				}
+                userMessage('warn', "Config file " . getcwd() . "/$config_file already exists.");
+                if ( $result == FALSE ) {
+                    $result = TRUE;
+                }
             }
         }
         return $result;
+    }
+
+    function configFindValue($name, $config_entry)
+    {
+        $config_file = getcwd() . "/" . $config_entry['file'];
+        $config_value = $config_entry['default'];
+        if ( file_exists($config_file) ) {
+            include $config_file;
+            if ( isset($config[$name]) ) {
+                $config_value = $config[$name];
+            }
+        }
+        return $config_value;
     }
 
     function configGetValue($name)
@@ -23,7 +36,7 @@
         } else {
             foreach ( $configOptions as $key => $config ) {
                 if ( $key == $name ) {
-                    return $config['default'];
+                    return configFindValue($key, $config);
                 }
             }
         }
@@ -37,7 +50,7 @@
         foreach ( $configOptions as $key => $options ) {
             $entry = array();
             $entry['name'] = $key;
-            $entry['value'] = configGetValue($key);
+            $entry['value'] = configGetValue($key, $key);
             $entry['label'] = $options['name'];
             array_push($result, $entry);
         }
@@ -106,10 +119,10 @@
         $writableFiles = configFileList();
         
         foreach ( $writableDirectories as $directory ) {
-			$check_result = is_writable($directory);
-			if ( ! $check_result ) {
-				userMessage("error", "Directory $directory is not writable.");
-			}
+            $check_result = is_writable($directory);
+            if ( ! $check_result ) {
+                userMessage("error", "Directory " . getcwd() . "/$directory is not writable (It must be writeable by the account the webserver runs under).");
+            }
             $item = array (
                 'name' => $directory,
                 'check' => $check_result,
@@ -122,17 +135,17 @@
                 $path_dir = dirname($path);
                 if ( is_dir($path_dir) ) {
                     $check = is_writable($path_dir);
-					if ( ! $check ) {
-						userMessage("error", "Directory $path_dir is not writable for $file.");
-					}
+                    if ( ! $check ) {
+                        userMessage("error", "Directory " . getcwd() . "/$path_dir is not writable (It must be writeable by the account the webserver runs under).");
+                    }
                 } else {
-					userMessage("error", "Unable to find directory $path_dir.");
-				}
+                    userMessage("error", "Unable to find directory $path.");
+                }
             } else {
-                $check = is_writable($check);
-				if ( ! $check ) {
-					userMessage("error", "File $file is not writable.");
-				}
+                $check = is_writable($path);
+                if ( ! $check ) {
+                    userMessage("error", "File $path is not writable (It must be writeable by the account the webserver runs under).");
+                }
             }
             $item = array (
                 'name' => $path,
@@ -194,7 +207,7 @@
             } else {
                 $write_result = fwrite($handle, $file_scratch);
                 if ( $write_result === FALSE || $write_result < strlen($file_scratch) ) {
-                    userMessage("error", "Problem writing $config_file");
+                    userMessage("error", "Problem writing " . getcwd() . "/$config_file");
                     return FALSE;
                 } else {
                     fclose($handle);

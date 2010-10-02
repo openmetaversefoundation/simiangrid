@@ -81,6 +81,8 @@ $request_xml = file_get_contents("php://input");
 $response = xmlrpc_server_call_method($xmlrpc_server, $request_xml, '');
 
 header('Content-Type: text/xml');
+
+log_message('debug', "SENDING THIS -> $response");
 echo $response;
 
 xmlrpc_server_destroy($xmlrpc_server);
@@ -136,10 +138,10 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     
     // JSON decode the response
     $response = decode_recursive_json($response);
-	
-	if (!isset($response))
-	    $response = array('Message' => 'Invalid or missing response');
-	
+    
+    if (!isset($response))
+        $response = array('Message' => 'Invalid or missing response');
+    
     return $response;
 }
 
@@ -149,8 +151,8 @@ function get_user($userID)
     $userService = $config['user_service'];
     
     $response = webservice_post($userService, array(
-    	'RequestMethod' => 'GetUser',
-    	'UserID' => $userID)
+        'RequestMethod' => 'GetUser',
+        'UserID' => $userID)
     );
     
     if (!empty($response['Success']) && !empty($response['User']))
@@ -165,8 +167,8 @@ function get_session($userID)
     $userService = $config['user_service'];
         
     $response = webservice_post($userService, array(
-    	'RequestMethod' => 'GetSession',
-    	'UserID' => $userID)
+        'RequestMethod' => 'GetSession',
+        'UserID' => $userID)
     );
     
     if (!empty($response['Success']))
@@ -181,8 +183,8 @@ function add_session($userID, &$sessionID, &$secureSessionID)
     $userService = $config['user_service'];
     
     $response = webservice_post($userService, array(
-    	'RequestMethod' => 'AddSession',
-    	'UserID' => $userID)
+        'RequestMethod' => 'AddSession',
+        'UserID' => $userID)
     );
     
     if (!empty($response['Success']) &&
@@ -201,8 +203,8 @@ function remove_session($sessionID)
     $userService = $config['user_service'];
     
     $response = webservice_post($userService, array(
-    	'RequestMethod' => 'RemoveSession',
-    	'SessionID' => $sessionID)
+        'RequestMethod' => 'RemoveSession',
+        'SessionID' => $sessionID)
     );
     
     if (!empty($response['Success']))
@@ -217,9 +219,9 @@ function lookup_scene_by_id($sceneID)
     $gridService = $config['grid_service'];
     
     $response = webservice_post($gridService, array(
-    	'RequestMethod' => 'GetScene',
-    	'SceneID' => $sceneID,
-    	'Enabled' => '1')
+        'RequestMethod' => 'GetScene',
+        'SceneID' => $sceneID,
+        'Enabled' => '1')
     );
     
     if (!empty($response['Success']))
@@ -234,10 +236,10 @@ function lookup_scene_by_name($name)
     $gridService = $config['grid_service'];
     
     $response = webservice_post($gridService, array(
-    	'RequestMethod' => 'GetScenes',
-    	'NameQuery' => $name,
-    	'Enabled' => '1',
-    	'MaxNumber' => '1')
+        'RequestMethod' => 'GetScenes',
+        'NameQuery' => $name,
+        'Enabled' => '1',
+        'MaxNumber' => '1')
     );
     
     if (!empty($response['Success']) && is_array($response['Scenes']) && count($response['Scenes']) > 0)
@@ -252,10 +254,10 @@ function lookup_scene_by_position($position, $findClosest = false)
     $gridService = $config['grid_service'];
     
     $response = webservice_post($gridService, array(
-    	'RequestMethod' => 'GetScene',
-    	'Position' => $position,
+        'RequestMethod' => 'GetScene',
+        'Position' => $position,
         'FindClosest' => ($findClosest ? '1' : '0'),
-    	'Enabled' => '1')
+        'Enabled' => '1')
     );
     
     if (!empty($response['Success']))
@@ -292,10 +294,10 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
     list($firstName, $lastName) = explode(' ', $fullName);
 
     $response = webservice_post($regionUrl, array(
-    	'agent_id' => $userID,
-    	'caps_path' => $capsPath,
-    	'child' => false,
-    	'circuit_code' => $circuitCode,
+        'agent_id' => $userID,
+        'caps_path' => $capsPath,
+        'child' => false,
+        'circuit_code' => $circuitCode,
         'first_name' => $firstName,
         'last_name' => $lastName,
         'session_id' => $sessionID,
@@ -381,7 +383,9 @@ function bitShift($num1, $bits)
 function link_region($method_name, $params, $user_data)
 {
     log_message('info', "link_region called");
-    
+
+    $config =& get_config();
+
     $req = $params[0];
 
     $region_name = $req['region_name'];
@@ -403,8 +407,8 @@ function link_region($method_name, $params, $user_data)
         $handle = bitOr($handle, (string)$y, 0);
         $response['handle'] = (string)$handle;
         
-        $response['region_image'] = "http://" . $scene->ExtraData['ExternalAddress'] . ":" . $scene->ExtraData['ExternalPort'] . "/index.php?method=" . str_replace('-', '', $scene->SceneID);
-        $response['external_name'] = '';
+        $response['region_image'] = "http://" . $scene->ExtraData['ExternalAddress'] . ":" . $scene->ExtraData['ExternalPort'] . "/index.php?method=regionImage" . str_replace('-', '', $scene->SceneID);
+        $response['external_name'] = $scene->ExtraData['ExternalAddress'];
     }
     
     return $response;
@@ -426,12 +430,12 @@ function get_region($method_name, $params, $user_data)
     } else {
         $response['result'] = "true";
         $response['uuid'] = $scene->SceneID;
-        $response['x'] = $scene->MinPosition->X;
-        $response['y'] = $scene->MinPosition->Y;
+        $response['x'] = (string) $scene->MinPosition->X;
+        $response['y'] = (string) $scene->MinPosition->Y;
         $response['region_name'] = $scene->Name;
-        $response['hostname'] = $scene->Address;
-        $response['http_port'] = $scene->ExternalData['ExternalPort'];
-        $response['internal_port'] = $scene->ExternalData['InternalPort'];
+        $response['hostname'] = $scene->ExtraData['ExternalAddress'];
+        $response['http_port'] = (string) $scene->ExtraData['ExternalPort'];
+        $response['internal_port'] = (string) $scene->ExtraData['InternalPort'];
     }
 
     return $response;

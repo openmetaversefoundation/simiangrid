@@ -42,52 +42,52 @@ class AddMapTile implements IGridService
 {
     private $dirpath;
     
-	public function Execute($unused, $tile)
+    public function Execute($unused, $tile)
     {
-    	$config =& get_config();
-    	
-    	$x = (int)$tile->X;
-    	$y = (int)$tile->Y;
-    	
-    	// Get the file path of the full resolution tile
-    	$this->dirpath = (!empty($config['map_path'])) ? $config['map_path'] : BASEPATH . 'map/';
-    	$filepath = $this->GetFilename(1, $x, $y);
-    	
-    	// Save the full resolution tile
-    	if (!$fp = @fopen($filepath, 'w'))
-    	{
-    		log_message('error', "Failed to map tile file " . $filepath . " for writing");
-    		
-    		header("Content-Type: application/json", true);
-    		echo '{ "Message": "Unable to store map tile" }';
+        $config =& get_config();
+        
+        $x = (int)$tile->X;
+        $y = (int)$tile->Y;
+        
+        // Get the file path of the full resolution tile
+        $this->dirpath = (!empty($config['map_path'])) ? $config['map_path'] : BASEPATH . 'map/';
+        $filepath = $this->GetFilename(1, $x, $y);
+        
+        // Save the full resolution tile
+        if (!$fp = @fopen($filepath, 'w'))
+        {
+            log_message('error', "Failed to map tile file " . $filepath . " for writing");
+            
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Unable to store map tile" }';
             exit();
-    	}
-    	flock($fp, LOCK_EX);
-    	fwrite($fp, $tile->Data);
-    	flock($fp, LOCK_UN);
-    	fclose($fp);
-    	
-    	// Also save in JPG format
-    	$this->Png2Jpg($filepath, $this->GetFilename(1, $x, $y, 'jpg'), JPEG_QUALITY);
-    	
-    	// Stitch seven more aggregate tiles together
-    	for ($zoomLevel = 2; $zoomLevel <= ZOOM_LEVELS; $zoomLevel++)
-    	{
-    	    // Calculate the width (in full resolution tiles) and bottom-left
-    	    // corner of the current zoom level
-    	    $width = pow(2, $zoomLevel - 1);
-    	    $x1 = $x - ($x % $width);
-    	    $y1 = $y - ($y % $width);
-    	    
-    	    if (!$this->CreateTile($zoomLevel, $x1, $y1))
-    	    {
-    	        header("Content-Type: application/json", true);
-        		echo '{ "Message": "Unable to store zoom level ' . $zoomLevel . '" }';
+        }
+        flock($fp, LOCK_EX);
+        fwrite($fp, $tile->Data);
+        flock($fp, LOCK_UN);
+        fclose($fp);
+        
+        // Also save in JPG format
+        $this->Png2Jpg($filepath, $this->GetFilename(1, $x, $y, 'jpg'), JPEG_QUALITY);
+        
+        // Stitch seven more aggregate tiles together
+        for ($zoomLevel = 2; $zoomLevel <= ZOOM_LEVELS; $zoomLevel++)
+        {
+            // Calculate the width (in full resolution tiles) and bottom-left
+            // corner of the current zoom level
+            $width = pow(2, $zoomLevel - 1);
+            $x1 = $x - ($x % $width);
+            $y1 = $y - ($y % $width);
+            
+            if (!$this->CreateTile($zoomLevel, $x1, $y1))
+            {
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Unable to store zoom level ' . $zoomLevel . '" }';
                 exit();
-    	    }
-    	}
-    	
-    	header("Content-Type: application/json", true);
+            }
+        }
+        
+        header("Content-Type: application/json", true);
         echo '{ "Success": true }';
         exit();
     }
@@ -152,7 +152,7 @@ class AddMapTile implements IGridService
         
         if (!$output)
             return FALSE;
-		$watercolor = imagecolorallocate($output, 29, 71, 95); #1D475F used by frontend map.js
+        $watercolor = imagecolorallocate($output, 29, 71, 95); #1D475F used by frontend map.js
         imagefill($output, 0, 0 , $watercolor);
         // Scale the input tiles into the output tile
         if ($inputBL)
@@ -181,7 +181,7 @@ class AddMapTile implements IGridService
         imagedestroy($output);
         
         // Also save in JPG format
-    	$this->Png2Jpg($outputFile, $this->GetFilename($zoomLevel, $xOut, $yOut, 'jpg'), JPEG_QUALITY);
+        $this->Png2Jpg($outputFile, $this->GetFilename($zoomLevel, $xOut, $yOut, 'jpg'), JPEG_QUALITY);
         
         return TRUE;
     }

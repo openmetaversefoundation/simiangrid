@@ -55,18 +55,18 @@ class Curl
         
         if($url)
         {
-        	$this->create($url);
+            $this->create($url);
         }
     }
  
     function __call($method, $arguments)
     {
-    	if(in_array($method, array('simple_get', 'simple_post', 'simple_put', 'simple_delete')))
-    	{
-    		$verb = str_replace('simple_', '', $method);
-    		array_unshift($arguments, $verb);
-    		return call_user_func_array(array($this, '_simple_call'), $arguments);
-    	}
+        if(in_array($method, array('simple_get', 'simple_post', 'simple_put', 'simple_delete')))
+        {
+            $verb = str_replace('simple_', '', $method);
+            array_unshift($arguments, $verb);
+            return call_user_func_array(array($this, '_simple_call'), $arguments);
+        }
     }
     
     /* =================================================================================
@@ -79,7 +79,7 @@ class Curl
         // If a URL is provided, create new session
         $this->create($url);
 
-		$this->{$method}($params, $options);
+        $this->{$method}($params, $options);
         
         // Add in the specific options provided
         $this->options($options);
@@ -101,7 +101,7 @@ class Curl
             
             if($password != '')
             {
-            	$auth_string .= ':'.$password;
+                $auth_string .= ':'.$password;
             }
             
             // Add the user auth string after the protocol
@@ -127,9 +127,9 @@ class Curl
         // If its an array (instead of a query string) then format it correctly
         if(is_array($params)) {
             $result = '';
-    	    foreach ($params as $key => $value)
-    	        $result .= urlencode($key) . '=' . urlencode($value) . '&';
-    	    $params = rtrim($result, '&');
+            foreach ($params as $key => $value)
+                $result .= urlencode($key) . '=' . urlencode($value) . '&';
+            $params = rtrim($result, '&');
         }
         
         // Add in the specific options provided
@@ -188,18 +188,18 @@ class Curl
     
     public function http_header($header_string)
     {
-		$this->headers[] = $header_string;
+        $this->headers[] = $header_string;
     }
     
     public function http_method($method)
     {
-    	$this->options[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
+        $this->options[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
         return $this;
     }
     
     public function http_login($username = '', $password = '', $type = 'any')
     {
-		$this->option(CURLOPT_HTTPAUTH, constant('CURLAUTH_'.strtoupper($type) ));
+        $this->option(CURLOPT_HTTPAUTH, constant('CURLAUTH_'.strtoupper($type) ));
         $this->option(CURLOPT_USERPWD, $username.':'.$password);
         return $this;
     }
@@ -233,12 +233,12 @@ class Curl
     
     public function option($code, $value)
     {
-    	if(is_string($code) && !is_numeric($code))
-    	{
-    		$code = constant('CURLOPT_' . strtoupper($code));
-    	}
-    	
-    	$this->options[$code] = $value;
+        if(is_string($code) && !is_numeric($code))
+        {
+            $code = constant('CURLOPT_' . strtoupper($code));
+        }
+        
+        $this->options[$code] = $value;
         return $this;
     }
     
@@ -263,10 +263,10 @@ class Curl
         if(!isset($this->options[CURLOPT_FOLLOWLOCATION]))    $this->options[CURLOPT_FOLLOWLOCATION] = TRUE;
         if(!isset($this->options[CURLOPT_FAILONERROR]))       $this->options[CURLOPT_FAILONERROR] = TRUE;
 
-		if(!empty($this->headers))
-		{
-			$this->option(CURLOPT_HTTPHEADER, $this->headers); 
-		}
+        if(!empty($this->headers))
+        {
+            $this->option(CURLOPT_HTTPHEADER, $this->headers); 
+        }
 
         $this->options();
 
@@ -297,7 +297,7 @@ class Curl
     
     public function is_enabled()
     {
-		return function_exists('curl_init');
+        return function_exists('curl_init');
     }
     
     private function set_defaults()

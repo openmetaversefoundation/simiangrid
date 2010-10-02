@@ -103,22 +103,22 @@ class AddScene implements IGridService
             }
             
             $sql = "REPLACE INTO Scenes (ID, Name, MinX, MinY, MinZ, MaxX, MaxY, MaxZ, Address, Enabled, ExtraData, XYPlane) 
-					VALUES (:ID, :Name, :MinX, :MinY,  :MinZ, :MaxX, :MaxY, :MaxZ, :Address, :Enabled, :ExtraData, GeomFromText(:XY))";
+                    VALUES (:ID, :Name, :MinX, :MinY,  :MinZ, :MaxX, :MaxY, :MaxZ, :Address, :Enabled, :ExtraData, GeomFromText(:XY))";
             
             $sth = $db->prepare($sql);
             if ($sth->execute(array(
-            	':ID' => $this->Scene->ID,
-            	':Name' => $this->Scene->Name,
-            	':MinX' => $this->Scene->MinPosition->X,
-            	':MinY' => $this->Scene->MinPosition->Y,
-            	':MinZ' => $this->Scene->MinPosition->Z,
-            	':MaxX' => $this->Scene->MaxPosition->X,
-            	':MaxY' => $this->Scene->MaxPosition->Y,
-            	':MaxZ' => $this->Scene->MaxPosition->Z,
-            	':Address' => $this->Scene->Address,
-            	':Enabled' => $this->Scene->Enabled,
-            	':ExtraData' => $this->Scene->ExtraData,
-            	':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))",
+                ':ID' => $this->Scene->ID,
+                ':Name' => $this->Scene->Name,
+                ':MinX' => $this->Scene->MinPosition->X,
+                ':MinY' => $this->Scene->MinPosition->Y,
+                ':MinZ' => $this->Scene->MinPosition->Z,
+                ':MaxX' => $this->Scene->MaxPosition->X,
+                ':MaxY' => $this->Scene->MaxPosition->Y,
+                ':MaxZ' => $this->Scene->MaxPosition->Z,
+                ':Address' => $this->Scene->Address,
+                ':Enabled' => $this->Scene->Enabled,
+                ':ExtraData' => $this->Scene->ExtraData,
+                ':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))",
                     $this->Scene->MinPosition->X, $this->Scene->MinPosition->Y,
                     $this->Scene->MaxPosition->X, $this->Scene->MinPosition->Y,
                     $this->Scene->MaxPosition->X, $this->Scene->MaxPosition->Y,

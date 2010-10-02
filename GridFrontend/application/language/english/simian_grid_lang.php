@@ -14,6 +14,7 @@ $lang['sg_search'] = 'Search';
 $lang['sg_results_found'] = 'Results Found';
 $lang['sg_raw'] = 'Raw Data';
 $lang['sg_actions'] = 'Actions';
+$lang['sg_admin_actions'] = 'Admin Actions';
 $lang['sg_login'] = 'Login';
 $lang['sg_password'] = 'Password';
 $lang['sg_password_confirm'] = 'Confirm Password';
@@ -24,6 +25,7 @@ $lang['sg_type'] = 'Type';
 $lang['sg_admin'] = 'Admin';
 $lang['sg_email_fail'] = 'Problem sending email to %s';
 $lang['sg_reset'] = 'Reset';
+$lang['sg_style_selector'] = 'Style Selector';
 //region
 $lang['sg_region_name'] = 'Region Name';
 $lang['sg_region_owner'] = 'Owner';
@@ -32,6 +34,20 @@ $lang['sg_region_unknown'] = 'Region %s Not Found';
 $lang['sg_region_info'] = 'Region Info';
 $lang['sg_region_details'] = 'Details';
 $lang['sg_region_stats'] = 'Stats';
+$lang['sg_region_map'] = 'Full Map';
+$lang['sg_region_version'] = 'Version';
+$lang['sg_region_uptime'] = 'Uptime';
+$lang['sg_region_online'] = 'Online';
+$lang['sg_region_offline'] = 'Offline';
+$lang['sg_region_status'] = 'Status';
+$lang['sg_region_stat_name'] = 'Stat Name';
+$lang['sg_region_stat_value'] = 'Value';
+$lang['sg_stat_simulation_fps'] = 'Simulation FPS';
+$lang['sg_stat_physics_fps'] = 'Physics FPS';
+$lang['sg_stat_dilation'] = 'Dilation';
+$lang['sg_stat_prim_count'] = 'Primitive Count';
+$lang['sg_stat_agents'] = 'Normal Agents';
+$lang['sg_stat_child_agents'] = 'Child Agents';
 //user
 $lang['sg_user_view'] = 'User View';
 $lang['sg_user_identities'] = 'Identities';
@@ -51,6 +67,8 @@ $lang['sg_user_identifier'] = 'Identifier';
 $lang['sg_user_not_found'] = 'User %s not found';
 $lang['sg_avatar_reset_fail'] = 'Unable to reset avatar : %s';
 $lang['sg_avatar_reset'] = 'Avatar Reset';
+$lang['sg_user_search_public'] = 'Public';
+$lang['sg_user_search_private'] = 'Private';
 //auth
 $lang['username_check'] = 'Username must be alphanumeric or dashes with first and fast name separated by a space.';
 $lang['username_exists_check'] = 'Username already exists. Please choose another username.';
@@ -107,4 +125,13 @@ $lang['tooltip_menu_register'] = 'Sign up to access this SimianGrid powered site
 //languages
 $lang['sg_lang_english'] = 'English';
 $lang['sg_lang_french'] = 'French';
+//admin
+$lang['sg_admin_maintenance'] = 'Maintenance';
+$lang['sg_admin_add_user'] = 'Add User';
+$lang['sg_admin_add_user_success'] = 'User account %s successfully created';
+$lang['sg_stat_name'] = 'Stat Name';
+$lang['sg_stat_value'] = 'Value';
+$lang['sg_stat_total_users'] = 'Total Users';
+$lang['sg_stat_total_scenes'] = 'Total Scenes';
+
 ?>

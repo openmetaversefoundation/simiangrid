@@ -108,12 +108,12 @@ class MPTT
             
             $sth = $this->conn->prepare($sql);
             if ($sth->execute(array(
-            	':ID' => $inventory->ID,
-            	':ParentID' => $inventory->ParentID,
-            	':OwnerID' => $inventory->OwnerID,
-            	':Name' => $inventory->Name,
-            	':ContentType' => $inventory->ContentType,
-            	':ParentLevel' => $parent_level)))
+                ':ID' => $inventory->ID,
+                ':ParentID' => $inventory->ParentID,
+                ':OwnerID' => $inventory->OwnerID,
+                ':Name' => $inventory->Name,
+                ':ContentType' => $inventory->ContentType,
+                ':ParentLevel' => $parent_level)))
             {
                 /*
                  * Increment the parent folder version
@@ -142,15 +142,15 @@ class MPTT
             
             $sth = $this->conn->prepare($sql);
             if ($sth->execute(array(
-            	':ID' => $inventory->ID,
-            	':AssetID' => $inventory->AssetID,
-            	':ParentID' => $inventory->ParentID,
-            	':OwnerID' => $inventory->OwnerID,
-            	':CreatorID' => $inventory->CreatorID,
-            	':Name' => $inventory->Name,
-            	':Description' => $inventory->Description,
-            	':ContentType' => $inventory->ContentType,
-            	':ParentLevel' => $parent_level)))
+                ':ID' => $inventory->ID,
+                ':AssetID' => $inventory->AssetID,
+                ':ParentID' => $inventory->ParentID,
+                ':OwnerID' => $inventory->OwnerID,
+                ':CreatorID' => $inventory->CreatorID,
+                ':Name' => $inventory->Name,
+                ':Description' => $inventory->Description,
+                ':ContentType' => $inventory->ContentType,
+                ':ParentLevel' => $parent_level)))
             {
                 /*
                  * Increment the parent folder version
