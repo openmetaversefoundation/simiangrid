@@ -245,7 +245,7 @@
             }
         }
         return TRUE;
-
+    }
 
     function dbFlush($db) {
         $done = FALSE;
