@@ -288,10 +288,6 @@
 
     function dbWrite()
     {
-        if ( $_SESSION['db_version']['skip_schema'] === TRUE ) {
-            userMessage("warn", "Skipped loading of schema and fixtures");
-            return TRUE;
-        }
         global $dbSchemas, $dbFixtures;
         $db = dbHandle();
         if ( ! dbSelect($db) ) {
