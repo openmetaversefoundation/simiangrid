@@ -13,11 +13,14 @@
     </tr><tr>
         <td><?php echo lang('sg_auth_validation_status'); ?></td>
         <td><span id="validation_status"><?php echo $validation; ?></span></td>
-    </tr>   
+    </tr>
+<!--
+Note that this will actually remove inventory and do other atrocious things to the avatar.
     <tr>
         <td><?php echo lang('sg_avatar_reset'); ?></td>
         <td><a href="{site_url}/user/actions/{user_id}/reset_avatar"><?php echo lang('sg_reset'); ?></td>
     </tr>
+-->
 </table>
 
 <div>
