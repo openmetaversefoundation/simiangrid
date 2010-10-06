@@ -227,7 +227,7 @@
                 }
             }
             closedir($handle);
-            if(array_length($updates) != 0) {
+            if(count($updates) != 0) {
                 sort($updates);
                 foreach($updates as $schema) {
                     # omfg execute the sql already :p
