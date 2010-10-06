@@ -229,15 +229,15 @@
             closedir($handle);
             if(count($updates) != 0) {
                 sort($updates);
-                foreach($updates as $schema) {
+                foreach($updates as $schemata) {
                     # omfg execute the sql already :p
-                    dbQueriesFromFile($db,$schema);
-                    userMessage("warn","Migration: " . $schema);
+                    dbQueriesFromFile($db,$schemata);
+                    userMessage("warn","Migration: " . $schemata);
                 }
-                $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + 1 WHERE migrations.schema == `' . $schema . '`';
+                $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + 1 WHERE migrations.schema == `' . $schemata . '`';
                 if (($result = mysqli_query($db, $mig_query)) != TRUE) {
                     $mserr = mysqli_error($db);
-                    userMessage("error", "Problem updating migration version for schema " . $schema . " - " . mysqli_error($db) );
+                    userMessage("error", "Problem updating migration version for schema " . $schemata . " - " . mysqli_error($db) );
                     return FALSE;
                 }
             } else {
