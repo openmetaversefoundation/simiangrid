@@ -198,10 +198,10 @@
     function dbDoMigration($db) {
         global $dbSchemas;
         $dir = $dbSchemas[0];
+        $schema = $_SESSION['db_config']['db'];
         $todo = 0;
-        $mig_query = 'SELECT MAX(version) FROM `migrations`';
-        if (($result = mysqli_query($db, $mig_query)) != FALSE)
-        {
+        $mig_query = 'SELECT migrations.version FROM `migrations` WHERE migrations.schema = "' . $schema . '"';
+        if (($result = mysqli_query($db, $mig_query)) != FALSE) {
             $row = mysqli_fetch_array($result, MYSQL_NUM);
             $todo = $row[0];
         } else {
@@ -227,17 +227,25 @@
                 }
             }
             closedir($handle);
-
-            sort($updates);
-            foreach($updates as $schema) {
-                # omfg execute the sql already :p
-                dbQueriesFromFile($db,$schema);
-                userMessage("warn","Migration: " . $schema);
+            if(count($updates) != 0) {
+                sort($updates);
+                foreach($updates as $schemata) {
+                    # omfg execute the sql already :p
+                    dbQueriesFromFile($db,$schemata);
+                    userMessage("warn","Migration: " . $schemata);
+                }
+                $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + 1 WHERE migrations.schema == `' . $schemata . '`';
+                if (($result = mysqli_query($db, $mig_query)) != TRUE) {
+                    $mserr = mysqli_error($db);
+                    userMessage("error", "Problem updating migration version for schema " . $schemata . " - " . mysqli_error($db) );
+                    return FALSE;
+                }
+            } else {
+                userMessage("info","No migrations to be performed.");
             }
         }
         return TRUE;
     }
-
 
     function dbFlush($db) {
         $done = FALSE;
@@ -280,10 +288,6 @@
 
     function dbWrite()
     {
-        if ( $_SESSION['db_version']['skip_schema'] === TRUE ) {
-            userMessage("warn", "Skipped loading of schema and fixtures");
-            return TRUE;
-        }
         global $dbSchemas, $dbFixtures;
         $db = dbHandle();
         if ( ! dbSelect($db) ) {
