@@ -202,17 +202,18 @@
         $todo = 0;
         $mig_query = 'SELECT migrations.version FROM `migrations` WHERE migrations.schema = "' . $schema . '"';
         if (($result = mysqli_query($db, $mig_query)) != FALSE) {
-            $row = mysqli_fetch_array($result, MYSQL_NUM);
-            $todo = $row[0];
+	    if(mysqli_num_rows($result) != 0) {
+		$row = mysqli_fetch_array($result, MYSQL_NUM);
+                $todo = $row[0];
+	    }
         } else {
             $mserr = mysqli_error($db);
-
             if ( mysqli_errno($db) != 0 ) {
                 if (!strpos($mserr,"doesn't exist")) {
                     userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
                     return FALSE;
                 }
-            }
+            } 
         }
 
         if($handle = opendir($dir)) {
@@ -227,15 +228,23 @@
                 }
             }
             closedir($handle);
+	    $migoffset = 0;
             if(count($updates) != 0) {
                 sort($updates);
                 foreach($updates as $schemata) {
                     # omfg execute the sql already :p
                     dbQueriesFromFile($db,$schemata);
                     userMessage("warn","Migration: " . $schemata);
+		    $migoffset = $migoffset + 1;
+		    $delim1 = strpos($schemata,'-')+1;
+		    $tablespace = substr($schemata, $delim1, -4);
                 }
-                $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + 1 WHERE migrations.schema == `' . $schemata . '`';
-                if (($result = mysqli_query($db, $mig_query)) != TRUE) {
+		if($todo == 0) {
+		    $mig_update_query = "INSERT INTO migrations (migrations.schema, migrations.description, migrations.version) VALUES ('" . $tablespace . "', '" . $schemata . "', " . $migoffset .")";
+		} else {
+		    $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + ' . $migoffset . ' WHERE migrations.schema == `' . $tablespace . '`';
+		}
+                if (($result = mysqli_query($db, $mig_update_query)) != TRUE) {
                     $mserr = mysqli_error($db);
                     userMessage("error", "Problem updating migration version for schema " . $schemata . " - " . mysqli_error($db) );
                     return FALSE;
