@@ -215,7 +215,7 @@
             } else { 
 		$mif_update_query = "INSERT INTO migrations (schema, description, version) VALUES '" . $schema . "', '" . $dir . $schema . "', 0";
 		if (($result = mysqli_query($db, $mig_update_query)) != FALSE) {
-		    userMessage("error", "Problem initializing schema/version entry in migrations table - " . mysqli_error($db);
+		    userMessage("error", "Problem initializing schema/version entry in migrations table - " . mysqli_error($db));
 		    return FALSE;
 		}
 	    }
