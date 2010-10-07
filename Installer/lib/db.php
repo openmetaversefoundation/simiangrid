@@ -236,7 +236,7 @@
                     userMessage("warn","Migration: " . $schemata);
                 }
 		if($todo == 0) {
-		    $mig_update_query = "INSERT INTO migrations (migrations.schema, migrations.description, migrations.version) VALUES ('" . substr($file, $delimpos +1) . "', '" . $schemata . "', 0)";
+		    $mig_update_query = "INSERT INTO migrations (migrations.schema, migrations.description, migrations.version) VALUES ('" . substr($schemata, strpos($schemata,'-') +1) . "', '" . $schemata . "', 0)";
 		} else {
 		    $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + 1 WHERE migrations.schema == `' . $schema . '`';
 		}
