@@ -238,9 +238,9 @@
 		if($todo == 0) {
 		    $mig_update_query = "INSERT INTO migrations (schema, description, version) VALUES '" . $schema . "', '" . $dir . $schema . "', 0";
 		} else {
-		    $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + 1 WHERE migrations.schema == `' . $schemata . '`';
+		    $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + 1 WHERE migrations.schema == `' . $schema . '`';
 		}
-                if (($result = mysqli_query($db, $mig_query)) != TRUE) {
+                if (($result = mysqli_query($db, $mig_update_query)) != TRUE) {
                     $mserr = mysqli_error($db);
                     userMessage("error", "Problem updating migration version for schema " . $schemata . " - " . mysqli_error($db) );
                     return FALSE;
