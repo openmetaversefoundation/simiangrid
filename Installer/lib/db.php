@@ -212,7 +212,14 @@
                     userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
                     return FALSE;
                 }
-            }
+            } else {
+		# add a record to migrations for $schemata
+		$mig_update_query = "INSERT INTO migrations (schema, description, version) VALUES '" . $schema . "', '" . $dir . $schema . "', 0";
+		if (($result = mysqli_query($db, $mig_update_query)) == FALSE) {
+		    userMessage("error","Problem adding migrations entry - " . mysqli_error($db) );
+		    return FALSE;
+		}
+	    }
         }
 
         if($handle = opendir($dir)) {
