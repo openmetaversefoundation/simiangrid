@@ -205,12 +205,6 @@
 	    if(mysqli_num_rows($result) != 0) {
 		$row = mysqli_fetch_array($result, MYSQL_NUM);
                 $todo = $row[0];
-	    } else {
-		$mig_update_query = "INSERT INTO migrations (schema, description, version) VALUES '" . $schema . "', '" . $dir . $schema . "', 0";
-                if (($result = mysqli_query($db, $mig_update_query)) != FALSE) {
-                    userMessage("error", "Problem initializing schema/version entry in migrations table - " . mysqli_error($db));
-                    return FALSE;
-		}
 	    }
         } else {
             $mserr = mysqli_error($db);
@@ -241,7 +235,11 @@
                     dbQueriesFromFile($db,$schemata);
                     userMessage("warn","Migration: " . $schemata);
                 }
-                $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + 1 WHERE migrations.schema == `' . $schemata . '`';
+		if($todo == 0) {
+		    $mig_update_query = "INSERT INTO migrations (schema, description, version) VALUES '" . $schema . "', '" . $dir . $schema . "', 0";
+		} else {
+		    $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + 1 WHERE migrations.schema == `' . $schemata . '`';
+		}
                 if (($result = mysqli_query($db, $mig_query)) != TRUE) {
                     $mserr = mysqli_error($db);
                     userMessage("error", "Problem updating migration version for schema " . $schemata . " - " . mysqli_error($db) );
