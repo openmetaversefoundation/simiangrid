@@ -28,7 +28,7 @@
     {
         echo "<img src=\"" . staticUrl("image/$image") . "\">";
     }
-    
+
     function errorOut($message, $status = 500, $details = array())
     {
         $result['page'] = 'Error';
@@ -203,7 +203,12 @@
     function sessionInit()
     {
         $base_path = baseInstallDir();
-        session_set_cookie_params(3600, $base_path, $_SERVER['SERVER_NAME'], false, false);
+        if ( substr_count($_SERVER['SERVER_NAME'], '.') == 0 ) {
+            $cookiedomain = null;
+        } else {
+            $cookiedomain = $_SERVER['SERVER_NAME'];
+        }
+        session_set_cookie_params(3600, $base_path, $cookiedomain, false, false);
         session_start();
         
         if ( ! isset($_SESSION['user_message']) || $_SESSION['user_message'] == null ) {
