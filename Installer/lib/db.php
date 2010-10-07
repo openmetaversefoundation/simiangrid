@@ -236,10 +236,12 @@
                     dbQueriesFromFile($db,$schemata);
                     userMessage("warn","Migration: " . $schemata);
 		    $migoffset = $migoffset + 1;
-		    $tablespace = substr($schemata, strpos($schemata,'-')+1, strpos($schemata,'.'));
+		    $delim1 = strpos($schemata,'-')+1;
+		    $delim2 = strpos($schemata,'.');
+		    $tablespace = substr($schemata, $delim1, $delim2);
                 }
 		if($todo == 0) {
-		    $mig_update_query = "INSERT INTO migrations (migrations.schema, migrations.description, migrations.version) VALUES ('" . $tablespace . "', '" . $schemata . "', 0)";
+		    $mig_update_query = "INSERT INTO migrations (migrations.schema, migrations.description, migrations.version) VALUES ('" . $tablespace . "', '" . $schemata . "', " . $migoffset .")";
 		} else {
 		    $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + ' . $migoffset . ' WHERE migrations.schema == `' . $tablespace . '`';
 		}
