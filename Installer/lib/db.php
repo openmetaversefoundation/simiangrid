@@ -237,8 +237,7 @@
                     userMessage("warn","Migration: " . $schemata);
 		    $migoffset = $migoffset + 1;
 		    $delim1 = strpos($schemata,'-')+1;
-		    $delim2 = strpos($schemata,'.');
-		    $tablespace = substr($schemata, $delim1, $delim2);
+		    $tablespace = substr($schemata, $delim1, -4);
                 }
 		if($todo == 0) {
 		    $mig_update_query = "INSERT INTO migrations (migrations.schema, migrations.description, migrations.version) VALUES ('" . $tablespace . "', '" . $schemata . "', " . $migoffset .")";
