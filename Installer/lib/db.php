@@ -228,17 +228,20 @@
                 }
             }
             closedir($handle);
+	    $migoffset = 0;
             if(count($updates) != 0) {
                 sort($updates);
                 foreach($updates as $schemata) {
                     # omfg execute the sql already :p
                     dbQueriesFromFile($db,$schemata);
                     userMessage("warn","Migration: " . $schemata);
+		    $migoffset = $migoffset + 1;
+		    $tablespace = substr($schemata, strpos($schemata,'-')+1, strpos($schemata,'.'));
                 }
 		if($todo == 0) {
-		    $mig_update_query = "INSERT INTO migrations (migrations.schema, migrations.description, migrations.version) VALUES ('" . substr($schemata, strpos($schemata,'-') +1) . "', '" . $schemata . "', 0)";
+		    $mig_update_query = "INSERT INTO migrations (migrations.schema, migrations.description, migrations.version) VALUES ('" . $tablespace . "', '" . $schemata . "', 0)";
 		} else {
-		    $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + 1 WHERE migrations.schema == `' . $schema . '`';
+		    $mig_update_query = 'UPDATE `migrations` set migrations.version = migrations.version + ' . $migoffset . ' WHERE migrations.schema == `' . $tablespace . '`';
 		}
                 if (($result = mysqli_query($db, $mig_update_query)) != TRUE) {
                     $mserr = mysqli_error($db);
