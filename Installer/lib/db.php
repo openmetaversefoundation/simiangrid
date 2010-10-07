@@ -202,23 +202,24 @@
         $todo = 0;
         $mig_query = 'SELECT migrations.version FROM `migrations` WHERE migrations.schema = "' . $schema . '"';
         if (($result = mysqli_query($db, $mig_query)) != FALSE) {
-            $row = mysqli_fetch_array($result, MYSQL_NUM);
-            $todo = $row[0];
+	    if(mysqli_num_rows($result) != 0) {
+		$row = mysqli_fetch_array($result, MYSQL_NUM);
+                $todo = $row[0];
+	    } else {
+		$mig_update_query = "INSERT INTO migrations (schema, description, version) VALUES '" . $schema . "', '" . $dir . $schema . "', 0";
+                if (($result = mysqli_query($db, $mig_update_query)) != FALSE) {
+                    userMessage("error", "Problem initializing schema/version entry in migrations table - " . mysqli_error($db));
+                    return FALSE;
+		}
+	    }
         } else {
             $mserr = mysqli_error($db);
-
             if ( mysqli_errno($db) != 0 ) {
                 if (!strpos($mserr,"doesn't exist")) {
                     userMessage("error", "Problem checking migration version - " . mysqli_error($db) );
                     return FALSE;
                 }
-            } else { 
-		$mif_update_query = "INSERT INTO migrations (schema, description, version) VALUES '" . $schema . "', '" . $dir . $schema . "', 0";
-		if (($result = mysqli_query($db, $mig_update_query)) != FALSE) {
-		    userMessage("error", "Problem initializing schema/version entry in migrations table - " . mysqli_error($db));
-		    return FALSE;
-		}
-	    }
+            } 
         }
 
         if($handle = opendir($dir)) {
