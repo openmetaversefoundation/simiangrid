@@ -47,21 +47,25 @@ class GetUser implements IGridService
             // Handle the special case of a request for the admin user
             if ($this->UserID == UUID::Zero)
             {
+                log_message('debug', "Request for Admin User.");
                 $sql .= " ORDER BY AccessLevel DESC LIMIT 1";
             }
             else
             {
+                log_message('debug', "Requesting by UUID - " . $this->UserID);
                 $sql .= " WHERE Users.ID=:UserID";
                 $values["UserID"] = $this->UserID;
             }
         }
         else if (isset($params["Name"]))
         {
+            log_message('debug', "Requesting by name - " . $params["Name"]);
             $sql .= " WHERE Name=:Name";
             $values["Name"] = $params["Name"];
         }
         else if (isset($params["Email"]))
         {
+            log_message('debug', "Requesting by email - " . $params["Email"]);
             $sql .= " WHERE Email=:Email";
             $values["Email"] = $params["Email"];
         }

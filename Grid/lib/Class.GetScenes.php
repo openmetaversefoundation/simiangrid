@@ -43,17 +43,23 @@ class GetScenes implements IGridService
     {
         if (isset($params["NameQuery"]))
         {
+            log_message('debug', 'Searching by name - "' . $params["NameQuery"] . '"');
             $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
                     CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                     CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
                     FROM Scenes WHERE Name LIKE :NameQuery";
             $nameQuery = '%' . $params["NameQuery"] . '%';
             
-            if (isset($params["Enabled"]) && $params["Enabled"])
+            if (isset($params["Enabled"]) && $params["Enabled"]) {
+                log_message('debug', "Restricting to Enabled scenes");
                 $sql .= " AND Enabled=1";
-            if (isset($params["MaxNumber"]))
+            }
+            if (isset($params["MaxNumber"])) {
+                log_message('debug', "Limiting to " . $params["MaxNumber"] . " scenes");
                 $sql .= " LIMIT " . intval($params["MaxNumber"]);
+            }
             
+            log_message('debug', "SQL $sql");
             $sth = $db->prepare($sql);
             
             if ($sth->execute(array(':NameQuery' => $nameQuery)))
@@ -79,11 +85,17 @@ class GetScenes implements IGridService
                     CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
                     FROM Scenes WHERE MBRIntersects(GeomFromText(:XY), XYPlane)";
             
-            if (isset($params["Enabled"]) && $params["Enabled"])
+            log_message("debug", "Searching by position - " . $this->MinPosition . "-" . $this->MaxPosition);
+
+            if (isset($params["Enabled"]) && $params["Enabled"]) {
+                log_message('debug', "Restricting to Enabled scenes");
                 $sql .= " AND Enabled=1";
-            if (isset($params["MaxNumber"]))
+            }
+            if (isset($params["MaxNumber"])) {
+                log_message('debug', "Limiting to " . $params["MaxNumber"] . " scenes");
                 $sql .= " LIMIT " . intval($params["MaxNumber"]);
-            
+            }
+
             $sth = $db->prepare($sql);
             
             if ($sth->execute(array(':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))",
@@ -116,6 +128,7 @@ class GetScenes implements IGridService
     {
         $found = array();
         
+        $scenelist = "";
         while ($obj = $sth->fetchObject())
         {
             $scene = new Scene();
@@ -131,8 +144,10 @@ class GetScenes implements IGridService
                 $scene->ExtraData = "{}";
             
             $found[] = $scene->toOSD();
+            $scenelist = $scenelist . $scene->Name . ",";
         }
         
+        log_message('debug', 'returning ' . count($found) . ' results : ' . $scenelist);
         header("Content-Type: application/json", true);
         echo '{ "Success": true, "Scenes": [' . implode(',', $found) . '] }';
         exit();
