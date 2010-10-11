@@ -226,7 +226,7 @@ class User extends Controller {
         $offset = $_GET['iDisplayStart'];
         $limit = $_GET['iDisplayLength'];
         $search = $_GET['sSearch'];
-        if ( $search == '' ) {
+        if ( $search == '' || $search == ' ' ) {
             $trunc_count = 0;
             $trunc_results = array();
         } else {

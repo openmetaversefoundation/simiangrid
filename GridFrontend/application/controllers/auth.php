@@ -126,7 +126,7 @@ class Auth extends Controller
                     }
                     $message = lang('sg_auth_register_success_validation');
                 } else {                    
-                    $message = set_message('sg_auth_register_success', anchor(site_url() + "/auth/login", 'Login'));
+                    $message = set_message('sg_auth_register_success', anchor(site_url("/auth/login"), 'Login'));
                 }        
                 push_message($message, 'info');
                 log_message('debug', "SG_Auth Succesfully created user $user_id");
