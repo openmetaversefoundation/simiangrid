@@ -405,6 +405,8 @@ $config['default_style'] = "default";
 $config['style_list'] = array(
 	'default' => 'Default Theme'
 );
+//Whether to allow style changes.
+$config['allow_style_change'] = true;
 
 //don't touch! hehe
 $config['admin_access_level'] = 200;
