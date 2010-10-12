@@ -388,13 +388,20 @@ function link_region($method_name, $params, $user_data)
 
     $req = $params[0];
 
-    $region_name = $req['region_name'];
+    if ( isset($req['region_name']) ) {
+        $region_name = $req['region_name'];
+        log_message('debug', "Using specified region name $region_name");
+    } else {
+        $region_name = $config['hypergrid_default_region'];
+        log_message('debug', "No region name specified - using $region_name");
+    }
     
     $scene = lookup_scene_by_name($region_name);
     
     $response = array();
 
     if ( $scene == null ) {
+        log_message('warn', "Unable to link to unknown region $region_name - no scene found");
         $response['result'] = 'false';
     } else {
         $response['result'] = 'true';
@@ -408,7 +415,9 @@ function link_region($method_name, $params, $user_data)
         $response['handle'] = (string)$handle;
         
         $response['region_image'] = "http://" . $scene->ExtraData['ExternalAddress'] . ":" . $scene->ExtraData['ExternalPort'] . "/index.php?method=regionImage" . str_replace('-', '', $scene->SceneID);
-        $response['external_name'] = $scene->ExtraData['ExternalAddress'];
+        $response['server_uri'] = $scene->Address;
+        $response['region_name'] = $scene->Name;
+        log_message('debug', "Succesfully linked to $region_name@" . $scene->Address);
     }
     
     return $response;
