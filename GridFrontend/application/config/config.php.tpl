@@ -443,5 +443,7 @@ $config['zoom'] = 5;
 //enable fancy tooltips. browser compatability is annoying, so disabled by default!
 $config['enable_tooltips'] = false;
 
+$config['languages'] = array('english','french');
+
 /* End of file config.php */
 /* Location: ./system/application/config/config.php */
