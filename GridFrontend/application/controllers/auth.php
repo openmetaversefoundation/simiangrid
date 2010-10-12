@@ -25,6 +25,26 @@ class Auth extends Controller
         $this->lang->load('form_validation', get_language() );
     }
     
+    function username_check($value)
+    {
+        return sg_username_check($this, $value);
+    }
+    
+    function username_exists_check($value)
+    {
+        return sg_username_exists_check($this, $value);
+    }
+    
+    function email_check($value)
+    {
+        return sg_email_check($this, $value);
+    }
+    
+    function email_exists($value)
+    {
+        return sg_email_exists($this, $value);
+    }
+    
     function index()
     {
         $this->login();
