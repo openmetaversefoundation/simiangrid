@@ -156,3 +156,11 @@ function log_message($level = 'error', $message, $php_error = FALSE)
     
     $LOG->write_log($level, $message, $php_error);
 }
+
+function log_dump($message, $thing)
+{
+    ob_start();
+    var_dump($thing);
+    $dump = ob_get_clean();
+    log_message('debug', $message . ' ' . $dump);
+}
