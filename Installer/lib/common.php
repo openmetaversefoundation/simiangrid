@@ -102,7 +102,7 @@
     function nextStep($step)
     {
         if ( $step === STEP_PHP_REQUIREMENTS ) {
-            if ( defined("WITH_DB") ) {
+            if ( dbEnabled() ) {
                 $next_step = STEP_DB_CONFIG;
             } else {
                 $next_step = STEP_CONFIG;
@@ -253,7 +253,7 @@
             installerStepSet(prevStep(installerStep()));
         }
         
-        if ( defined(WITH_DB) ) {
+        if ( dbEnabled() ) {
             $result['with_db'] = TRUE;
         } else {
             $result['with_db'] = FALSE;
