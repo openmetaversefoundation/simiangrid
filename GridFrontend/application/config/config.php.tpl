@@ -405,6 +405,8 @@ $config['default_style'] = "default";
 $config['style_list'] = array(
 	'default' => 'Default Theme'
 );
+//Whether to allow style changes.
+$config['allow_style_change'] = true;
 
 //don't touch! hehe
 $config['admin_access_level'] = 200;
@@ -442,6 +444,8 @@ $config['zoom'] = 5;
 
 //enable fancy tooltips. browser compatability is annoying, so disabled by default!
 $config['enable_tooltips'] = false;
+
+$config['languages'] = array('english','french');
 
 /* End of file config.php */
 /* Location: ./system/application/config/config.php */

@@ -3,7 +3,6 @@
 
     define("NEED_PHP_VERSION", "5.3");
     define("MYSQL_VERSION", "5.1");
-    define("WITH_DB", TRUE);
     define("INSTALLER_PROJECT", 'Simian Grid');
     
     $requiredMysqlVersion = "5.0";
@@ -30,7 +29,7 @@
         'Sessions',
         'UserData',
         'Users',
-    'migrations'
+        'migrations'
     );
     
     $dbSchemas = array('sql/');

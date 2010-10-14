@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `sgf_user_session` (
 CREATE TABLE IF NOT EXISTS `sgf_user_settings` (
 	`user_id` VARCHAR(36) NOT NULL,
 	`style` VARCHAR(16) NOT NULL,
+	`language` VARCHAR(16) NOT NULL,
 	PRIMARY KEY ( `user_id` )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 

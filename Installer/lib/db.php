@@ -297,6 +297,9 @@
 
     function dbWrite()
     {
+        if ( ! dbEnabled() ) {
+            return TRUE;
+        }
         global $dbSchemas, $dbFixtures;
         $db = dbHandle();
         if ( ! dbSelect($db) ) {
@@ -315,6 +318,16 @@
         }
         mysqli_close($db);
         return TRUE;
+    }
+    
+    function dbEnabled()
+    {
+        $result = false;
+        global $dbSchemas;
+        if ( ! empty($dbSchemas) ) {
+            $result = true;
+        }
+        return $result;
     }
 
 ?>
