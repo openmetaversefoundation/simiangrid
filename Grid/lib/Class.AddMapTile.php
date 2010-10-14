@@ -38,6 +38,8 @@ define("HALF_WIDTH", 128);
 define("ZOOM_LEVELS", 8);
 define("JPEG_QUALITY", 90);
 
+define("LOCK_FILE", "tiles.lock");
+
 class AddMapTile implements IGridService
 {
     private $dirpath;
@@ -53,18 +55,28 @@ class AddMapTile implements IGridService
         $this->dirpath = (!empty($config['map_path'])) ? $config['map_path'] : BASEPATH . 'map/';
         $filepath = $this->GetFilename(1, $x, $y);
         
-        // Save the full resolution tile
-        if (!$fp = @fopen($filepath, 'w'))
+        // Acquire a lock on the lock file
+        $lockfile = $this->dirpath . LOCK_FILE;
+        if (!$lock = @fopen($lockfile, 'ab'))
         {
-            log_message('error', "Failed to map tile file " . $filepath . " for writing");
+            log_message('error', "Failed to create or open lock file " . $lockfile);
             
             header("Content-Type: application/json", true);
             echo '{ "Message": "Unable to store map tile" }';
             exit();
         }
-        flock($fp, LOCK_EX);
+        flock($lock, LOCK_EX);
+        
+        // Save the full resolution tile
+        if (!$fp = @fopen($filepath, 'w'))
+        {
+            log_message('error', "Failed to open map tile " . $filepath . " for writing");
+            
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Unable to store map tile" }';
+            exit();
+        }
         fwrite($fp, $tile->Data);
-        flock($fp, LOCK_UN);
         fclose($fp);
         
         // Also save in JPG format
@@ -86,6 +98,10 @@ class AddMapTile implements IGridService
                 exit();
             }
         }
+        
+        // Release the lock on the lock file
+        flock($lock, LOCK_UN);
+        fclose($lock);
         
         header("Content-Type: application/json", true);
         echo '{ "Success": true }';
