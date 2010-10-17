@@ -6,3 +6,12 @@ Grid/map/map-*.png
 #LogFiles
 Grid/logs/log-*.php
 GridFrontend/system/logs/log-*.php
+#Config Files
+Grid/config/config.php
+GridFrontend/application/config/config.php
+GridFrontend/application/config/database.php
+GridWebDAV/config/config.php
+#Installer Lock Files
+Grid/InstallLock_Simian_Grid
+GridFrontend/InstallLock_Simian_Grid_Frontend
+GridWebDAV/InstallLock_Simian_Grid_WebDAV
