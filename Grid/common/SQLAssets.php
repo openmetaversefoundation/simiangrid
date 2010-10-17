@@ -37,15 +37,38 @@
 class SQLAssets
 {
     private $conn;
+    private $accessupdate = 0;
 
     public function __construct($db_conn)
     {
+        $config =& get_config();
+        if (isset($config['access_update_interval']))
+            $this->accessupdate = $config['access_update_interval'];
+
         if (!$db_conn || !($db_conn instanceof PDO))
             throw new Exception("SQLAssets::__construct expects first parameter passed to be a valid database resource. " . print_r($db_conn, true));
         
         $this->conn = $db_conn;
     }
     
+    private function UpdateLastAccessedTime($assetID,$age)
+    {
+        if ($this->accessupdate == 0)
+            return false;
+
+        if ($age > $this->accessupdate)
+        {
+            log_message('debug',"[SQLAssets] update LastAccessed for $assetID ($age)");
+            $asql = "UPDATE AssetData SET LastAccessed=CURRENT_TIMESTAMP where ID=:ID";
+            $asth = $this->conn->prepare($asql);
+            if ($asth->execute(array(':ID' => $assetID)))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function GetAssetMetadata($assetID)
     {
         $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
@@ -107,6 +130,8 @@ class SQLAssets
                 $asset->Temporary = $obj->Temporary;
                 $asset->Public = $obj->Public;
                 
+                $this->UpdateLastAccessedTime($assetID,$obj->Age);
+
                 return $asset;
             }
         }

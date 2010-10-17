@@ -16,6 +16,12 @@ $config['db_driver'] = "mysql";
 $config['db_prefix'] = "";
 $config['db_persistent'] = TRUE;
 
+// This is the number of days between updates to LastAccess for Assets
+// and is useful if you want to clean up unused Assets from the Db
+// 0 turns off all updates and is the old behavior
+$config['access_update_interval'] = 0;
+
+
 /*
 |--------------------------------------------------------------------------
 | Service URLs

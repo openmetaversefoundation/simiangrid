@@ -1,0 +1,4 @@
+START TRANSACTION ;
+ALTER TABLE `AssetData` CHANGE COLUMN `LastAccessed` `LastAccessed` TIMESTAMP NOT NULL;
+ALTER TABLE `AssetData` DROP INDEX `last_accessed`;
+COMMIT ;
