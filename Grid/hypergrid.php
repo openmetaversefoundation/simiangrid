@@ -53,6 +53,7 @@ if ( $_SERVER['REQUEST_METHOD'] != 'POST' ) {
 }
 
 if ( isset($_SERVER['PATH_INFO'] ) ) {
+    log_message('debug', "PARSING PATH INFO " . $_SERVER['PATH_INFO']);
     $path_bits = explode('/', $_SERVER['PATH_INFO']);
     if ( count($path_bits) > 0 ) {
         $data = file_get_contents("php://input");
@@ -78,6 +79,8 @@ xmlrpc_server_register_method($xmlrpc_server, "agent_is_coming_home", "agent_is_
 
 $request_xml = file_get_contents("php://input");
 
+log_message('debug', "RECEIVING THIS -> $request_xml");
+
 $response = xmlrpc_server_call_method($xmlrpc_server, $request_xml, '');
 
 header('Content-Type: text/xml');
@@ -99,6 +102,9 @@ function decode_recursive_json($json)
 {   
     if ( is_string($json) ) {
         $response = json_decode($json, TRUE);
+        if ( $response === null || ! is_array($response) ) {
+            return $json;
+        }
     } else if ( is_array($json) ) {
         $response = $json;
     } else {
@@ -283,17 +289,20 @@ function add_wearable(&$wearables, $appearance, $wearableName)
         $wearables[] = UUID::Zero;
 }
 
-function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appearance, $attachments,
-    $sessionID, $secureSessionID, $startPosition, $capsPath)
+function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $wearables, $attachments, $sessionID, $secureSessionID, $startPosition, $capsPath)
 {
-    $regionBaseUrl = $scene->Address;
-    if (!ends_with($regionBaseUrl, '/'))
-        $regionBaseUrl .= '/';
-    $regionUrl = $regionBaseUrl . 'agent/' . $userID . '/';
+    return create_opensim_presence_full($scene->Address, $scene->Name, $scene->ID, $scene->MinPosition->X, $scene->MinPosition->Y, $userID, $circuitCode, $fullName, $wearables, $attachments, $sessionID, $secureSessionID, $startPosition, $capsPath, null, null);
+}
+
+function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $scene_x, $scene_y, $userID, $circuitCode, $fullName, $wearables, $attachments, $sessionID, $secureSessionID, $startPosition, $capsPath, $client_ip, $service_urls)
+{
+    if (!ends_with($server_uri, '/'))
+        $server_uri .= '/';
+    $regionUrl = $server_uri . 'agent/' . $userID . '/';
     
     list($firstName, $lastName) = explode(' ', $fullName);
 
-    $response = webservice_post($regionUrl, array(
+    $request = array(
         'agent_id' => $userID,
         'caps_path' => $capsPath,
         'child' => false,
@@ -304,14 +313,23 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
         'secure_session_id' => $secureSessionID,
         'start_pos' => (string)$startPosition,
         'appearance_serial' => 1,
-        'destination_x' => $scene->MinPosition->X,
-        'destination_y' => $scene->MinPosition->Y,
-        'destination_name' => $scene->Name,
-        'destination_uuid' => $scene->SceneID,
+        'destination_x' => $scene_x,
+        'destination_y' => $scene_y,
+        'destination_name' => $scene_name,
+        'destination_uuid' => $scene_uuid,
         'wearables' => $wearables,
-        'attachments' => $attached,
+        'attachments' => $attachments,
         'teleport_flags' => 128
-    ), true);
+    );
+    if ( $client_ip != null ) {
+        $request['client_ip'] = $client_ip;
+    }
+    if ( $service_urls != null ) {
+        $request['service_urls'] = $service_urls;
+    }
+    $response = webservice_post($regionUrl, $request, true);
+    
+    log_dump("webservice post response", $response);
     
     if (!empty($response['success']))
     {
@@ -388,7 +406,7 @@ function link_region($method_name, $params, $user_data)
 
     $req = $params[0];
 
-    if ( isset($req['region_name']) ) {
+    if ( isset($req['region_name']) && strlen($req['region_name']) > 0 ) {
         $region_name = $req['region_name'];
         log_message('debug', "Using specified region name $region_name");
     } else {
@@ -414,9 +432,9 @@ function link_region($method_name, $params, $user_data)
         $handle = bitOr($handle, (string)$y, 0);
         $response['handle'] = (string)$handle;
         
-        $response['region_image'] = "http://" . $scene->ExtraData['ExternalAddress'] . ":" . $scene->ExtraData['ExternalPort'] . "/index.php?method=regionImage" . str_replace('-', '', $scene->SceneID);
+        $response['region_image'] = "http://" . $scene->ExtraData['ExternalAddress'] . ":" .
         $response['server_uri'] = $scene->Address;
-        $response['region_name'] = $scene->Name;
+        $response['external_name'] = $scene->Name;
         log_message('debug', "Succesfully linked to $region_name@" . $scene->Address);
     }
     
@@ -433,7 +451,7 @@ function get_region($method_name, $params, $user_data)
     $scene = lookup_scene_by_id($regionid);
     
     $response = array();
-    
+    $config =& get_config();
     if ( $scene == null ) {
         $response['result'] = "false";
     } else {
@@ -442,17 +460,63 @@ function get_region($method_name, $params, $user_data)
         $response['x'] = (string) $scene->MinPosition->X;
         $response['y'] = (string) $scene->MinPosition->Y;
         $response['region_name'] = $scene->Name;
+        $response['server_uri'] = $scene->Address;
         $response['hostname'] = $scene->ExtraData['ExternalAddress'];
-        $response['http_port'] = (string) $scene->ExtraData['ExternalPort'];
-        $response['internal_port'] = (string) $scene->ExtraData['InternalPort'];
+        $response['internal_port'] = (string) $scene->ExtraData['ExternalPort'];
     }
 
     return $response;
 }
 
-function foreignagent_handler()
+function foreignagent_handler($path_tail, $data)
 {
-    // FIXME: How do we handle this?
+    log_message('debug', "server method is " . $_SERVER['REQUEST_METHOD']);
+    log_message('info', 'foreign_agent called');
+    
+    $userid = $path_tail[0];
+    $osd = decode_recursive_json($data);
+    
+    $dest_x = $osd['destination_x'];
+    $dest_y = $osd['destination_y'];
+    
+    if ( $dest_x == null ) {
+        $dest_x = 0;
+    }
+    if ( $dest_y == null ) {
+        $dest_y = 0;
+    }
+    
+    $caps_path = $osd['caps_path'];
+    $username = $osd['first_name'] . ' ' . $osd['last_name'];
+    $circuit_code = $osd['circuit_code'];
+    $session_id = $osd['session_id'];
+    $secure_session_id = $osd['secure_session_id'];
+    $start_pos = $osd['start_pos'];
+    $appearance = $osd['wearables'];
+    if ( isset($osd['attachments']) ) {
+        $attachments = $osd['attachments'];
+    } else {
+        $attachments = array();
+    }
+    $service_urls = $osd['service_urls'];
+    $client_ip = $osd['client_ip'];
+    
+    $dest_uuid = $osd['destination_uuid'];
+    $dest_name = $osd['destination_name'];
+    
+    if ( $dest_uuid == null || $dest_name == null ) {
+        header("HTTP/1.1 400 Bad Request");
+        echo "missing destination_name and/or destination_uuid";
+        exit();
+    }
+    
+    $scene = lookup_scene_by_id($dest_uuid);
+    
+    $result = create_opensim_presence_full($scene->Address, $dest_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $attachments, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $service_urls);
+    
+    echo "{'success': $result, 'reason': 'no reason set lol', 'your_ip': '" . $_SERVER['REMOTE_ADDR'] . "'}";
+    exit();
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -619,8 +683,6 @@ function homeagent_handler($path_tail, $data)
         exit();
     }
     
-    #$agent_id = $osd['agent_id'];
-    $base_folder = $osd['base_folder'];
     $caps_path = $osd['caps_path'];
     $username = $osd['first_name'] . ' ' . $osd['last_name'];
     $circuit_code = $osd['circuit_code'];
