@@ -46,12 +46,16 @@ class GetAsset implements IGridService
         
         if ($headrequest)
         {
+            $request_type = "Meta";
             $asset = $assets->GetAssetMetadata($asset->ID);
         }
         else
         {
+            $request_type = "Full";
             $asset = $assets->GetAsset($asset->ID);
         }
+        
+        log_message('debug', "GetAsset Requesting $request_type asset");
         
         if ($asset)
         {
