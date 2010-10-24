@@ -294,7 +294,7 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $wear
     return create_opensim_presence_full($scene->Address, $scene->Name, $scene->ID, $scene->MinPosition->X, $scene->MinPosition->Y, $userID, $circuitCode, $fullName, $wearables, $attachments, $sessionID, $secureSessionID, $startPosition, $capsPath, null, null, null);
 }
 
-function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $scene_x, $scene_y, $userID, $circuitCode, $fullName, $wearables, $attachments, $sessionID, $secureSessionID, $startPosition, $capsPath, $client_ip, $service_urls, $tp_flags)
+function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $scene_x, $scene_y, $userID, $circuitCode, $fullName, $wearables, $attachments, $sessionID, $secureSessionID, $startPosition, $capsPath, $client_ip, $service_urls, $tp_flags, $service_session_id)
 {
     if (!ends_with($server_uri, '/'))
         $server_uri .= '/';
@@ -318,13 +318,17 @@ function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $sc
         'destination_name' => $scene_name,
         'destination_uuid' => $scene_uuid,
         'wearables' => $wearables,
-        'attachments' => $attachments
+        'attachments' => $attachments,
+        'child' => true
     );
     if ( $client_ip != null ) {
         $request['client_ip'] = $client_ip;
     }
     if ( $service_urls != null ) {
         $request['service_urls'] = $service_urls;
+    }
+    if ( $service_session_id != null ) {
+        $request['service_session_id'] = $service_session_id;
     }
     if ( $tp_flags != null ) {
         $request['teleport_flags'] = $tp_flags;
@@ -527,6 +531,7 @@ function foreignagent_handler($path_tail, $data)
     $circuit_code = $osd['circuit_code'];
     $session_id = $osd['session_id'];
     $secure_session_id = $osd['secure_session_id'];
+    $service_session_id = $osd['service_session_id'];
     $start_pos = $osd['start_pos'];
     $appearance = $osd['wearables'];
     if ( isset($osd['attachments']) ) {
@@ -556,7 +561,7 @@ function foreignagent_handler($path_tail, $data)
     bump_user($userid, $username, "$username@HG LOLOL");
     create_session($userid, $session_id, $secure_session_id);
     
-    $result = create_opensim_presence_full($scene->Address, $dest_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $attachments, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $service_urls, 128);
+    $result = create_opensim_presence_full($scene->Address, $dest_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $attachments, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $service_urls, 1073741824, $service_session_id);
     
     echo "{'success': $result, 'reason': 'no reason set lol', 'your_ip': '" . $_SERVER['REMOTE_ADDR'] . "'}";
     exit();
