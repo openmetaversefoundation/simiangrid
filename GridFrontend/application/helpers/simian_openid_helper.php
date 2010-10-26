@@ -85,6 +85,8 @@
                     $data['email'] = $ax->getSingle('http://axschema.org/contact/email');
                 if (isset($ax->data['http://axschema.org/namePerson/first'])) {
                     $first_name = $ax->getSingle('http://axschema.org/namePerson/first');
+                } else {
+                    $first_name = "Sample";
                 }
                 if (isset($ax->data['http://axschema.org/namePerson/last'])) {
                     $last_name = $ax->getSingle('http://axschema.org/namePerson/last');
