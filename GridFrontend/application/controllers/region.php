@@ -136,13 +136,14 @@ class Region extends Controller {
         
         if ( $data['scene_data']['Enabled'] ) {
             $details = $this->simiangrid->simulator_details($uuid);
-            foreach ( $details as $key => $value ) {
-                if ( $key != 'version' && $key != 'uptime' ) {
-                    $this->table->add_row(lang("sg_stat_$key"), $value);
+            if ( $details != null && is_array($details) ) {
+                foreach ( $details as $key => $value ) {
+                    if ( $key != 'version' && $key != 'uptime' ) {
+                        $this->table->add_row(lang("sg_stat_$key"), $value);
+                    }
                 }
             }
-        }
-        return parse_template('region/stats', $data, true);
+        }        return parse_template('region/stats', $data, true);
     }
     
     function _scene_extra_info($uuid, &$data)
