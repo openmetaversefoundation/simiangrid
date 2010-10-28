@@ -108,9 +108,9 @@ class SQLAssets
     
     public function GetAsset($assetID)
     {
-        $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public, Temporary,
-                LENGTH(Data) as ContentLength, Data FROM AssetData WHERE ID=:ID";
-        
+        $sql = "SELECT SHA256, TIMESTAMPDIFF(DAY,IFNULL(LastAccessed,MAKEDATE(2000,1)),CURRENT_TIMESTAMP) as Age, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public, Temporary,
+				LENGTH(Data) as ContentLength, Data FROM AssetData WHERE ID=:ID";
+
         $sth = $this->conn->prepare($sql);
         
         if ($sth->execute(array(':ID' => $assetID)))
@@ -150,9 +150,9 @@ class SQLAssets
         $p = ($asset->Public) ? '1' : '0';
         $t = ($asset->Temporary) ? '1' : '0';
         
-        $sql = "INSERT INTO AssetData (ID, Data, ContentType, CreatorID, SHA256, Public, Temporary)
-                VALUES (:ID, :Data, :ContentType, :CreatorID, :SHA256, $p, $t)
-                ON DUPLICATE KEY UPDATE Data=VALUES(Data), SHA256=VALUES(SHA256), Public=VALUES(Public), Temporary=VALUES(Temporary)";
+        $sql = "INSERT INTO AssetData (ID, Data, ContentType, CreatorID, SHA256, Public, Temporary, LastAccessed)
+        		VALUES (:ID, :Data, :ContentType, :CreatorID, :SHA256, $p, $t, CURRENT_TIMESTAMP)
+        		ON DUPLICATE KEY UPDATE Data=VALUES(Data), SHA256=VALUES(SHA256), Public=VALUES(Public), Temporary=VALUES(Temporary)";
         
         $sth = $this->conn->prepare($sql);
         
