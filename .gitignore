@@ -15,3 +15,6 @@ GridWebDAV/config/config.php
 Grid/InstallLock_Simian_Grid
 GridFrontend/InstallLock_Simian_Grid_Frontend
 GridWebDAV/InstallLock_Simian_Grid_WebDAV
+#
+# stupid Macs
+.DS_Store
