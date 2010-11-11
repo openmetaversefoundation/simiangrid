@@ -111,6 +111,7 @@ class MongoAssets
     public function AddAsset($asset, &$created)
     {
         $obj = array(
+            'ID' => $asset->ID,
             'CreatorID' => $asset->CreatorID,
             'ContentLength' => $asset->ContentLength,
             'ContentType' => $asset->ContentType,
