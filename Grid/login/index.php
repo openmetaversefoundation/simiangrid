@@ -46,6 +46,9 @@ require_once(BASEPATH . 'common/Scene.php');
 require_once(BASEPATH . 'common/SceneLocation.php');
 require_once(BASEPATH . 'common/Session.php');
 
+define('LOGINPATH', str_replace("\\", "/", realpath(dirname(__FILE__)) . '/'));
+require_once(LOGINPATH . 'lib/Class.Appearance.php');
+
 ///////////////////////////////////////////////////////////////////////////////
 // XML-RPC Server
 
@@ -96,7 +99,7 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     $curl = new Curl();
     $response = $curl->simple_post($url, $params);
     
-    //log_message('debug', sprintf('Response received from %s POST to %s: %s', $requestMethod, $url, $response));
+    // log_message('debug', sprintf('Response received from %s POST to %s: %s', $requestMethod, $url, $response));
     
     // JSON decode the response
     $response = json_decode($response, TRUE);
@@ -564,26 +567,15 @@ function find_start_location($start, $lastLocation, $homeLocation, &$scene, &$st
     return false;
 }
 
-function add_wearable(&$wearables, $appearance, $wearableName)
-{
-    $uuid = null;
-    
-    // ItemID
-    if (isset($appearance[$wearableName . 'Item']) && UUID::TryParse($appearance[$wearableName . 'Item'], $uuid))
-        $wearables[] = $uuid;
-    else
-        $wearables[] = UUID::Zero;
-    
-    // AssetID
-    if (isset($appearance[$wearableName . 'Asset']) && UUID::TryParse($appearance[$wearableName . 'Asset'], $uuid))
-        $wearables[] = $uuid;
-    else
-        $wearables[] = UUID::Zero;
-}
-
-function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appearance, $attachments,
+function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appearance,
     $sessionID, $secureSessionID, $startPosition, &$seedCapability)
 {
+    // These configuration variables give you some control over opensim versions
+    // send_packedapp should be false to support older opensim versions
+    $config =& get_config();
+    $sendPackedAppearance = isset($config['send_packedapp']) ? $config['send_packedapp'] : true;
+    $sendWearables = isset($config['send_wearables']) ? $config['send_wearables'] : false;
+
     $regionBaseUrl = $scene->Address;
     if (!ends_with($regionBaseUrl, '/'))
         $regionBaseUrl .= '/';
@@ -592,66 +584,47 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
     list($firstName, $lastName) = explode(' ', $fullName);
     $capsPath = UUID::Random();
     
-    $wearables = array();
-    $attached = array();
-    
-    if (isset($appearance))
+    log_message('warn','[LOGIN] create opensim session');
+
+    $params = array(
+                    'agent_id' => $userID,
+                    'caps_path' => $capsPath,
+                    'child' => false,
+                    'circuit_code' => $circuitCode,
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'session_id' => $sessionID,
+                    'secure_session_id' => $secureSessionID,
+                    'start_pos' => (string)$startPosition,
+                    'destination_x' => $scene->MinPosition->X,
+                    'destination_y' => $scene->MinPosition->Y,
+                    'destination_name' => $scene->Name,
+                    'destination_uuid' => $scene->SceneID,
+                    'appearance_serial' => 1,
+                    'teleport_flags' => 128);
+
+    if ($sendPackedAppearance)
     {
-        add_wearable($wearables, $appearance, 'Shape');
-        add_wearable($wearables, $appearance, 'Skin');
-        add_wearable($wearables, $appearance, 'Hair');
-        add_wearable($wearables, $appearance, 'Eyes');
-        add_wearable($wearables, $appearance, 'Shirt');
-        add_wearable($wearables, $appearance, 'Pants');
-        add_wearable($wearables, $appearance, 'Shoes');
-        add_wearable($wearables, $appearance, 'Socks');
-        add_wearable($wearables, $appearance, 'Jacket');
-        add_wearable($wearables, $appearance, 'Gloves');
-        add_wearable($wearables, $appearance, 'Undershirt');
-        add_wearable($wearables, $appearance, 'Underpants');
-        add_wearable($wearables, $appearance, 'Skirt');
+        $params['packed_appearance'] = $appearance->GetPackedAppearance();
     }
-    
-    if (isset($attachments))
+
+    if ($sendWearables)
     {
-        $i = 0;
-        
-        foreach ($attachments as $key => $item)
-        {
-            if (substr($key, 0, 4) === '_ap_')
-            {
-                $point = (int)substr($key, 4);
-                $attached[$i++] = array('point' => $point, 'item' => $item);
-            }
-        }
+        $params['wearables'] = $appearance->GetWearables();
+        $params['attachments'] = $appearance->GetAttachments();
     }
-    
-    $response = webservice_post($regionUrl, array(
-        'agent_id' => $userID,
-        'caps_path' => $capsPath,
-        'child' => false,
-        'circuit_code' => $circuitCode,
-        'first_name' => $firstName,
-        'last_name' => $lastName,
-        'session_id' => $sessionID,
-        'secure_session_id' => $secureSessionID,
-        'start_pos' => (string)$startPosition,
-        'appearance_serial' => 1,
-        'destination_x' => $scene->MinPosition->X,
-        'destination_y' => $scene->MinPosition->Y,
-        'destination_name' => $scene->Name,
-        'destination_uuid' => $scene->SceneID,
-        'wearables' => $wearables,
-        'attachments' => $attached,
-        'teleport_flags' => 128
-    ), true);
-    
+
+    $response = webservice_post($regionUrl, $params, true);
     if (!empty($response['success']))
     {
+        log_message('warn','[LOGIN] created opensim session');
+
         // This is the hardcoded format OpenSim uses for seed capability URLs
         $seedCapability = $regionBaseUrl . 'CAPS/' . $capsPath . '0000/';
         return true;
     }
+
+    log_message('warn','[LOGIN] failed to created opensim session');
     
     $seedCapability = null;
     return false;
@@ -802,10 +775,9 @@ function process_login($method_name, $params, $user_data)
     
     // Prepare a login to the destination scene
     $seedCapability = NULL;
-    $llappearance = isset($user['LLAppearance']) ? json_decode($user['LLAppearance'], true) : null;
-    $llattachments = isset($user['LLAttachments']) ? json_decode($user['LLAttachments'], true) : null;
+    $llappearance = new Appearance($user);
     
-    if (!create_opensim_presence($scene, $userID, $circuitCode, $fullname, $llappearance, $llattachments,
+    if (!create_opensim_presence($scene, $userID, $circuitCode, $fullname, $llappearance,
         $sessionID, $secureSessionID, $startPosition, $seedCapability))
     {
         return array('reason' => 'presence', 'login' => 'false',
@@ -843,9 +815,9 @@ function process_login($method_name, $params, $user_data)
     {
         $option = str_replace('-', '_', $req['options'][$i]);
         
-        if (file_exists("options/Class.$option.php"))
+        if (file_exists(LOGINPATH . "options/Class.$option.php"))
         {
-            if (include_once("options/Class.$option.php"))
+            if (include_once(LOGINPATH . "options/Class.$option.php"))
             {
                 $instance = new $option($user);
                 $response[$req["options"][$i]] = $instance->GetResults();
