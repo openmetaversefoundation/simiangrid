@@ -55,10 +55,16 @@ require_once(LOGINPATH . 'lib/Class.Appearance.php');
 $xmlrpc_server = xmlrpc_server_create();
 xmlrpc_server_register_method($xmlrpc_server, "login_to_simulator", "process_login");
 
+// Read the request
 $request_xml = file_get_contents("php://input");
 
-$response = xmlrpc_server_call_method($xmlrpc_server, $request_xml, '');
+// Check for a login capability
+$authUserID = NULL;
+if (isset($_GET['cap']))
+    $authUserID = get_capability($_GET['cap']);
 
+// Build the response 
+$response = xmlrpc_server_call_method($xmlrpc_server, $request_xml, $authUserID);
 header('Content-Type: text/xml');
 echo $response;
 
@@ -128,6 +134,22 @@ function authorize_identity($name, $passHash)
         UUID::TryParse($response['UserID'], $userID);
     
     return $userID;
+}
+
+function get_capability($capID)
+{
+    $config =& get_config();
+    $userService = $config['user_service'];
+    
+    $response = webservice_post($userService, array(
+        'RequestMethod' => 'GetCapability',
+        'CapabilityID' => $capID)
+    );
+    
+    if (!empty($response['Success']) && !empty($response['OwnerID']))
+        return $response['OwnerID'];
+    
+    return null;
 }
 
 function get_user($userID)
@@ -632,7 +654,7 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
 
 ///////////////////////////////////////////////////////////////////////////////
 
-function process_login($method_name, $params, $user_data)
+function process_login($method_name, $params, $userID)
 {
     $config =& get_config();
     $userService = $config['user_service'];
@@ -643,22 +665,30 @@ function process_login($method_name, $params, $user_data)
     $fullname = $req["first"] . ' ' . $req["last"];
     
     // Sanity check the request, make sure it's somewhat valid
-    if (!isset($req["first"], $req["last"], $req["passwd"]) ||
-        empty($req["first"]) || empty($req["last"]) || empty($req["passwd"]))
-    {
-        return array('reason' => 'key' , 'login' => 'false' , 'message' =>
-            "Login request must contain a first name, last name, and password and they cannot be blank");
-    }
-    
-    // Authorize the first/last/password and resolve it to a user account UUID
-    $userID = authorize_identity($fullname, $req['passwd']);
     if (empty($userID))
     {
-        return array('reason' => 'key' , 'login' => 'false' , 'message' =>
-            "Sorry! We couldn't log you in.\nPlease check to make sure you entered the right\n    * Account name\n    * Password\nAlso, please make sure your Caps Lock key is off.");
+        if (!isset($req["first"], $req["last"], $req["passwd"]) ||
+            empty($req["first"]) || empty($req["last"]) || empty($req["passwd"]))
+        {
+            return array('reason' => 'key' , 'login' => 'false' , 'message' =>
+                "Login request must contain a first name, last name, and password and they cannot be blank");
+        }
+        
+        // Authorize the first/last/password and resolve it to a user account UUID
+        $userID = authorize_identity($fullname, $req['passwd']);
+        
+        if (empty($userID))
+        {
+            return array('reason' => 'key' , 'login' => 'false' , 'message' =>
+                "Sorry! We couldn't log you in.\nPlease check to make sure you entered the right\n    * Account name\n    * Password\nAlso, please make sure your Caps Lock key is off.");
+        }
+        
+        log_message('debug', sprintf("Authorization success for %s", $userID));
     }
-    
-    log_message('debug', sprintf("Authorization success for %s", $userID));
+    else
+    {
+        log_message('debug', sprintf("Using pre-authenticated capability for %s", $userID));
+    }
     
     // Get information about the user account
     $user = get_user($userID);
