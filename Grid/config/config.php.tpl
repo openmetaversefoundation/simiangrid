@@ -205,3 +205,9 @@ $config['validation_required'] = false;
 //User Access Level at which Users will not be blocked by
 //Either email validation or closed grids
 $config['access_level_minimum'] = 200;
+
+// Settings for appearance
+// These configuration variables give you some control over opensim versions
+// send_packedapp should be false to support older opensim versions
+$config['send_packedapp'] = true;
+$config['send_wearables'] = false;

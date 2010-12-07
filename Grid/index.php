@@ -93,9 +93,9 @@ catch (Exception $ex)
 if (isset($_GET['cap']))
 {
     // Capability routing
-    $resourceURL = '';
+    $resource = '';
     
-    $sql = "SELECT Resource FROM Capabilities WHERE ID=:ID AND ExpirationDate > NOW() LIMIT 1";
+    $sql = "SELECT OwnerID,Resource FROM Capabilities WHERE ID=:ID AND ExpirationDate > NOW() LIMIT 1";
     
     $sth = $db->prepare($sql);
     
@@ -104,31 +104,35 @@ if (isset($_GET['cap']))
         if ($sth->rowCount() > 0)
         {
             $obj = $sth->fetchObject();
-            $resourceURL = $obj->Resource;
+            $resource = $obj->Resource;
             
-            // TODO: Handle relative resource URLs
-            
-            if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
+            switch ($resource)
             {
-                // FIXME: Implement POST capability routing
-                $curl = new Curl();
-                $curl->create($resourceURL);
-            }
-            else if (stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE)
-            {
-                // FIXME: Properly proxy response codes
-                $curl = new Curl();
-                $curl->create($resourceURL);
-                echo $curl->execute();
-                exit();
-            }
-            else
-            {
-                log_message('warn', "Don't know how to route method " . $_SERVER['REQUEST_METHOD'] . " for capability $resourceURL");
-                
-                header("HTTP/1.1 400 Bad Request");
-                echo 'Request method not understood';
-                exit();
+                case 'admin':
+                    // TODO: Allow access to all API methods
+                    log_message('error', "Admin capability routing not implemented");
+                    header("HTTP/1.1 400 Bad Request");
+                    echo 'Request method not understood';
+                    exit();
+                    break;
+                case 'simulator':
+                    // TODO: Allow access to API methods that are safe for simulators
+                    log_message('error', "Simulator capability routing not implemented");
+                    header("HTTP/1.1 400 Bad Request");
+                    echo 'Request method not understood';
+                    exit();
+                    break;
+                case 'login':
+                    // Authenticated login
+                    log_message('warn', "Attempted direct access to login capability for owner " . $obj->OwnerID);
+                    header("HTTP/1.1 400 Bad Request");
+                    echo 'Login capabilities can only be accessed through the login server';
+                    exit();
+                default:
+                    log_message('warn', "Unrecognized capability resource " . $resource);
+                    header("HTTP/1.1 500 Internal Server Error");
+                    echo 'Invalid capability';
+                    exit();
             }
         }
         else
