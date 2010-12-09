@@ -40,8 +40,6 @@ class AddCapability implements IGridService
 
     public function Execute($db, $params)
     {
-        // TODO: Sanity check the expiration date
-        // TODO: Also run a regex on Resource to make sure it's a valid (relative or absolute) URL
         if (!isset($params["OwnerID"], $params["Resource"], $params["Expiration"]) ||
             !UUID::TryParse($params["OwnerID"], $this->OwnerID))
         {
@@ -54,10 +52,20 @@ class AddCapability implements IGridService
             $this->CapabilityID = UUID::Random();
         
         $resource = $params["Resource"];
-        $expiration = $params["Expiration"];
+        $expiration = intval($params["Expiration"]);
         
-        $sql = "INSERT INTO Capabilities (ID, OwnerID, Resource, ExpirationDate) VALUES (:ID, :OwnerID, :Resource, :ExpirationDate)
-                ON DUPLICATE KEY UPDATE OwnerID=VALUES(OwnerID), Resource=VALUES(Resource), ExpirationDate=VALUES(ExpirationDate)";
+        // Sanity check the expiration date
+        if ($expiration <= time())
+        {
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Invalid expiration date ' . $expiration . '" }';
+            exit();
+        }
+        
+        log_message('debug', "Creating capability " . $this->CapabilityID . " owned by " . $this->OwnerID . " mapping to $resource until $expiration");
+        
+        $sql = "INSERT INTO Capabilities (ID, OwnerID, Resource, ExpirationDate) VALUES (:ID, :OwnerID, :Resource, FROM_UNIXTIME(:ExpirationDate))
+                ON DUPLICATE KEY UPDATE ID=VALUES(ID), Resource=VALUES(Resource), ExpirationDate=VALUES(ExpirationDate)";
         
         $sth = $db->prepare($sql);
         

@@ -46,19 +46,19 @@ class GetCapability implements IGridService
             exit();
         }
         
-        $sql = "SELECT OwnerID,Resource,Expiration FROM Capabilities WHERE ID=:ID AND ExpirationDate > NOW() LIMIT 1";
+        $sql = "SELECT OwnerID,Resource,UNIX_TIMESTAMP(ExpirationDate) AS ExpirationDate FROM Capabilities WHERE ID=:ID AND UNIX_TIMESTAMP(ExpirationDate) > UNIX_TIMESTAMP() LIMIT 1";
         
         $sth = $db->prepare($sql);
         
-        if ($sth->execute(array(':ID' => $_GET['cap'])))
+        if ($sth->execute(array(':ID' => $this->CapabilityID)))
         {
             if ($sth->rowCount() > 0)
             {
                 $obj = $sth->fetchObject();
                 
                 header("Content-Type: application/json", true);
-                echo sprintf('{"Success": true, "CapabilityID": "%s", "OwnerID": "%s", Resource: "%s", Expiration: %u}',
-                    $this->CapabilityID, $obj->OwnerID, $obj->Resource, $obj->Expiration);
+                echo sprintf('{"Success": true, "CapabilityID": "%s", "OwnerID": "%s", "Resource": "%s", "Expiration": %u}',
+                    $this->CapabilityID, $obj->OwnerID, $obj->Resource, $obj->ExpirationDate);
                 exit();
             }
             else
@@ -68,21 +68,12 @@ class GetCapability implements IGridService
                 exit();
             }
         }
-        else
-        {
-            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-            log_message('debug', sprintf("Query: %s", $sql));
-            
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
-            exit();
-        }
         
-        if ($sth->execute(array(':ID' => $this->CapabilityID , ':OwnerID' => $this->OwnerID , ':Resource' => $resource , ':ExpirationDate' => $expiration)))
-        {
-            header("Content-Type: application/json", true);
-            echo sprintf('{"Success": true, "CapabilityID": "%s"}', $this->CapabilityID);
-            exit();
-        }
+        log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+        log_message('debug', sprintf("Query: %s", $sql));
+        
+        header("Content-Type: application/json", true);
+        echo '{ "Message": "Database query error" }';
+        exit();
     }
 }
