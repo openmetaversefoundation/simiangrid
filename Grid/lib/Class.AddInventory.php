@@ -178,7 +178,8 @@ class AddInventory implements IGridService
                 
                 $item->Name = $items[$i]['Name'];
                 $item->AssetID = UUID::Parse($items[$i]['AssetID']);
-                $item->ExtraData = $items[$i]['ExtraData'];
+                if (array_key_exists('ExtraData', $items[$i]))
+                    $item->ExtraData = $items[$i]['ExtraData'];
                 
                 if (!$this->Inventory->InsertNode($item))
                 {
