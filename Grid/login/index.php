@@ -60,9 +60,9 @@ $request_xml = file_get_contents("php://input");
 
 // Check for a login capability
 $authUserID = NULL;
-if (isset($_GET['cap']))
+if ( ! empty($_GET['cap']))
     $authUserID = get_capability($_GET['cap']);
-
+    
 // Build the response 
 $response = xmlrpc_server_call_method($xmlrpc_server, $request_xml, $authUserID);
 header('Content-Type: text/xml');
@@ -146,7 +146,7 @@ function get_capability($capID)
         'CapabilityID' => $capID)
     );
     
-    if (!empty($response['Success']) && !empty($response['OwnerID']))
+    if (!empty($response['Success']) && $response['Resource'] == 'login')
         return $response['OwnerID'];
     
     return null;
@@ -675,6 +675,7 @@ function process_login($method_name, $params, $userID)
         }
         
         // Authorize the first/last/password and resolve it to a user account UUID
+        log_message('debug', "Doing password-based authorization for user $fullname");
         $userID = authorize_identity($fullname, $req['passwd']);
         
         if (empty($userID))
