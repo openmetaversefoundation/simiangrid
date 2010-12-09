@@ -229,6 +229,7 @@ namespace VWRAPLauncher
             viewerItem.BackColor = panel.BackColor;
             viewerItem.Dock = DockStyle.Top;
             viewerItem.Click += HighlightItem;
+            viewerItem.DoubleClick += DoubleClickItem;
 
             Label viewerLabel = new Label();
             viewerLabel.Font = new Font(viewerLabel.Font, FontStyle.Bold);
@@ -239,6 +240,7 @@ namespace VWRAPLauncher
             viewerLabel.TextAlign = ContentAlignment.MiddleLeft;
             viewerLabel.Dock = DockStyle.Top;
             viewerLabel.Click += HighlightItem;
+            viewerLabel.DoubleClick += DoubleClickItem;
 
             Label viewerPathLabel = new Label();
             viewerPathLabel.AutoEllipsis = true;
@@ -248,6 +250,7 @@ namespace VWRAPLauncher
             viewerPathLabel.TextAlign = ContentAlignment.MiddleLeft;
             viewerPathLabel.Dock = DockStyle.Top;
             viewerPathLabel.Click += HighlightItem;
+            viewerPathLabel.DoubleClick += DoubleClickItem;
 
             viewerItem.Controls.Add(viewerPathLabel);
             viewerItem.Controls.Add(viewerLabel);
@@ -536,6 +539,12 @@ namespace VWRAPLauncher
                     }
                 }
             }
+        }
+
+        private void DoubleClickItem(object sender, EventArgs e)
+        {
+            if (m_selectedViewerInfo != null)
+                cmdOK_Click(sender, e);
         }
 
         private void cmdOK_Click(object sender, EventArgs e)
