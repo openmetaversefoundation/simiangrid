@@ -181,7 +181,7 @@ class FSAssets
                 substr($asset->SHA256, 0, 2) . "/" .
                 substr($asset->SHA256, 2, 2) . "/" .
                 $asset->SHA256;
-            if (file_put_contents($asset_file) = $asset->Data)
+            if (file_put_contents($asset_file, $asset->Data))
             {
                 // 0 = No Update to existing asset
                 // 1 = A new asset was created
@@ -221,7 +221,7 @@ class FSAssets
         {
             if ($sth->rowCount() == 1)
             {
-                if (unlink($asset_file)
+                if (unlink($asset_file))
                 {
                     return true;
                 }

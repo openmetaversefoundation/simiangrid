@@ -59,7 +59,7 @@ $config['mongo_database'] = "SimianGrid";
 | FSAssets stores the asset data on the local filesystem.
 | fsassets_path == where to store the asset data
 */
-//$config['fsassets_path'] = "/srv/simiangrid/assets"
+//$config['fsassets_path'] = "/srv/simiangrid/assets";
 
 /*
 |--------------------------------------------------------------------------

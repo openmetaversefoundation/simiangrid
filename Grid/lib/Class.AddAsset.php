@@ -34,6 +34,7 @@
  */
 require_once(BASEPATH . 'common/SQLAssets.php');
 //require_once(BASEPATH . 'common/MongoAssets.php');
+//require_once(BASEPATH . 'common/FSAssets.php');
 
 class AddAsset implements IGridService
 {
@@ -41,6 +42,7 @@ class AddAsset implements IGridService
     {
         $assets = new SQLAssets($db);
         //$assets = new MongoAssets($db);
+        //$assets = new FSAssets($db);
         $created = false;
         
         if ($assets->AddAsset($asset, $created))
