@@ -33,7 +33,7 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-class SQLAssets
+class FSAssets
 {
     private $conn;
     private $accessupdate = 0;
@@ -48,7 +48,7 @@ class SQLAssets
             $this->assets_path = $config['fsassets_path'];
 
         if (!$db_conn || !($db_conn instanceof PDO))
-            throw new Exception("SQLAssets::__construct expects first parameter passed to be a valid database resource. " . print_r($db_conn, true));
+            throw new Exception("FSAssets::__construct expects first parameter passed to be a valid database resource. " . print_r($db_conn, true));
         
         $this->conn = $db_conn;
     }
@@ -63,7 +63,7 @@ class SQLAssets
 
         if ($age > $this->accessupdate)
         {
-            log_message('debug',"[SQLAssets] update LastAccessed for $assetID ($age)");
+            log_message('debug',"[FSAssets] update LastAccessed for $assetID ($age)");
             $asql = "UPDATE AssetData SET LastAccessed=CURRENT_TIMESTAMP where ID=:ID";
             $asth = $this->conn->prepare($asql);
             if ($asth->execute(array(':ID' => $assetID)))
@@ -192,7 +192,7 @@ class SQLAssets
             else
             {
                 log_message('error', sprintf("Error occurred during AddAsset file writing"));
-                log_message('debug', sprintf("Failed writing: %s", $asset_file));
+                log_message('debug', sprintf("Failed writing: $asset_file"));
             }
         }
         else
@@ -207,6 +207,12 @@ class SQLAssets
     
     public function RemoveAsset($assetID)
     {
+        $asset = GetAssetMetadata($assetID);
+        $asset_file = $this->assets_path . "/" .
+            substr($asset->SHA256, 0, 2) . "/" .
+            substr($asset->SHA256, 2, 2) . "/" .
+            $asset->SHA256;
+
         $sql = "DELETE FROM AssetData WHERE ID=:ID";
         
         $sth = $this->conn->prepare($sql);
@@ -215,11 +221,18 @@ class SQLAssets
         {
             if ($sth->rowCount() == 1)
             {
-                return true;
+                if (unlink($asset_file)
+                {
+                    return true;
+                }
+                else
+                {
+                    log_message('debug', "RemoveAsset could not delete file: $asset_file (AssetID: $assetID)");
+                }
             }
             else
             {
-                log_message('debug', "RemoveAsset could not find asset " . $assetID);
+                log_message('debug', "RemoveAsset could not find asset: " . $assetID);
             }
         }
         else
