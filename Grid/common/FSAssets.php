@@ -74,6 +74,15 @@ class FSAssets
         return false;
     }
 
+    private function GetAssetDirectory($asset_hash)
+    {
+        $asset_dir = $this->assets_path . "/" .
+            substr($asset_hash, 0, 2) . "/" .
+            substr($asset_hash, 2, 2);
+
+        return $asset_dir;
+    }
+
     public function GetAssetMetadata($assetID)
     {
         $sql = "SELECT SHA256, UNIX_TIMESTAMP(CreationDate) AS CreationDate, CreatorID, ContentType, Public,
@@ -96,9 +105,7 @@ class FSAssets
                 $asset->Temporary = $obj->Temporary;
                 $asset->Public = $obj->Public;
                 
-                $asset_file = $this->assets_path . "/" .
-                    substr($asset->SHA256, 0, 2) . "/" .
-                    substr($asset->SHA256, 2, 2) . "/" .
+                $asset_file = $this->GetAssetDirectory($asset->SHA256) . "/" .
                     $asset->SHA256;
                 $asset->ContentLength = filesize($asset_file);
                 $asset->Data = null;
@@ -138,9 +145,7 @@ class FSAssets
                 $asset->Temporary = $obj->Temporary;
                 $asset->Public = $obj->Public;
                 
-                $asset_file = $this->assets_path . "/" .
-                    substr($asset->SHA256, 0, 2) . "/" .
-                    substr($asset->SHA256, 2, 2) . "/" .
+                $asset_file = $this->GetAssetDirectory($asset->SHA256) . "/" .
                     $asset->SHA256;
                 $asset->ContentLength = filesize($asset_file);
                 $asset->Data = file_get_contents($asset_file);
@@ -177,9 +182,19 @@ class FSAssets
             ':CreatorID' => $asset->CreatorID,
             ':SHA256' => $asset->SHA256)))
         {
-            $asset_file = $this->assets_path . "/" .
-                substr($asset->SHA256, 0, 2) . "/" .
-                substr($asset->SHA256, 2, 2) . "/" .
+            $asset_dir = $this->GetAssetDirectory($asset->SHA256);
+
+            if (!is_dir($asset_dir))
+            {
+                if (!mkdir($asset_dir, 0755, true))
+                {
+                    log_message('error', sprintf("Error occurred during AddAsset file writing"));
+                    log_message('debug', sprintf("Failed mkdir: $asset_dir"));
+                    return false;
+                }
+            }
+
+            $asset_file = $asset_dir . "/" .
                 $asset->SHA256;
             if (file_put_contents($asset_file, $asset->Data))
             {
@@ -194,6 +209,8 @@ class FSAssets
                 log_message('error', sprintf("Error occurred during AddAsset file writing"));
                 log_message('debug', sprintf("Failed writing: $asset_file"));
             }
+
+            return false;
         }
         else
         {
@@ -208,10 +225,8 @@ class FSAssets
     public function RemoveAsset($assetID)
     {
         $asset = GetAssetMetadata($assetID);
-        $asset_file = $this->assets_path . "/" .
-            substr($asset->SHA256, 0, 2) . "/" .
-            substr($asset->SHA256, 2, 2) . "/" .
-            $asset->SHA256;
+        $asset_file = $this->GetAssetDirectory($asset->SHA256) . "/" .
+                    $asset->SHA256;
 
         $sql = "DELETE FROM AssetData WHERE ID=:ID";
         
