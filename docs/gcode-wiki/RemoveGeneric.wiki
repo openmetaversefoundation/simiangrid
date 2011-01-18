@@ -1,0 +1,40 @@
+#summary Remove a generic key/value pair.
+#labels Protocol-Generic
+
+= Request Format =
+
+|| *Parameter* || *Description* || *Type* || *Required* ||
+||`RequestMethod`||RemoveGeneric||String||Yes||
+||`OwnerID`||UUID of the user the entry belongs to||UUID||Yes||
+||`Type`||Type of key/value pair to remove||String||Yes||
+||`Key`||The key to remove||String||Yes||
+
+{{{
+RequestMethod=RemoveGeneric
+&OwnerID=e4709e21-9a3f-4276-b3cc-22224bdf0199
+&Type=Friend
+&Key=990ea180-2828-11df-8a39-0800200c9a66
+}}}
+
+= Response Format =
+
+|| *Parameter* || *Description* || *Type* ||
+||`Success`||True if the entry was removed or did not exist, False if a Message was returned||Boolean||
+||`Message`||Error message||String||
+
+Success:
+
+{{{
+{
+    "Success":true
+}
+}}}
+
+Failure:
+
+{{{
+{
+    "Success":false,
+    "Message":"An unknown error occurred"
+}
+}}}
