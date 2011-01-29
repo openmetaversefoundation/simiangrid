@@ -62,6 +62,11 @@ namespace VWRAPLauncher
             "secondlife",
         };
 
+        const string VAR_WELCOME_URL = "{welcomeurl}";
+        const string VAR_ECONOMY_URL = "{economyurl}";
+        const string VAR_LOGIN_URL = "{loginurl}";
+        const string VAR_START_URL = "{starturl}";
+
         #endregion Constants
 
         /// <summary>Path to load the launch document from</summary>
@@ -620,21 +625,46 @@ namespace VWRAPLauncher
 
             if (m_launchDocument != null)
             {
-                if (!String.IsNullOrEmpty(m_launchDocument.WelcomeUrl))
-                    launchArgs += String.Format(" --loginpage \"{0}\"", m_launchDocument.WelcomeUrl);
-                if (!String.IsNullOrEmpty(m_launchDocument.EconomyUrl))
-                    launchArgs += String.Format(" --helperuri \"{0}\"", m_launchDocument.EconomyUrl);
+                string welcomeUrl = (!String.IsNullOrEmpty(m_launchDocument.WelcomeUrl))
+                    ? m_launchDocument.WelcomeUrl
+                    : "http://127.0.0.1:65535/";
 
-                if (m_launchDocument.IsLoginUrlCapability)
-                {
-                    string autoLaunchUri = BuildAutoLaunchUri(m_launchDocument.FirstName, m_launchDocument.LastName, location, region);
-                    launchArgs += String.Format(" -loginuri \"{0}\" -url \"{1}\"", m_launchDocument.LoginUrl, autoLaunchUri);
-                }
+                string economyUrl = (!String.IsNullOrEmpty(m_launchDocument.EconomyUrl))
+                    ? m_launchDocument.EconomyUrl
+                    : "http://127.0.0.1:65535/";
+
+                string loginUrl = (!String.IsNullOrEmpty(m_launchDocument.LoginUrl))
+                    ? m_launchDocument.LoginUrl
+                    : "http://127.0.0.1:65535/";
+
+                string locationUrl = (m_launchDocument.IsLoginUrlCapability)
+                    ? BuildAutoLaunchUri(m_launchDocument.FirstName, m_launchDocument.LastName, location, region)
+                    : BuildLoginScreenUri(location, region);
+
+                if (launchArgs.Contains(VAR_WELCOME_URL))
+                    launchArgs = launchArgs.Replace(VAR_WELCOME_URL, welcomeUrl);
                 else
-                {
-                    string loginScreenUri = BuildLoginScreenUri(location, region);
-                    launchArgs += String.Format(" -loginuri \"{0}\" -url \"{1}\"", m_launchDocument.LoginUrl, loginScreenUri);
-                }
+                    launchArgs += String.Format(" --loginpage \"{0}\"", welcomeUrl);
+
+                if (launchArgs.Contains(VAR_WELCOME_URL))
+                    launchArgs = launchArgs.Replace(VAR_ECONOMY_URL, economyUrl);
+                else
+                    launchArgs += String.Format(" --helperuri \"{0}\"", economyUrl);
+
+                if (launchArgs.Contains(VAR_LOGIN_URL))
+                    launchArgs = launchArgs.Replace(VAR_LOGIN_URL, loginUrl);
+                else
+                    launchArgs += String.Format(" -loginuri \"{0}\"", loginUrl);
+
+                if (launchArgs.Contains(VAR_START_URL))
+                    launchArgs += String.Format(" -url \"{0}\"", locationUrl);
+                else
+                    launchArgs = launchArgs.Replace(VAR_START_URL, locationUrl);
+            }
+            else
+            {
+                // Ignore all command-line parameters if there is no launch document
+                launchArgs = String.Empty;
             }
 
             launchArgs = launchArgs.Trim();
