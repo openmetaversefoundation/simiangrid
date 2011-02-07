@@ -4,6 +4,6 @@
 </p>
 </td><td>
 <?php
-    generate_site_stream();
+    echo generate_site_stream();
 ?>
 </td></tr></table>
