@@ -221,6 +221,22 @@ class SimianGrid
             return null;
         }
     }
+    
+    function add_capability($owner_id, $resource, $expiration_timestamp)
+    {
+        $query = array(
+            'RequestMethod' => 'AddCapability',
+            'OwnerID' => $owner_id,
+            'Resource' => $resource,
+            'Expiration' => $expiration_timestamp
+        );
+        $response = $this->_rest_post($this->user_service, $query);
+        if ( element('Success', $response, false) ) {
+            return element('CapabilityID', $response, null);
+        } else {
+            return null;
+        }
+    }
 
     function set_user_data($user_id, $key, $value)
     {

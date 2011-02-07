@@ -99,14 +99,14 @@ namespace VWRAPLauncher
                         OSDMap identifierMap = launchMap["identifier"] as OSDMap;
                         if (identifierMap != null)
                         {
-                            document.AccountName = launchMap["account_name"].AsString();
-                            document.Name = launchMap["name"].AsString();
+                            document.AccountName = identifierMap["account_name"].AsString();
+                            document.Name = identifierMap["name"].AsString();
 
                             // Legacy support
                             if (String.IsNullOrEmpty(document.Name))
                             {
-                                string first = launchMap["first_name"].AsString();
-                                string last = launchMap["last_name"].AsString();
+                                string first = identifierMap["first_name"].AsString();
+                                string last = identifierMap["last_name"].AsString();
 
                                 document.Name = (first + " " + last).Trim();
                             }

@@ -7,6 +7,7 @@ $lang['sg_menu_logout'] = 'Logout';
 $lang['sg_menu_about'] = 'About';
 //about
 $lang['sg_about_blurb'] = 'is a set of PHP web services that provide the backend for a virtual world.';
+$lang['sg_about_launch'] = 'Go in-world as %s';
 //generic
 $lang['sg_direct_link'] = 'Direct Link';
 $lang['sg_name'] = 'Username';

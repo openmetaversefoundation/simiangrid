@@ -27,62 +27,53 @@
  *
  *
  * @package    SimianGrid
- * @author     Jim Radford <http://www.jimradford.com/>
+ * @author     John Hurliman <http://software.intel.com/en-us/blogs/author/john-hurliman/>
  * @copyright  Open Metaverse Foundation
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
 
-class AddCapability implements IGridService
+class GetCapability implements IGridService
 {
     private $CapabilityID;
-    private $OwnerID;
 
     public function Execute($db, $params)
     {
-        if (!isset($params["OwnerID"], $params["Resource"], $params["Expiration"]) ||
-            !UUID::TryParse($params["OwnerID"], $this->OwnerID))
+        if (!isset($params["CapabilityID"]) || !UUID::TryParse($params["CapabilityID"], $this->CapabilityID))
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
             exit();
         }
         
-        if (!isset($params["CapabilityID"]) || !UUID::TryParse($params["CapabilityID"], $this->CapabilityID))
-            $this->CapabilityID = UUID::Random();
-        
-        $resource = $params["Resource"];
-        $expiration = intval($params["Expiration"]);
-        
-        // Sanity check the expiration date
-        if ($expiration <= time())
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid expiration date ' . $expiration . '" }';
-            exit();
-        }
-        
-        log_message('debug', "Creating capability " . $this->CapabilityID . " owned by " . $this->OwnerID . " mapping to $resource until $expiration");
-        
-        $sql = "INSERT INTO Capabilities (ID, OwnerID, Resource, ExpirationDate) VALUES (:ID, :OwnerID, :Resource, FROM_UNIXTIME(:ExpirationDate))
-                ON DUPLICATE KEY UPDATE ID=VALUES(ID), Resource=VALUES(Resource), ExpirationDate=VALUES(ExpirationDate)";
+        $sql = "SELECT OwnerID,Resource,UNIX_TIMESTAMP(ExpirationDate) AS ExpirationDate FROM Capabilities WHERE ID=:ID AND UNIX_TIMESTAMP(ExpirationDate) > UNIX_TIMESTAMP() LIMIT 1";
         
         $sth = $db->prepare($sql);
         
-        if ($sth->execute(array(':ID' => $this->CapabilityID , ':OwnerID' => $this->OwnerID , ':Resource' => $resource , ':ExpirationDate' => $expiration)))
+        if ($sth->execute(array(':ID' => $this->CapabilityID)))
         {
-            header("Content-Type: application/json", true);
-            echo sprintf('{"Success": true, "CapabilityID": "%s"}', $this->CapabilityID);
-            exit();
+            if ($sth->rowCount() > 0)
+            {
+                $obj = $sth->fetchObject();
+                
+                header("Content-Type: application/json", true);
+                echo sprintf('{"Success": true, "CapabilityID": "%s", "OwnerID": "%s", "Resource": "%s", "Expiration": %u}',
+                    $this->CapabilityID, $obj->OwnerID, $obj->Resource, $obj->ExpirationDate);
+                exit();
+            }
+            else
+            {
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Capability not found" }';
+                exit();
+            }
         }
-        else
-        {
-            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-            log_message('debug', sprintf("Query: %s", $sql));
-            
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
-            exit();
-        }
+        
+        log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+        log_message('debug', sprintf("Query: %s", $sql));
+        
+        header("Content-Type: application/json", true);
+        echo '{ "Message": "Database query error" }';
+        exit();
     }
 }

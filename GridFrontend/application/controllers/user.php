@@ -447,12 +447,16 @@ class User extends Controller {
         $current_language = $this->_get_language($uuid);
         $languages = $this->config->item('languages');
         $result = array();
-        foreach ( $languages as $language ) {
-            $language_name = lang("sg_lang_$language");
-            if ( $language_name == null ) {
-                $language_name = $language;
+        
+        if ( ! empty($languages))
+        {
+            foreach ( $languages as $language ) {
+                $language_name = lang("sg_lang_$language");
+                if ( $language_name == null ) {
+                    $language_name = $language;
+                }
+                $result[$language] = $language_name;
             }
-            $result[$language] = $language_name;
         }
         echo json_encode($result);
     }

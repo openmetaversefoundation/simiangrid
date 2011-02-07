@@ -38,14 +38,14 @@ class GetSceneStats implements IGridService
 
     public function Execute($db, $params)
     {
+        $scenecount = 0;
+
         $sql = "SELECT COUNT(Scenes.ID) AS sceneCount FROM Scenes";
         $sth = $db->prepare($sql);
         if ( $sth->execute() ) {
             if ( $sth->rowCount() == 1 ) {
                 $obj = $sth->fetchObject();
-                header("Content-Type: application/json", true);
-                echo '{"Success":true,"SceneCount":' . $obj->sceneCount . '}';
-                exit();
+		$scenecount = $obj->sceneCount;
             }
         } else {
             log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
@@ -55,5 +55,29 @@ class GetSceneStats implements IGridService
             echo '{ "Message": "Database query error" }';
             exit();
         }
+
+        $activecount = 0;
+
+        $sql = "SELECT COUNT(Scenes.ID) AS activeCount FROM Scenes where Enabled=1";
+        $sth = $db->prepare($sql);
+        if ( $sth->execute() ) {
+            if ( $sth->rowCount() == 1 ) {
+                $obj = $sth->fetchObject();
+		$activecount = $obj->activeCount;
+            }
+        } else {
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
+        
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Database query error" }';
+            exit();
+        }
+
+        header("Content-Type: application/json", true);
+        echo '{"Success":true,"SceneCount":' . $scenecount . ',"ActiveCount":' . $activecount . '}';
+        exit();
+
+
     }
 }

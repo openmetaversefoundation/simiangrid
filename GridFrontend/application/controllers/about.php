@@ -16,6 +16,18 @@ class About extends Controller {
     {
         $data = array();
         $data['page'] = 'about';
+        
+        if ($this->sg_auth->is_logged_in())
+        {
+            $data['logged_in'] = true;
+            $uuid = $this->sg_auth->get_uuid();
+            $data['user_data'] = $this->simiangrid->get_user($uuid);
+        }
+        else
+        {
+            $data['logged_in'] = false;
+        }
+        
         parse_template('about', $data);
     }
     

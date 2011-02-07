@@ -9,6 +9,7 @@ $lang['sg_menu_about'] = 'Information';
 
 //about
 $lang['sg_about_blurb'] = 'est un ensemble de services Web PHP qui fournissent le backend pour une monde virtuelle.';
+$lang['sg_about_launch'] = 'Go in-world as %s';
 
 //generic
 $lang['sg_direct_link'] = 'Lien direct';

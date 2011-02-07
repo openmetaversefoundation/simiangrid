@@ -84,7 +84,7 @@
     
     $configOptions['base_url']['name'] = "Base URL";
     $configOptions['base_url']['description'] = "The base url to use when constructing urls.";
-    $configOptions['base_url']['default'] = "http://localhost/Simian/GridFrontend/";
+    $configOptions['base_url']['default'] = "http://localhost/GridFrontend/";
     $configOptions['base_url']['string'] = "@@BASE_URL@@";
     $configOptions['base_url']['file'] = "application/config/config.php";
 
