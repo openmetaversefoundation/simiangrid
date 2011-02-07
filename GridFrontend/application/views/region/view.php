@@ -1,7 +1,7 @@
 <?php
     $my_url = "$site_url/region/view/$uuid";
-    generate_like_button($my_url);
-    generate_tweet_button($my_url);
+    echo generate_like_button($my_url);
+    echo generate_tweet_button($my_url);
 ?>
 
 <div id="region_menu">

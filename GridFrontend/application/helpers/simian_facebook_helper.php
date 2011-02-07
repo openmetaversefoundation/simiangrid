@@ -2,29 +2,50 @@
 
 include APPPATH . '/helpers/facebook.php';
 
+function generate_open_graph($url, $title, $image, $type)
+{
+	$CI =& get_instance();
+	$ret = '';
+	if ( $CI->config->item('use_facebook') === true ) {
+		$ret = '<meta property="og:title" content="' . $title . '"/>' .
+		'<meta property="og:url" content="' . $url . '"/>' .
+		'<meta property="og:image" content="' . $image . '"/>' .
+		'<meta property="og:site_name" content="' . $CI->config->item('grid_name') . '"/>' .
+		'<meta property="fb:app_id" content="' . $CI->config->item('facebook_id') . '"/>' .
+		'<meta property="og:type" content="openmetaverse:' . $type . '"/>';
+	}
+	return $ret;
+}
+
 function generate_like_button($url)
 {
     $CI =& get_instance();
+	$ret = '';
     if ( $CI->config->item('use_facebook') === true ) {
-        echo "<iframe src=\"http://www.facebook.com/plugins/like.php?href=" . urlencode($url) . "&amp;layout=standard&amp;show_faces=false&amp;width=450&amp;action=like&amp;colorscheme=light&amp;height=35\" scrolling=\"no\" frameborder=\"0\" style=\"border:none; overflow:hidden; width:450px; height:35px;\" allowTransparency=\"true\"></iframe>";
+     	$ret = "<iframe src=\"http://www.facebook.com/plugins/like.php?href=" . urlencode($url) . "&amp;layout=standard&amp;show_faces=false&amp;width=450&amp;action=like&amp;colorscheme=light&amp;height=35\" scrolling=\"no\" frameborder=\"0\" style=\"border:none; overflow:hidden; width:450px; height:35px;\" allowTransparency=\"true\"></iframe>";
     }
+	return $ret;
 }
 
 function generate_site_stream()
 {
     $CI =& get_instance();
+	$ret = '';
     if ( $CI->config->item('use_facebook') === true ) {
         $domain_name = get_site_host();
-        echo "<iframe src=\"http://www.facebook.com/plugins/activity.php?site=$domain_name&amp;width=300&amp;height=300&amp;header=true&amp;colorscheme=light&amp;recommendations=false\" scrolling=\"no\" frameborder=\"0\" style=\"border:none; overflow:hidden; width:300px; height:300px;\" allowTransparency=\"true\"></iframe>";
+        $ret = "<iframe src=\"http://www.facebook.com/plugins/activity.php?site=$domain_name&amp;width=300&amp;height=300&amp;header=true&amp;colorscheme=light&amp;recommendations=false\" scrolling=\"no\" frameborder=\"0\" style=\"border:none; overflow:hidden; width:300px; height:300px;\" allowTransparency=\"true\"></iframe>";
     }
+	return $ret;
 }
 
 function generate_tweet_button($url, $text='')
 {
     $CI =& get_instance();
+	$ret = '';
     if ( $CI->config->item('use_twitter') === true ) {
-        echo "<a href=\"http://twitter.com/share?url=" . urlencode($url) . "\" class=\"twitter-share-button\" data-count=\"horizontal\">Tweet</a><script type=\"text/javascript\" src=\"http://platform.twitter.com/widgets.js\"></script>";
+        $ret =  "<a href=\"http://twitter.com/share?url=" . urlencode($url) . "\" class=\"twitter-share-button\" data-count=\"horizontal\">Tweet</a><script type=\"text/javascript\" src=\"http://platform.twitter.com/widgets.js\"></script>";
     }
+	return $ret;
 }
 
 function _get_facebook($ci=null)

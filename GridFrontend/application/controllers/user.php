@@ -164,7 +164,7 @@ class User extends Controller {
                 }
             }
         } else {
-            return show_404($uuid);
+			return redirect(base_url() . "static/images/user.png", 'location');
         }
     }
 
@@ -226,7 +226,7 @@ class User extends Controller {
         $offset = $_GET['iDisplayStart'];
         $limit = $_GET['iDisplayLength'];
         $search = $_GET['sSearch'];
-        if ( $search == '' || $search == ' ' ) {
+        if ( $search == '' || $search == ' ' || strlen($search) <= 3 ) {
             $trunc_count = 0;
             $trunc_results = array();
         } else {
@@ -262,12 +262,14 @@ class User extends Controller {
             $user = $this->simiangrid->get_user_by_name($uuid);
             if ( $user != null ) {
                 $data['uuid'] = $user['UserID'];
+				$data['username'] = $user['Name'];
             } else {
                 push_message(set_message('sg_user_not_found', $uuid), 'error');
                 return redirect('user/');
             }
         } else {
             $data['uuid'] = $uuid;
+			$data['username'] = $user['Name'];
         }
         $my_uuid = $this->sg_auth->get_uuid();
         $data['page'] = 'users';
@@ -286,6 +288,7 @@ class User extends Controller {
             $data['tab'] = 'admin_actions';
         }
         $data['title'] = $user['Name'];
+		$data['meta'] = generate_open_graph(site_url("user/view/$uuid"), $user['Name'], site_url("user/profile_pic/$uuid"), "avatar");
         parse_template('user/view', $data);
     }
     

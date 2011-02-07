@@ -32,9 +32,7 @@
     <tr>
         <td colspan="2">
 <?php 
-    if ( isset($avatar_image) ) {
-        echo "<img src=\"" . "$site_url/user/profile_pic/" . $avatar_image . "\"/>";
-    }
+    echo "<img src=\"" . "$site_url/user/profile_pic/" . $user_id . "\"/>";
 ?>
         </td>
     </tr>

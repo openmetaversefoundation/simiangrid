@@ -93,6 +93,9 @@ class Region extends Controller {
         $this->_scene_extra_info($uuid, $data);
         $data['title'] = $data['scene_data']['Name'];
         $data['page'] = 'regions';
+		$x = $data['scene_data']['MinPosition']['0'] / 256;
+		$y = $data['scene_data']['MinPosition']['1'] / 256;
+		$data['meta'] = generate_open_graph(site_url("region/view/$uuid"), $this->config->item('grid_name_short') . " region " . $data['scene_data']['Name'], $this->config->item('tile_host') . "map-1-$x-$y-objects.png", "simulator");
         parse_template('region/view', $data);
     }
 
@@ -183,7 +186,7 @@ class Region extends Controller {
         $offset = $_GET['iDisplayStart'];
         $limit = $_GET['iDisplayLength'];
         $search = $_GET['sSearch'];
-        if ( $search == '' ) {
+        if ( $search == '' || strlen($search) <= 3 ) {
             $trunc_count = 0;
             $trunc_results = array();
         } else {
