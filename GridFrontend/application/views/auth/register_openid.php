@@ -8,7 +8,8 @@ $username_field = array(
     'name'    => 'username',
     'id'    => 'username',
     'size'    => 30,
-    'value' =>  set_value('username', $username)
+    'value' =>  set_value('username', $username),
+    'title' => 'register_username'
 );
 
 $password = array(
@@ -30,7 +31,8 @@ $email_field = array(
     'id'    => 'email',
     'maxlength'    => 80,
     'size'    => 30,
-    'value'    => set_value('email', $email)
+    'value'    => set_value('email', $email),
+    'title' => 'register_email'
 );
 
 $openid_identifier_field = array(
@@ -38,7 +40,8 @@ $openid_identifier_field = array(
     'id'       => 'openid_identifier',
     'size'     => 40,
     'value'    => set_value('openid_identifier', $openid_identifier),
-    'readonly' => 'readonly'
+    'readonly' => 'readonly',
+    'title' => 'openid_identifier'
 );
 ?>
 
@@ -88,7 +91,7 @@ $openid_identifier_field = array(
     </dd>
 
     <dt></dt>
-    <dd><?php echo form_submit('register', lang('sg_email'), 'class="button"');?></dd>
+    <dd><?php echo form_submit('register', lang('sg_register'), 'class="button"');?></dd>
     
     <?php echo form_close()?>
 </dl>
