@@ -136,6 +136,8 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     if ($jsonRequest)
         $params = json_encode($params);
     
+    log_message('error', "posting\n$params\n");
+
     // POST our query and fetch the response
     $curl = new Curl();
     $response = $curl->simple_post($url, $params);
@@ -272,29 +274,13 @@ function lookup_scene_by_position($position, $findClosest = false)
     return null;
 }
 
-function add_wearable(&$wearables, $appearance, $wearableName)
+function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appearance,
+    $sessionID, $secureSessionID, $startPosition, $capsPath)
 {
-    $uuid = null;
-    
-    // ItemID
-    if (isset($appearance[$wearableName . 'Item']) && UUID::TryParse($appearance[$wearableName . 'Item'], $uuid))
-        $wearables[] = $uuid;
-    else
-        $wearables[] = UUID::Zero;
-    
-    // AssetID
-    if (isset($appearance[$wearableName . 'Asset']) && UUID::TryParse($appearance[$wearableName . 'Asset'], $uuid))
-        $wearables[] = $uuid;
-    else
-        $wearables[] = UUID::Zero;
+    return create_opensim_presence_full($scene->Address, $scene->Name, $scene->ID, $scene->MinPosition->X, $scene->MinPosition->Y, $userID, $circuitCode, $fullName, $appearance, $sessionID, $secureSessionID, $startPosition, $capsPath, null, null, null);
 }
 
-function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $wearables, $attachments, $sessionID, $secureSessionID, $startPosition, $capsPath)
-{
-    return create_opensim_presence_full($scene->Address, $scene->Name, $scene->ID, $scene->MinPosition->X, $scene->MinPosition->Y, $userID, $circuitCode, $fullName, $wearables, $attachments, $sessionID, $secureSessionID, $startPosition, $capsPath, null, null, null);
-}
-
-function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $scene_x, $scene_y, $userID, $circuitCode, $fullName, $wearables, $attachments, $sessionID, $secureSessionID, $startPosition, $capsPath, $client_ip, $service_urls, $tp_flags, $service_session_id)
+function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $scene_x, $scene_y, $userID, $circuitCode, $fullName, $appearance, $sessionID, $secureSessionID, $startPosition, $capsPath, $client_ip, $service_urls, $tp_flags, $service_session_id)
 {
     if (!ends_with($server_uri, '/'))
         $server_uri .= '/';
@@ -312,13 +298,13 @@ function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $sc
         'session_id' => $sessionID,
         'secure_session_id' => $secureSessionID,
         'start_pos' => (string)$startPosition,
-        'appearance_serial' => 1,
         'destination_x' => $scene_x,
         'destination_y' => $scene_y,
         'destination_name' => $scene_name,
         'destination_uuid' => $scene_uuid,
-        'wearables' => $wearables,
-        'attachments' => $attachments,
+	'packed_appearance' => $appearance,
+        'appearance_serial' => 1,
+	'teleport_flags' => (1 << 30), // marks this as via HG
         'child' => true
     );
     if ( $client_ip != null ) {
@@ -330,9 +316,9 @@ function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $sc
     if ( $service_session_id != null ) {
         $request['service_session_id'] = $service_session_id;
     }
-    if ( $tp_flags != null ) {
-        $request['teleport_flags'] = $tp_flags;
-    }
+    //    if ( $tp_flags != null ) {
+    //        $request['teleport_flags'] = $tp_flags;
+    //    }
     $response = webservice_post($regionUrl, $request, true);
     
     log_dump("webservice post response", $response);
@@ -533,16 +519,22 @@ function foreignagent_handler($path_tail, $data)
     $secure_session_id = $osd['secure_session_id'];
     $service_session_id = $osd['service_session_id'];
     $start_pos = $osd['start_pos'];
-    $appearance = $osd['wearables'];
-    if ( isset($osd['attachments']) ) {
-        $attachments = $osd['attachments'];
-    } else {
-        $attachments = array();
-    }
-    $service_urls['HomeURI'] = $osd['service_urls'][1];
-    $service_urls['GatekeeperURI'] = $osd['service_urls'][3];
-    $service_urls['InventoryServerURI'] = $osd['service_urls'][5];
-    $service_urls['AssetServerURI'] = $osd['service_urls'][7];
+    $appearance = $osd['packed_appearance'];
+
+    
+    $service_urls[0] = 'HomeURI';
+    $service_urls[1] = $osd['service_urls'][1];
+    $service_urls[2] = 'GatekeeperURI';
+    $service_urls[3] = $osd['service_urls'][3];
+    $service_urls[4] = 'InventoryServerURI';
+    $service_urls[5] = $osd['service_urls'][5];
+    $service_urls[6] = 'AssetServerURI';
+    $service_urls[7] = $osd['service_urls'][7];
+
+    //$service_urls['HomeURI'] = $osd['service_urls'][1];
+    //$service_urls['GatekeeperURI'] = $osd['service_urls'][3];
+    //$service_urls['InventoryServerURI'] = $osd['service_urls'][5];
+    //$service_urls['AssetServerURI'] = $osd['service_urls'][7];
     $client_ip = $osd['client_ip'];
     
     $dest_uuid = $osd['destination_uuid'];
@@ -556,12 +548,13 @@ function foreignagent_handler($path_tail, $data)
     
     $scene = lookup_scene_by_id($dest_uuid);
     
-    $username = $osd['first_name'] . ' ' . $osd['last_name'] . '@' . $service_urls['HomeURI'];
+    // $username = $osd['first_name'] . ' ' . $osd['last_name'] . '@' . $service_urls['HomeURI'];
+    $username = $osd['first_name'] . ' ' . $osd['last_name'] . '@' . $service_urls[1];
     
     bump_user($userid, $username, "$username@HG LOLOL");
     create_session($userid, $session_id, $secure_session_id);
     
-    $result = create_opensim_presence_full($scene->Address, $dest_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $attachments, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $service_urls, 1073741824, $service_session_id);
+    $result = create_opensim_presence_full($scene->Address, $dest_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $service_urls, 1073741824, $service_session_id);
     
     echo "{'success': $result, 'reason': 'no reason set lol', 'your_ip': '" . $_SERVER['REMOTE_ADDR'] . "'}";
     exit();
@@ -738,11 +731,10 @@ function homeagent_handler($path_tail, $data)
     $session_id = $osd['session_id'];
     $secure_session_id = $osd['secure_session_id'];
     $start_pos = $osd['start_pos'];
-    $appearance = $osd['wearables'];
-    $attachments = $osd['attachments'];
+    $appearance = $osd['packed_appearance'];
     
-    $result = create_opensim_presence($scene, $userid, $circuit_code, $username, $appearance, $attachments,
-    $session_id, $secure_session_id, $start_pos, $caps_path);
+    $result = create_opensim_presence($scene, $userid, $circuit_code, $username, $appearance,
+				      $session_id, $secure_session_id, $start_pos, $caps_path);
     
     echo "{'success': $result, 'reason': 'no reason set lol'}";
     exit();
