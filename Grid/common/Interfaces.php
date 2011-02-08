@@ -82,7 +82,6 @@ interface IAvatarInventoryFolder
     public function Folders();
     public function Items();
     public function Appearance();
-    public function Attachments();
     public function Configure();
 }
 
@@ -103,7 +102,9 @@ class AvatarInventoryFolderFactory
         {
             log_message('warn', "requested avatar $type not found, using default");
     
+            $type = "DefaultAvatar";
             $classFile = BASEPATH . 'avatar/Avatar.DefaultAvatar.php';
+
             include_once $classFile;
             return new $type($name,$userid);
         }

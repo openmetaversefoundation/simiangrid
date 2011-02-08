@@ -1,178 +1,164 @@
 <?php
-/** Simian grid services
- *
- * PHP version 5
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- * @package    SimianGrid
- * @author     Intel Corporation <http://www.intel.com/>
- * @copyright  Open Metaverse Foundation
- * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
- * @link       http://openmetaverse.googlecode.com/
- */
 
-/* Implements the default "ruth" avatar */
 class DefaultAvatar implements IAvatarInventoryFolder
 {
-  private $Name;
-  private $RootID;
+    private $gFolders;
+    private $gItems;
+    private $gAppearance;
 
-  private $ClothingID;
-  private $OutfitID;
+    private function FindItemID($folderid,$iname)
+    {
+        foreach ($this->gItems as $ind => $item)
+        {
+            if ($item['ParentID'] == $folderid && $item['Name'] == $iname)
+                return $item['ID'];
+        }
 
-  private $HairID;
-  private $PantsID;
-  private $ShapeID;
-  private $ShirtID;
-  private $SkinID;
-  private $EyesID;
+        log_message('error',"unable to locate item $iname in folder $folderid");
+        return false;
+    }
 
-  public function __construct($name,$userid)
-  {
-    /* folder information */
-    $this->Name = $name;
-    $this->RootID = $userid;
-
-    /* handle for the outfit folder */
-    $this->ClothingID = UUID::Random();
-    $this->OutfitID = UUID::Random();
-
-    /* handles for all the appearance items */
-    $this->HairID = UUID::Random();
-    $this->PantsID = UUID::Random();
-    $this->ShapeID = UUID::Random();
-    $this->ShirtID = UUID::Random();
-    $this->SkinID = UUID::Random();
-    $this->EyesID = UUID::Random();
-  }
-
-  public function Folders()
-  {
-    $skeleton =
-      array(
-        array('ID' => $this->RootID, 'ParentID' => UUID::Parse(UUID::Zero), 'Name' => $this->Name,
-          'PreferredContentType' => 'application/vnd.ll.folder'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Animations',
-          'PreferredContentType' => 'application/vnd.ll.animation'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Body Parts',
-          'PreferredContentType' => 'application/vnd.ll.bodypart'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Calling Cards',
-          'PreferredContentType' => 'application/vnd.ll.callingcard'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Gestures',
-          'PreferredContentType' => 'application/vnd.ll.gesture'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Landmarks',
-          'PreferredContentType' => 'application/vnd.ll.landmark'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Lost and Found',
-          'PreferredContentType' => 'application/vnd.ll.lostandfoundfolder'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Notecards',
-          'PreferredContentType' => 'application/vnd.ll.notecard'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Objects',
-          'PreferredContentType' => 'application/vnd.ll.primitive'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Photo Album',
-          'PreferredContentType' => 'application/vnd.ll.snapshotfolder'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Scripts',
-          'PreferredContentType' => 'application/vnd.ll.lsltext'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Sounds',
-          'PreferredContentType' => 'application/ogg'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Textures',
-          'PreferredContentType' => 'image/x-j2c'),
-        array('ID' => UUID::Random(), 'ParentID' => $this->RootID, 'Name' => 'Trash',
-          'PreferredContentType' => 'application/vnd.ll.trashfolder'),
-        array('ID' => $this->ClothingID, 'ParentID' => $this->RootID, 'Name' => 'Clothing',
-          'PreferredContentType' => 'application/vnd.ll.clothing'),
-        array('ID' => $this->OutfitID, 'ParentID' => $this->ClothingID, 'Name' => 'Default Outfit',
-          'PreferredContentType' => 'application/octet-stream')
-        );
-
-    return $skeleton;
-  }
-        
-  public function Items()
-  {
-    $items =
-      array(
-        array('ID' => $this->HairID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Hair',
-          'AssetID' => 'dc675529-7ba5-4976-b91d-dcb9e5e36188'),
-        array('ID' => $this->PantsID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Pants',
-          'AssetID' => '3e8ee2d6-4f21-4a55-832d-77daa505edff'),
-        array('ID' => $this->ShapeID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Shape',
-          'AssetID' => '530a2614-052e-49a2-af0e-534bb3c05af0'),
-        array('ID' => $this->ShirtID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Shirt',
-          'AssetID' => '6a714f37-fe53-4230-b46f-8db384465981'),
-        array('ID' => $this->SkinID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Skin',
-          'AssetID' => '5f787f25-f761-4a35-9764-6418ee4774c4'),
-        array('ID' => $this->EyesID, 'ParentID' => $this->OutfitID, 'Name' => 'Default Eyes',
-          'AssetID' => '78d20332-9b07-44a2-bf74-3b368605f4b5')
-        );
+    private function FindAssetID($folderid,$iname)
+    {
+        foreach ($this->gItems as $ind => $item)
+        {
+            if ($item['ParentID'] == $folderid && $item['Name'] == $iname)
+                return $item['AssetID'];
+        }
     
-    return $items;
-  }
+        log_message('error',"unable to locate asset item $iname in folder $folderid");
+        return false;
+    }
 
-  public function Appearance()
-  {
-    // Update this users appearance in the user service
-    $appearance =
-      array(
-        'Height' => 1.771488,
-        'ShapeItem' => $this->ShapeID,
-        'ShapeAsset' => '530a2614-052e-49a2-af0e-534bb3c05af0',
-        'EyesItem' => $this->EyesID,
-        'EyesAsset' => '78d20332-9b07-44a2-bf74-3b368605f4b5',
-        //'GlovesItem' => '',
-        //'GlovesAsset' => '',
-        'HairItem' => $this->HairID,
-        'HairAsset' => 'dc675529-7ba5-4976-b91d-dcb9e5e36188',
-        //'JacketItem' => '',
-        //'JacketAsset' => '',
-        'PantsItem' => $this->PantsID,
-        'PantsAsset' => '3e8ee2d6-4f21-4a55-832d-77daa505edff',
-        'ShirtItem' => $this->ShirtID,
-        'ShirtAsset' => '6a714f37-fe53-4230-b46f-8db384465981',
-        //'ShoesItem' => '',
-        //'ShoesAsset' => '',
-        'SkinItem' => $this->SkinID,
-        'SkinAsset' => '5f787f25-f761-4a35-9764-6418ee4774c4'
-        //'SkirtItem' => '',
-        //'SkirtAsset' => '',
-        //'SocksItem' => '',
-        //'SocksAsset' => '',
-        //'UnderpantsItem' => '',
-        //'UnderpantsAsset' => '',
-        //'UndershirtItem' => '',
-        //'UndershirtAsset' => ''
-        );
+    private function MakeFolder($id,$pid,$name,$type)
+    {
+        $flist = array();
+        $flist['ID'] = $id;
+        $flist['ParentID'] = $pid;
+        $flist['Name'] = $name;
+        $flist['PreferredContentType'] = $type;
+        return $flist;
+    }
 
-    return $appearance;
-  }
+    private function MakeItem($pid,$name,$asset,$creator,$data)
+    {
+        $ilist = array();
+        $ilist['ID'] = UUID::Random();
+        $ilist['ParentID'] = $pid;
+        $ilist['Name'] = $name;
+        $ilist['AssetID'] = $asset;
+        $ilist['CreatorID'] = $creator;
+        $ilist['ExtraData'] = $data;
+        return $ilist;
+    }
 
-  public function Attachments()
-  {
-    return array();
-  }
+    private function MakeWearable($pid,$name,$asset)
+    {
+        $wlist = array();
+        $wlist['item'] = $this->FindItemID($pid,$name);
+        $wlist['asset'] = $asset;
+        return $wlist;
+    }
 
-  public function Configure()
-  {
-  }
+    public function __construct($name,$userid)
+    {
+        /* folder information */
+        $Name = $name;
+        $RootID = $userid;
+
+        $parent_0 = UUID::Random();
+        $parent_1 = UUID::Random();
+        $parent_2 = UUID::Random();
+        $parent_3 = UUID::Random();
+        $parent_4 = UUID::Random();
+        $parent_5 = UUID::Random();
+        $parent_6 = UUID::Random();
+        $parent_7 = UUID::Random();
+        $parent_8 = UUID::Random();
+        $parent_9 = UUID::Random();
+        $parent_10 = UUID::Random();
+        $parent_11 = UUID::Random();
+        $parent_12 = UUID::Random();
+        $parent_13 = UUID::Random();
+        $parent_14 = UUID::Random();
+
+        $this->gFolders =
+            array(
+                  $this->MakeFolder($RootID, UUID::Parse(UUID::Zero),$Name,'application/vnd.ll.folder'),
+                  $this->MakeFolder($parent_0,  $RootID, 'Objects', 'application/vnd.ll.primitive'),
+                  $this->MakeFolder($parent_1,  $RootID, 'Gestures', 'application/vnd.ll.gesture'),
+                  $this->MakeFolder($parent_2,  $RootID, 'Sounds', 'application/ogg'),
+                  $this->MakeFolder($parent_3,  $RootID, 'Landmarks', 'application/vnd.ll.landmark'),
+                  $this->MakeFolder($parent_4,  $RootID, 'Clothing', 'application/vnd.ll.clothing'),
+                  $this->MakeFolder($parent_5,  $RootID, 'Calling Cards', 'application/vnd.ll.callingcard'),
+                  $this->MakeFolder($parent_6,  $RootID, 'Photo Album', 'application/vnd.ll.snapshotfolder'),
+                  $this->MakeFolder($parent_7,  $RootID, 'Scripts', 'application/vnd.ll.lsltext'),
+                  $this->MakeFolder($parent_8,  $RootID, 'Notecards', 'application/vnd.ll.notecard'),
+                  $this->MakeFolder($parent_9,  $RootID, 'Textures', 'image/x-j2c'),
+                  $this->MakeFolder($parent_10,  $RootID, 'Trash', 'application/vnd.ll.trashfolder'),
+                  $this->MakeFolder($parent_11,  $RootID, 'Lost and Found', 'application/vnd.ll.lostandfoundfolder'),
+                  $this->MakeFolder($parent_12,  $RootID, 'Body Parts', 'application/vnd.ll.bodypart'),
+                  $this->MakeFolder($parent_13,  $RootID, 'Animations', 'application/vnd.ll.animation'),
+                  $this->MakeFolder($parent_14,  $parent_4, 'Default Outfit', 'application/octet-stream')
+                  );
+
+        $this->gItems =
+            array(
+                  $this->MakeItem($parent_14,'Default Eyes','78d20332-9b07-44a2-bf74-3b368605f4b5','fd6e9c85-2fc3-478d-ad1b-e9bd382b78a9','{}'),
+                  $this->MakeItem($parent_14,'Default Shape','530a2614-052e-49a2-af0e-534bb3c05af0','fd6e9c85-2fc3-478d-ad1b-e9bd382b78a9','{}'),
+                  $this->MakeItem($parent_14,'Default Shirt','6a714f37-fe53-4230-b46f-8db384465981','fd6e9c85-2fc3-478d-ad1b-e9bd382b78a9','{}'),
+                  $this->MakeItem($parent_14,'Default Skin','5f787f25-f761-4a35-9764-6418ee4774c4','fd6e9c85-2fc3-478d-ad1b-e9bd382b78a9','{}'),
+                  $this->MakeItem($parent_14,'Default Hair','dc675529-7ba5-4976-b91d-dcb9e5e36188','fd6e9c85-2fc3-478d-ad1b-e9bd382b78a9','{}'),
+                  $this->MakeItem($parent_14,'Default Pants','3e8ee2d6-4f21-4a55-832d-77daa505edff','fd6e9c85-2fc3-478d-ad1b-e9bd382b78a9','{}')
+                  );
+    
+        $this->gAppearance = 
+            array(
+                  'serial' => 1,
+                  'height' => 1.8,
+                  'hipoffset' => 0,
+                  'wearables' =>
+                  array(
+                        array($this->MakeWearable($parent_14,'Default Shape','530a2614-052e-49a2-af0e-534bb3c05af0')),
+                        array($this->MakeWearable($parent_14,'Default Skin','5f787f25-f761-4a35-9764-6418ee4774c4')),
+                        array($this->MakeWearable($parent_14,'Default Hair','dc675529-7ba5-4976-b91d-dcb9e5e36188')),
+                        array($this->MakeWearable($parent_14,'Default Eyes','78d20332-9b07-44a2-bf74-3b368605f4b5')),
+                        array($this->MakeWearable($parent_14,'Default Shirt','6a714f37-fe53-4230-b46f-8db384465981')),
+                        array($this->MakeWearable($parent_14,'Default Pants','3e8ee2d6-4f21-4a55-832d-77daa505edff')),
+                        array(),
+                        array(),
+                        array(),
+                        array(),
+                        array(),
+                        array(),
+                        array(),
+                        array(),
+                        array()
+                        )
+                  );
+    }
+
+
+    /* ----------------------------------------------------------------- */
+    public function Folders()
+    {
+        return $this->gFolders;
+    }
+
+    /* ----------------------------------------------------------------- */
+    public function Items()
+    {
+        return $this->gItems;
+    }
+
+    /* ----------------------------------------------------------------- */
+    public function Appearance()
+    {
+        return $this->gAppearance;
+    }
+
+    /* ----------------------------------------------------------------- */
+    public function Configure()
+    {
+    }
 }
