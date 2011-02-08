@@ -1,0 +1,24 @@
+SimianGrid documentation
+========================
+
+Docs here use reStructuredText
+[ http://docutils.sourceforge.net/rst.html ] markup.  Its advantage is
+that it's human-readable without having to install any software.  In
+fact, this document you're reading is using reST.
+
+If, however, you want to generate PDFs, man pages, HTML files, or
+other versions of the SimianGrid documentation, you can use the Sphinx
+document generator [ http://sphinx.pocoo.org/ ].  Just install Python,
+then: ::
+
+    easy_install sphinx
+    easy_install rst2pdf
+
+to fulfil the dependencies, then: ::
+
+    make pdf
+
+and look in the ``docs/build`` directory for the output.  Run ``make``
+with no options to see all available formats.  This should work on
+both *nix variants and Windows.
+
