@@ -10,6 +10,9 @@
 <?php if ( $this->sg_auth->get_uuid() == $owner_id || $this->sg_auth->is_admin() ): ?>
         <li><?php echo anchor("$site_url/region/stats/" . $uuid, lang('sg_region_stats') ); ?></li>
 <?php endif; ?>
+<?php if ( $this->sg_auth->is_admin() ): ?>
+	<li><?php echo anchor("$site_url/region/admin_actions/" . $uuid, lang('sg_region_admin') ); ?></li>
+<?php endif; ?>
      </ul>
 </div>
 
@@ -27,5 +30,7 @@
     var tab = "{tab}";
     if ( tab == 'stats' ) {
         menu.tabs('select', 1);
-    }
+    } else if ( tab == 'admin_actions' ) {
+		menu.tabs('select', 2);
+	}
 </script>

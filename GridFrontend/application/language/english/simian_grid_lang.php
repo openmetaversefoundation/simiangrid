@@ -49,6 +49,8 @@ $lang['sg_stat_dilation'] = 'Dilation';
 $lang['sg_stat_prim_count'] = 'Primitive Count';
 $lang['sg_stat_agents'] = 'Normal Agents';
 $lang['sg_stat_child_agents'] = 'Child Agents';
+$lang['sg_region_new_owner'] = 'Change';
+$lang['sg_region_admin'] = 'Administer';
 //user
 $lang['sg_user_view'] = 'User View';
 $lang['sg_user_identities'] = 'Identities';

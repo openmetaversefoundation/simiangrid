@@ -294,6 +294,21 @@ class SimianGrid
         return null;
     }
     
+    function set_scene_extra_data($user_id, $key, $value)
+    {
+        $query = array(
+            'RequestMethod' => 'AddUserData',
+            'UserID' => $user_id,
+             $key => $value
+        );
+        $response = $this->_rest_post($this->user_service, $query);
+        if ( element('Success', $response, false) ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     function get_scene($scene_id)
     {
         return $this->_get_scene_info('id', $scene_id);
