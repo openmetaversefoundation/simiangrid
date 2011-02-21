@@ -32,34 +32,48 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
+require_once(BASEPATH . 'common/Scene.php');
 
-class RemoveScene implements IGridService
+class EnableScene implements IGridService
 {
     private $SceneID;
 
     public function Execute($db, $params)
     {
-        if (isset($params["SceneID"]) && UUID::TryParse($params["SceneID"], $this->SceneID))
+        if (isset($params["SceneID"], $params["Enabled"]) && UUID::TryParse($params["SceneID"], $this->SceneID))
         {
-            $sql = "DELETE FROM Scenes WHERE ID='" . $this->SceneID . "'";
+            $sql = "UPDATE Scenes SET Enabled=:Enabled WHERE ID='" . $this->SceneID . "'";
         }
-        else if (isset($params["Name"]))
+        else if (isset($params["Name"], $params["Enabled"]))
         {
-            $sql = "DELETE FROM Scenes WHERE Name='" . $params["Name"] . "'";
+            $sql = "UPDATE Scenes SET Enabled=:Enabled WHERE Name='" . $params["Name"] . "'";
         }
         else
         {
+            log_message('error', sprintf("AddScene: Unable to parse passed parameters or parameter missing: '%s'", print_r($params, true)));
+                
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
             exit();
         }
 
         $sth = $db->prepare($sql);
-        if ($sth->execute())
+        if ($sth->execute(array(':Enabled' => $params["Enabled"])))
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
+            if ($sth->rowCount() > 0)
+            {
+                header("Content-Type: application/json", true);
+                echo '{ "Success": true }';
+                exit();
+            }
+            else
+            {
+                log_message('error', "Failed updating the database");
+                    
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Database update failed" }';
+                exit();
+            }
         }
         else
         {

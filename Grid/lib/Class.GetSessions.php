@@ -32,43 +32,55 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
+require_once(BASEPATH . 'common/Session.php');
 
-class RemoveScene implements IGridService
+class GetSessions implements IGridService
 {
-    private $SceneID;
+    private $ID;
 
     public function Execute($db, $params)
     {
-        if (isset($params["SceneID"]) && UUID::TryParse($params["SceneID"], $this->SceneID))
-        {
-            $sql = "DELETE FROM Scenes WHERE ID='" . $this->SceneID . "'";
-        }
-        else if (isset($params["Name"]))
-        {
-            $sql = "DELETE FROM Scenes WHERE Name='" . $params["Name"] . "'";
-        }
-        else
-        {
-            header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
-            exit();
-        }
-
+        $sql = "SELECT * FROM Sessions";
+        
         $sth = $db->prepare($sql);
         if ($sth->execute())
         {
-            header("Content-Type: application/json", true);
-            echo '{ "Success": true }';
-            exit();
+            $this->HandleQueryResponse($sth);
         }
         else
         {
             log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
             log_message('debug', sprintf("Query: %s", $sql));
-                
+            
             header("Content-Type: application/json", true);
             echo '{ "Message": "Database query error" }';
             exit();
         }
+    }
+
+    private function HandleQueryResponse($sth)
+    {
+        $found = array();
+        
+        while ($obj = $sth->fetchObject())
+        {
+            $session = new Session();
+            $session->UserID = $obj->UserID;
+            $session->SessionID = $obj->SessionID;
+            $session->SecureSessionID = $obj->SecureSessionID;
+            $session->SceneID = $obj->SceneID;
+            $session->ScenePosition = Vector3::Parse($obj->ScenePosition);
+            $session->SceneLookAt = Vector3::Parse($obj->SceneLookAt);
+            $session->LastUpdate = $obj->LastUpdate;
+            $session->ExtraData = $obj->ExtraData;
+            if (empty($session->ExtraData))
+                $session->ExtraData = "{}";
+
+            $found[] = $session->toOSD();
+        }
+        
+        header("Content-Type: application/json", true);
+        echo '{ "Success": true, "Sessions": [' . implode(',', $found) . '] }';
+        exit();
     }
 }
