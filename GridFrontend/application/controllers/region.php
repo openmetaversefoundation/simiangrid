@@ -89,7 +89,9 @@ class Region extends Controller {
         $data['tab'] = '';
         if ( $extra == "stats" ) {
             $data['tab'] = 'stats';
-        }
+        } else if ( $extra == "admin_actions" ) {
+			$data['tab'] = 'admin_actions';
+		}
         $this->_scene_extra_info($uuid, $data);
         $data['title'] = $data['scene_data']['Name'];
         $data['page'] = 'regions';
@@ -98,6 +100,36 @@ class Region extends Controller {
 		$data['meta'] = generate_open_graph(site_url("region/view/$uuid"), $this->config->item('grid_name_short') . " region " . $data['scene_data']['Name'], $this->config->item('tile_host') . "map-1-$x-$y-objects.png", "simulator");
         parse_template('region/view', $data);
     }
+
+	function admin_actions($uuid)
+	{
+		$data = array();
+		$sim = $this->simiangrid->get_scene($uuid);
+		if ( $sim == null ) {
+			push_message("Region not found.", 'warning', $this->ci);
+			return redirect('region/');
+		} else {
+			$data['scene_id'] = $sim['SceneID'];
+			$data['owner_id'] = $sim['ExtraData']['EstateOwner'];
+			return parse_template('region/admin_actions', $data, true);
+		}
+	}
+	
+	function change_region_owner()
+	{
+        $val = $this->form_validation;
+        $val->set_rules('user_id', '', 'trim|required|xss_clean');
+        
+        if ( $val->run() ) {
+            $user_id = $val->set_value('user_id');
+			$user = $this->simiangrid->get_user($user_id);
+			if ( $user == null ) {
+				push_message("Invalid user specified", 'warning');
+				return redirect('region/admin_actions');
+			}
+			$scene = $this->
+        }
+	}
 
     function details($uuid, $extra=null)
     {
