@@ -128,8 +128,10 @@ class Appearance
                     $wearable = $this->_packedapp["wearables"][$i];
                     if (is_array($wearable) && isset($wearable[0]))
                     {
-                        $itemid = $wearable[0]['item'];
-                        $assetid = $wearable[0]['asset'];
+                        $itemid = isset($wearable[0]['item']) ?
+                            $wearable[0]['item'] : UUID::Zero;
+                        $assetid = isset($wearable[0]['asset']) ?
+                            $wearable[0]['asset'] : UUID::Zero;
                     }
                 }
 
@@ -150,7 +152,8 @@ class Appearance
                 {
                     $point = $attachment["point"];
                     $itemid = $attachment["item"];
-                    $assetid = $attachment["asset"];
+                    $assetid = isset($attachment["asset"]) ?
+                        $attachment["asset"] : UUID::Zero;
                     $this->_attachments[$i] = array('point' => $point, 'item' => $itemid);
                 }
             }
