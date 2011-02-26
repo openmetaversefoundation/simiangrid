@@ -70,7 +70,7 @@ class GetUsers implements IGridService
                 else
                 {
                     header("Content-Type: application/json", true);
-                    echo '{"Success:true,"Users":[]}';
+                    echo '{"Success":true,"Users":[]}';
                     exit();
                 }
             }
