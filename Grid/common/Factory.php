@@ -53,13 +53,112 @@ function load_class($type)
     }
 }
 
-function execute_command($command, $db, $request)
+$CapabilityMap = array(
+                       // Capability operations
+                       'AddCapability' => array('admin'),
+                       'GetCapability' => array('admin'),
+                       'GetUserCapabilities' => array('admin', 'user'),
+                       'RemoveCapability' => array('admin'),
+                       'RemoveUserCapabilities' => array('admin', 'user'),
+
+                       // Quark and actor operations (Intel)
+                       'AddActor' => array('admin', 'region'),
+                       'AddEndpoint' => array('admin', 'region'),
+                       'AddQuark' => array('admin', 'region'),
+                       'GetQuark' => array('admin', 'region'),
+                       'GetQuarks' => array('admin', 'region'),
+                       'RemoveActor' => array('admin', 'region'),
+                       'RemoveEndpoint' => array('admin', 'region'),
+                       'RemoveQuark' => array('admin', 'region'),
+
+                       // Asset operations
+                       'AddMapTile' => array('admin', 'region'),
+                       'AddAsset' => array('admin', 'region'),
+                       'GetAsset' => array('admin', 'region'),
+                       'RemoveAsset' => array('admin', 'region'),
+
+                       // Generic data operations
+                       'AddGeneric' => array('admin', 'region'),
+                       'GetGenerics' => array('admin', 'region'),
+                       'RemoveGeneric' => array('admin', 'region'),
+
+                       // Inventory operations
+                       'AddInventoryFolder' => array('admin', 'region'),
+                       'AddInventoryItem' => array('admin', 'region'),
+                       'AddInventory' => array('admin', 'region'),
+                       'GetFolderForType' => array('admin', 'region'),
+                       'GetInventoryNode' => array('admin', 'region'),
+                       'MoveInventoryNodes' => array('admin', 'region'),
+                       'PurgeInventoryFolder' => array('admin', 'region'),
+                       'RemoveInventoryNode' => array('admin', 'region'),
+
+                       // Scene operations
+                       'AddScene' => array('admin', 'region'), /* this could be admin only with updatescene being region */
+                       'EnableScene' => array('admin', 'region'),
+                       'GetScene' => array('admin', 'region'),
+                       'GetScenes' => array('admin', 'region'),
+                       'GetSceneStats' => array('admin', 'region'),
+                       'RemoveScene' => array('admin', 'region'),
+
+                       // Session operations
+                       'AddSession' => array('admin'), /* only login can add a session */
+                       'GetSession' => array('admin', 'region'),
+                       'GetSessions' => array('admin'),
+                       'RemoveSession' => array('admin', 'region'),
+                       'RemoveSessions' => array('admin', 'region'),
+                       'UpdateSession' => array('admin', 'region'),
+
+                       // Identity and user operations
+                       'AddIdentity' => array('admin'),
+                       'AddUserData' => array('admin', 'region'),
+                       'AddUser' => array('admin'),
+                       'AuthorizeIdentity' => array('admin'),
+                       'GetIdentities' => array('admin'),
+                       'GetUser' => array('admin', 'region'),
+                       'GetUsers' => array('admin', 'region'),
+                       'GetUserStats' => array('admin', 'region'),
+                       'RemoveIdentity' => array('admin'),
+                       'RemoveUser' => array('admin'),
+                       'RemoveUserData' => array('admin', 'region'));
+                       
+function authorize_command($command,$capability)
+{
+    global $CapabilityMap;
+
+    // Only perform authorization if configured to do so
+    $config =& get_config();
+    if (! $config['authorize_commands']) 
+        return true;
+
+    if ($capability == null)
+        return false;
+
+    if (! in_array($capability->Resource,$CapabilityMap[$command]))
+        return false;
+
+    return true;
+}
+
+function execute_command($command, $capability, $db, $request)
 {
     if (!empty($command) && ($action = load_class($command)))
     {
         try
         {
-            $action->Execute($db, $request);
+            if (! authorize_command($command,$capability))
+            {
+                log_message('error', sprintf("insufficient privileges for operation %s",$command));
+
+                header("Content-Type: application/json", true);
+                echo '{"Message":"Insufficient privileges"}';
+            }
+            else 
+            {
+                // this is really ugly and should be done by passing
+                // the capability separately into the function
+                $request['_Capability'] = $capability;
+                $action->Execute($db, $request);
+            }
         }
         catch (Exception $ex)
         {

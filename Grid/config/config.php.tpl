@@ -211,3 +211,14 @@ $config['access_level_minimum'] = 200;
 // send_packedapp should be false to support older opensim versions
 $config['send_packedapp'] = true;
 $config['send_wearables'] = false;
+
+/*
+|--------------------------------------------------------------------------
+| Authorize Commands
+|--------------------------------------------------------------------------
+|
+| Use capabilities to authorize commands, default is to authorize
+| all operations regardless of the capability provided
+|
+*/
+$config['authorize_commands'] = false;
