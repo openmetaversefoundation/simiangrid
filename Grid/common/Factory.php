@@ -156,7 +156,7 @@ function execute_command($command, $capability, $db, $request)
             {
                 // this is really ugly and should be done by passing
                 // the capability separately into the function
-                $request['_Capability'] = $capability;
+                // $request['_Capability'] = $capability;
                 $action->Execute($db, $request);
             }
         }
