@@ -127,7 +127,7 @@ function authorize_command($command,$capability)
 
     // Only perform authorization if configured to do so
     $config =& get_config();
-    if (! $config['authorize_commands']) 
+    if (empty($config['authorize_commands']))
         return true;
 
     if ($capability == null)
