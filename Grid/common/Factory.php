@@ -127,7 +127,7 @@ function authorize_command($command,$capability)
 
     // Only perform authorization if configured to do so
     $config =& get_config();
-    if (! $config['authorize_commands']) 
+    if (empty($config['authorize_commands']))
         return true;
 
     if ($capability == null)
@@ -156,7 +156,7 @@ function execute_command($command, $capability, $db, $request)
             {
                 // this is really ugly and should be done by passing
                 // the capability separately into the function
-                $request['_Capability'] = $capability;
+                // $request['_Capability'] = $capability;
                 $action->Execute($db, $request);
             }
         }
