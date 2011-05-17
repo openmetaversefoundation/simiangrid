@@ -34,6 +34,7 @@
  */
 require_once(BASEPATH . 'common/SQLAssets.php');
 //require_once(BASEPATH . 'common/MongoAssets.php');
+//require_once(BASEPATH . 'common/FSAssets.php');
 
 class RemoveAsset implements IGridService
 {
@@ -41,6 +42,7 @@ class RemoveAsset implements IGridService
     {
         $assets = new SQLAssets($db);
         //$assets = new MongoAssets($db);
+        //$assets = new FSAssets($db);
         
         if ($assets->RemoveAsset($asset->ID))
         {
