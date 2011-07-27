@@ -458,7 +458,7 @@ function link_region($method_name, $params, $user_data)
         $handle = bitOr($handle, (string)$y, 0);
         $response['handle'] = (string)$handle;
         
-        $response['region_image'] = "http://" . $scene->ExtraData['ExternalAddress'] . ":" .
+	$response['region_image'] = $config['map_service'] . 'map-1-' . ($x / 256) . '-' . ($y / 256) . '-objects.jpg';
         $response['server_uri'] = $scene->Address;
         $response['external_name'] = $scene->Name;
         log_message('debug', "Succesfully linked to $region_name@" . $scene->Address);
