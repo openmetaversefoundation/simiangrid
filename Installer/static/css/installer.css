@@ -1,0 +1,25 @@
+body {
+    margin: 20px;
+    padding: 20px;
+    font-family: 'Trebuchet MS', Trebuchet, Verdana, sans-serif;
+    letter-spacing: 0px;
+    line-height: normal;
+    font-weight: normal;
+    color: #000000;
+}
+
+h1 {
+    font-family: 'Trebuchet MS', Trebuchet, Verdana, sans-serif;
+    letter-spacing: 0px;
+    line-height: normal;
+    font-weight: bold;
+    color: #000000;
+}
+
+h2 {
+    font-family: 'Trebuchet MS', Trebuchet, Verdana, sans-serif;
+    letter-spacing: 0px;
+    line-height: normal;
+    font-weight: bold;
+    color: #000000;
+}

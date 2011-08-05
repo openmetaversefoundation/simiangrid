@@ -2,6 +2,7 @@
 <html>
     <head>
         <title><?php echo INSTALLER_PROJECT . " - " . $result['page']; ?></title>
+        <link rel="stylesheet" type="text/css" href="<?php echo staticUrl("css/installer.css"); ?>">
     </head>
     <body>
         <div id="main">
