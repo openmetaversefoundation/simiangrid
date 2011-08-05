@@ -23,3 +23,20 @@ h2 {
     font-weight: bold;
     color: #000000;
 }
+
+table {
+    border: 0;
+}
+
+td {
+    padding: 2px 12px 2px 12px;
+}
+
+th {
+    padding: 2px 12px 2px 12px;
+}
+    
+
+#dependency_list{
+    padding: 0px 0px 20px 30px;
+}
