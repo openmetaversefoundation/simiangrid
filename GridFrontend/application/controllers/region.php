@@ -116,6 +116,7 @@ class Region extends Controller {
 	}
 	
 	function change_region_owner()
+    ## TODO: finish this function
 	{
         $val = $this->form_validation;
         $val->set_rules('user_id', '', 'trim|required|xss_clean');
@@ -127,7 +128,7 @@ class Region extends Controller {
 				push_message("Invalid user specified", 'warning');
 				return redirect('region/admin_actions');
 			}
-			$scene = $this->
+            $scene = $this->get_scene($scene_id);
         }
 	}
 
