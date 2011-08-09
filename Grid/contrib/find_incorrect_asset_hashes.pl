@@ -6,7 +6,7 @@
 # link       http://openmetaverse.googlecode.com/
 # ===========================================
 #
-# find and print assets which have incorrect entries in the SHA267
+# find and print assets which have incorrect entries in the SHA256
 # column in the db.
 #
 # usage: ./find_incorrect_asset_hashes.pl --db-host=foo --db-name=bar \
