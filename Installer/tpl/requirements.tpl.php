@@ -69,6 +69,9 @@
     </table>
 </div>
 
+After installing PHP modules you will likely need to restart Apache.
+<br><br>
+
 <a href="?next">Next Step</a>
 
 <?php require 'footer.tpl.php'; ?>
