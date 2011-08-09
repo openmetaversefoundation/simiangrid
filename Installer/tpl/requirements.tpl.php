@@ -56,9 +56,9 @@
         <?php
             foreach ( $result['modules']['optional'] as $module => $enabled ) {
                 if ( $enabled ) {
-                    $enabled_string = "<font color=\"green\">OK</font>";
+                    $enabled_string = "<font color=\"green\">Yes</font>";
                 } else {
-                    $enabled_string = "<font color=\"red\">NOT OK</font>";
+                    $enabled_string = "<font color=\"red\">NO</font>";
                 }
                 echo "
             <tr>
