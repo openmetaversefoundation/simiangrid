@@ -17,7 +17,7 @@ GridWebDAV/config/config.php
 #
 #Installer Lock Files
 Grid/config/InstallerFinished_Simian_Grid
-GridFrontend/config/InstallerFinished_Simian_Grid_Frontend
+GridFrontend/application/config/InstallerFinished_Simian_Grid_Frontend
 GridWebDAV/config/InstallerFinished_Simian_Grid_WebDAV
 #
 # stupid Macs
