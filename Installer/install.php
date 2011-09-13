@@ -2,7 +2,7 @@
 
     define("BASEPATH", str_replace("\\", "/", realpath(dirname(__FILE__)) . '/'));
     
-    define("INSTALL_LOCK_FILE", getcwd() . "/InstallLock_" . str_replace(' ', '_', INSTALLER_PROJECT) );
+    define("INSTALL_LOCK_FILE", getcwd() . "/config/InstallerFinished_" . str_replace(' ', '_', INSTALLER_PROJECT) );
 
     require 'lib/common.php';
 
