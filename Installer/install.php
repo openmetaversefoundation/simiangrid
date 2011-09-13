@@ -1,8 +1,15 @@
 <?php if ( !defined('SIMIAN_INSTALLER') ) exit('No direct script access allowed');
 
     define("BASEPATH", str_replace("\\", "/", realpath(dirname(__FILE__)) . '/'));
+
+    $cwd = getcwd();
+    if ( is_dir($cwd . "/config") ) {
+        $lockfile_base_dir = $cwd . "/config";
+    } elseif ( is_dir($cwd . "/application/config") ) {
+        $lockfile_base_dir = $cwd . "/application/config";
+    }
     
-    define("INSTALL_LOCK_FILE", getcwd() . "/config/InstallerFinished_" . str_replace(' ', '_', INSTALLER_PROJECT) );
+    define("INSTALL_LOCK_FILE", $lockfile_base_dir . "/InstallerFinished_" . str_replace(' ', '_', INSTALLER_PROJECT) );
 
     require 'lib/common.php';
 
