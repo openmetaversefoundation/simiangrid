@@ -72,6 +72,7 @@ class GetSession implements IGridService
                 $session->SceneID = $obj->SceneID;
                 $session->ScenePosition = Vector3::Parse($obj->ScenePosition);
                 $session->SceneLookAt = Vector3::Parse($obj->SceneLookAt);
+                $session->LastUpdate = $obj->LastUpdate;
                 $session->ExtraData = $obj->ExtraData;
                 if (empty($session->ExtraData))
                     $session->ExtraData = "{}";

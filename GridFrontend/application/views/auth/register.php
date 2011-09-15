@@ -34,7 +34,8 @@ $email = array(
 $openid_identifier = array(
     'name'  => 'openid_identifier',
     'id'    => 'openid_identifier',
-    'size'  => 40
+    'size'  => 40,
+    'title' => 'register_openid'
 );
 ?>
 

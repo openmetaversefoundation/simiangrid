@@ -1,0 +1,70 @@
+body {
+    margin: 20px;
+    padding: 20px;
+    font-family: 'Trebuchet MS', Trebuchet, Verdana, sans-serif;
+    letter-spacing: 0px;
+    line-height: normal;
+    font-weight: normal;
+    color: #000000;
+}
+
+h1 {
+    font-family: 'Trebuchet MS', Trebuchet, Verdana, sans-serif;
+    letter-spacing: 0px;
+    line-height: normal;
+    font-weight: bold;
+    color: #000000;
+}
+
+h2 {
+    font-family: 'Trebuchet MS', Trebuchet, Verdana, sans-serif;
+    letter-spacing: 0px;
+    line-height: normal;
+    font-weight: bold;
+    color: #000000;
+}
+
+table {
+    border: 0;
+}
+
+td {
+    padding: 2px 12px 2px 12px;
+}
+
+th {
+    padding: 2px 12px 2px 12px;
+}
+    
+
+#dependency_list{
+    padding: 0px 0px 20px 30px;
+}
+
+.progress_buttons {
+    margin-top: 40px;
+}
+
+.progress_buttons li {
+    display: inline;
+    list-style: none;
+    margin-right: 20px;
+}
+
+.progress_buttons li a {
+    background: #b2f54c;
+    color: #000000;
+    border: 1px solid #77aa31;
+    text-decoration: none;
+    padding: 3px 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 15px;
+}
+
+.progress_buttons li a:hover {
+    background: #77aa31;
+    border: 1px solid #b2f54c;
+    text-decoration: none;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 15px;
+}

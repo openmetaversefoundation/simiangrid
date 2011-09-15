@@ -45,7 +45,7 @@ class GetScene implements IGridService
         
         if (isset($params["SceneID"]) && UUID::TryParse($params["SceneID"], $this->SceneID))
         {
-            $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
+            $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                     CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                     CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
                     FROM Scenes WHERE ID='" . $this->SceneID . "'";
@@ -53,11 +53,24 @@ class GetScene implements IGridService
             if (isset($params["Enabled"]) && $params["Enabled"])
                 $sql .= " AND Enabled=1";
         }
+        else if (isset($params["Name"]))
+        {
+            $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
+                    CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
+                    CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
+                    FROM Scenes WHERE Name='" . $params["Name"] . "'";
+
+            if (isset($params["Enabled"]) && $params["Enabled"])
+                $sql .= " AND Enabled=1";
+
+            log_message('error',"Get Name SQL: " . $sql);
+
+        }
         else if (isset($params["Position"]) && Vector3::TryParse($params["Position"], $this->Position))
         {
             if (isset($params["FindClosest"]) && $params["FindClosest"])
             {
-                $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
+                $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                         CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                         CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition,
                         GLength(LineString(GeomFromText('POINT(" . $this->Position->X . " " . $this->Position->Y . ")'), Centroid(XYPlane)))
@@ -70,7 +83,7 @@ class GetScene implements IGridService
             }
             else
             {
-                $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
+                $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                         CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                         CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
                         FROM Scenes WHERE MBRContains(XYPlane, GeomFromText('POINT(" . $this->Position->X . " " . $this->Position->Y . ")'))";
@@ -102,6 +115,8 @@ class GetScene implements IGridService
                 $scene->MinPosition = Vector3::Parse($obj->MinPosition);
                 $scene->MaxPosition = Vector3::Parse($obj->MaxPosition);
                 $scene->Address = $obj->Address;
+                $scene->LastUpdate = $obj->LastUpdate;
+
                 if (!is_null($obj->ExtraData))
                     $scene->ExtraData = $obj->ExtraData;
                 else

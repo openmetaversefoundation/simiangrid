@@ -234,7 +234,7 @@
                 foreach($updates as $schemata) {
                     # omfg execute the sql already :p
                     dbQueriesFromFile($db,$schemata);
-                    userMessage("warn","Migration: " . $schemata);
+                    userMessage("info","Applying migration: " . $schemata);
 		    $migoffset = $migoffset + 1;
 		    $delim1 = strpos($schemata,'-')+1;
 		    $tablespace = substr($schemata, $delim1, -4);

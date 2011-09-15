@@ -198,7 +198,13 @@ class User extends Controller {
         parse_template('user/profile', $data, true);
     }
 
-    function _truncate_search($search_results, $offset, $page_count)
+    function _render_user_callback($user_id, $callback)
+    {
+		$user = $this->simiangrid->get_user($user_id);
+        return anchor('user/view/' . $user_id, $user['Name'], array('class'=>'search_result','onclick' => $callback . '(\'' . $user_id . '\'); return false;'));
+    }
+
+    function _truncate_search($search_results, $offset, $page_count, $callback=null)
     {
         $results = array();
         $offset_count = 0;
@@ -207,31 +213,41 @@ class User extends Controller {
             if ( $offset_count >= $offset && $result_count < $page_count ) {
                 $user_id = $search_result['id'];
                 if ( $this->sg_auth->is_user_searchable($user_id) ) {
-                    $search_item = array(
-                        render_user_link($user_id)
-                    );
+					$search_item = null;
+					if ( $callback == null ) {
+                    	$search_item = array(
+	                        render_user_link($user_id)
+	                    );
+					} else {
+						$search_item = array(
+							$this->_render_user_callback($user_id, $callback)
+						);
+					}
                     array_push($results, $search_item);
                     $result_count = $result_count + 1;
-                }
-            } else if ( $offset_count < $offset ) {
-                $offset_count = $offset_count + 1;
+                } else if ( $offset_count < $offset ) {
+                	$offset_count = $offset_count + 1;
+				}
             }
         }
         return $results;
     }
 
-    function search()
+    function search($callback=null)
     {
         parse_str($_SERVER['QUERY_STRING'],$_GET); 
         $offset = $_GET['iDisplayStart'];
         $limit = $_GET['iDisplayLength'];
         $search = $_GET['sSearch'];
+		if ( $callback != 'change_region_owner' ) {
+			$callback = null;
+		}
         if ( $search == '' || $search == ' ' || strlen($search) <= 3 ) {
             $trunc_count = 0;
             $trunc_results = array();
         } else {
             $search_results = $this->simiangrid->search_user($search);
-            $trunc_results = $this->_truncate_search($search_results, $offset, $limit);
+            $trunc_results = $this->_truncate_search($search_results, $offset, $limit, $callback);
             $trunc_count = count($search_results);
         }
         $result = array(

@@ -41,30 +41,33 @@ class RemoveScene implements IGridService
     {
         if (isset($params["SceneID"]) && UUID::TryParse($params["SceneID"], $this->SceneID))
         {
-            $sql = "DELETE FROM Scenes WHERE ID=:SceneID";
-            
-            $sth = $db->prepare($sql);
-            
-            if ($sth->execute(array(':SceneID' => $this->SceneID)))
-            {
-                header("Content-Type: application/json", true);
-                echo '{ "Success": true }';
-                exit();
-            }
-            else
-            {
-                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                log_message('debug', sprintf("Query: %s", $sql));
-                
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Database query error" }';
-                exit();
-            }
+            $sql = "DELETE FROM Scenes WHERE ID='" . $this->SceneID . "'";
+        }
+        else if (isset($params["Name"]))
+        {
+            $sql = "DELETE FROM Scenes WHERE Name='" . $params["Name"] . "'";
         }
         else
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
+            exit();
+        }
+
+        $sth = $db->prepare($sql);
+        if ($sth->execute())
+        {
+            header("Content-Type: application/json", true);
+            echo '{ "Success": true }';
+            exit();
+        }
+        else
+        {
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
+                
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Database query error" }';
             exit();
         }
     }

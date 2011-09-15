@@ -20,9 +20,6 @@ Unknown
     </tr>
 <?php if ( $scene_data['Enabled'] && ( $this->sg_auth->get_uuid() == $owner_id || $this->sg_auth->is_admin() ) ): ?>
     <tr>
-        <th><?php echo lang('sg_region_owner'); ?></th>
-        <td><?php echo render_user_link($owner_id); ?></td>
-    </tr><tr>
         <th><?php echo lang('sg_region_version'); ?></th>
         <td>{region_version}</td>
     </tr><tr>

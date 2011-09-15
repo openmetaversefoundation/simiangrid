@@ -3,7 +3,8 @@ $username = array(
     'name'    => 'username',
     'id'    => 'username',
     'size'    => 30,
-    'value' => set_value('username')
+    'value' => set_value('username'),
+    'title' => 'register_username'
 );
 
 $password = array(
@@ -29,7 +30,8 @@ $confirmation_code = array(
 $openid_identifier = array(
     'name'  => 'openid_identifier',
     'id'    => 'openid_identifier',
-    'size'  => 40
+    'size'  => 40,
+    'title' => 'register_openid'
 );
 ?>
 

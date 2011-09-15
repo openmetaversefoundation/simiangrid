@@ -11,5 +11,21 @@
         }
     ?>
     </ul>
-    <a href="?next">Next Step</a>
-<?php require 'footer.tpl.php'; ?>
+
+<ul class="progress_buttons">
+    <li><a href="?next"><span>Continue</span></a></li>
+<?php if ( ! ( isset($result['error']) && $result['error'] == TRUE )) {
+    if ( $result['step'] != STEP_DONE ) {
+        echo "    <li><a href=\"?prev\"><span>Previous Step</a></span></li>\n";
+    }
+    echo "    <li><a href=\"?restart\"><span>Start from begining</a><span></li>\n";
+} ?>
+</ul>
+
+        </div>
+        </div>
+        </div>
+        </div>
+    </body>
+</html>
+

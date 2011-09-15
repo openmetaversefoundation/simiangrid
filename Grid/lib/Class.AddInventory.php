@@ -43,7 +43,7 @@ function update_appearance($userID, $appearance)
     $params = array(
         'RequestMethod' => 'AddUserData',
         'UserID' => $userID,
-        'LLAppearance' => json_encode($appearance)
+        'LLPackedAppearance' => json_encode($appearance)
     );
     
     $curl = new Curl();
@@ -52,29 +52,6 @@ function update_appearance($userID, $appearance)
     if (!isset($response))
     {
         log_message('error', "Update appearance call to $url failed");
-        $response = array('Message' => 'Invalid or missing response');
-    }
-    
-    return $response;
-}
-
-function update_attachments($userID, $attachments)
-{
-    $config =& get_config();
-    $url = $config['user_service'];
-    
-    $params = array(
-        'RequestMethod' => 'AddUserData',
-        'UserID' => $userID,
-        'LLAttachments' => json_encode($attachments)
-    );
-    
-    $curl = new Curl();
-    $response = json_decode($curl->simple_post($url, $params), TRUE);
-    
-    if (!isset($response))
-    {
-        log_message('error', "Update attachments call to $url failed");
         $response = array('Message' => 'Invalid or missing response');
     }
     
@@ -209,20 +186,6 @@ class AddInventory implements IGridService
         if ($appearance)
         {
             $response = update_appearance($this->UserID, $appearance);
-            
-            if (empty($response['Success']))
-            {
-                header("Content-Type: application/json", true);
-                echo sprintf('{ "Message": "%s" }', $response['Message']);
-                exit();
-            }
-        }
-        
-        // Update this users attachments in the user service
-        $attachments = $avtypehandler->Attachments();
-        if ($attachments)
-        {
-            $response = update_attachments($this->UserID, $attachments);
             
             if (empty($response['Success']))
             {

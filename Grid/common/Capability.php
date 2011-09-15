@@ -1,5 +1,6 @@
-<?php
-/** Simian grid services
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Simian grid services
  *
  * PHP version 5
  *
@@ -32,28 +33,39 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once(BASEPATH . 'common/SQLAssets.php');
-//require_once(BASEPATH . 'common/MongoAssets.php');
-//require_once(BASEPATH . 'common/FSAssets.php');
 
-class RemoveAsset implements IGridService
+class Capability
 {
-    public function Execute($db, $asset)
+    public $CapabilityID;
+    public $OwnerID;
+    public $Resource;
+    public $Expiration;
+
+    // -----------------------------------------------------------------
+    // -----------------------------------------------------------------
+    function __construct($db,$id)
     {
-        $assets = new SQLAssets($db);
-        //$assets = new MongoAssets($db);
-        //$assets = new FSAssets($db);
-        
-        if ($assets->RemoveAsset($asset->ID))
+        $CapabilityID = $id;
+        $OwnerID = UUID::Zero;
+        $Resource = 'failed';
+        $Expiration = -1;
+
+        $sql = "SELECT OwnerID,Resource,TIMESTAMPDIFF(SECOND,NOW(),ExpirationDate) AS Expiration FROM Capabilities WHERE ID=:ID";
+
+        $sth = $db->prepare($sql);
+        if ($sth->execute(array(':ID' => $id)))
         {
-            header("HTTP/1.1 204 No Content");
-            exit();
+            if ($sth->rowCount() > 0)
+            {
+                $obj = $sth->fetchObject();
+                $this->OwnerID = $obj->OwnerID;
+                $this->Resource = $obj->Resource;
+                $this->Expiration = $obj->Expiration;
+            }
         }
         else
         {
-            header("HTTP/1.1 404 Not Found");
-            echo 'Asset not found';
-            exit();
+            log_message('error',sprintf('Failed to find a valid capability for %s',$id));
         }
     }
 }

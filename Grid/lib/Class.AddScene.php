@@ -41,113 +41,114 @@ class AddScene implements IGridService
     public function Execute($db, $params)
     {
         $this->Scene = new Scene();
-        
-        if (isset($params["SceneID"], $params["Enabled"]) && !$params["Enabled"] && UUID::TryParse($params["SceneID"], $this->Scene->ID))
+
+        // Scene enabling
+        if (!isset($params["SceneID"], $params["Name"], $params["MinPosition"], $params["MaxPosition"], $params["Address"], $params["Enabled"]) ||
+            !UUID::TryParse($params["SceneID"], $this->Scene->ID) ||
+            !Vector3::TryParse($params["MinPosition"], $this->Scene->MinPosition) ||
+            !Vector3::TryParse($params["MaxPosition"], $this->Scene->MaxPosition))
         {
-            // Scene disabling
-            $sql = "UPDATE Scenes SET Enabled=0 WHERE ID=:ID";
-            
-            $sth = $db->prepare($sql);
-            if ($sth->execute(array(':ID' => $this->Scene->ID)))
+            // This clause should be removed at some point. It is superceded by the EnableScene
+            // API and is only provided for backward compatibility with older OpenSim versions
+            if (isset($params["SceneID"], $params["Enabled"]) && UUID::TryParse($params["SceneID"], $this->Scene->ID))
             {
-                if ($sth->rowCount() > 0)
+                // Scene enable/disable
+                $sql = "UPDATE Scenes SET Enabled=:Enabled WHERE ID=:ID";
+            
+                $sth = $db->prepare($sql);
+                if ($sth->execute(array(':ID' => $this->Scene->ID, ':Enabled' => $params["Enabled"])))
                 {
-                    header("Content-Type: application/json", true);
-                    echo '{ "Success": true }';
-                    exit();
+                    if ($sth->rowCount() > 0)
+                    {
+                        header("Content-Type: application/json", true);
+                        echo '{ "Success": true }';
+                        exit();
+                    }
+                    else
+                    {
+                        log_message('error', "Failed updating the database");
+                    
+                        header("Content-Type: application/json", true);
+                        echo '{ "Message": "Database update failed" }';
+                        exit();
+                    }
                 }
                 else
                 {
-                    log_message('error', "Failed updating the database");
-                    
+                    log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                
                     header("Content-Type: application/json", true);
-                    echo '{ "Message": "Database update failed" }';
+                    echo '{ "Message": "Database query error" }';
                     exit();
                 }
+            } // End of what needs to be removed
+
+            log_message('error', sprintf("AddScene: Unable to parse passed parameters or parameter missing: '%s'", print_r($params, true)));
+                
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Invalid parameters" }';
+            exit();
+        }
+
+        $this->Scene->Address = trim($params["Address"]);
+        $this->Scene->Name = trim($params["Name"]);
+        $this->Scene->Enabled = $params["Enabled"];
+            
+        if (isset($params["ExtraData"]))
+        {
+            $this->Scene->ExtraData = $params["ExtraData"];
+        }
+        else
+        {
+            $this->Scene->ExtraData = NULL;
+        }
+            
+        $sql = "REPLACE INTO Scenes (ID, Name, MinX, MinY, MinZ, MaxX, MaxY, MaxZ, Address, Enabled, ExtraData, XYPlane) 
+                    VALUES (:ID, :Name, :MinX, :MinY,  :MinZ, :MaxX, :MaxY, :MaxZ, :Address, :Enabled, :ExtraData, GeomFromText(:XY))";
+            
+        $sth = $db->prepare($sql);
+        if ($sth->execute(array(
+            ':ID' => $this->Scene->ID,
+            ':Name' => $this->Scene->Name,
+            ':MinX' => $this->Scene->MinPosition->X,
+            ':MinY' => $this->Scene->MinPosition->Y,
+            ':MinZ' => $this->Scene->MinPosition->Z,
+            ':MaxX' => $this->Scene->MaxPosition->X,
+            ':MaxY' => $this->Scene->MaxPosition->Y,
+            ':MaxZ' => $this->Scene->MaxPosition->Z,
+            ':Address' => $this->Scene->Address,
+            ':Enabled' => $this->Scene->Enabled,
+            ':ExtraData' => $this->Scene->ExtraData,
+            ':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))",
+                $this->Scene->MinPosition->X, $this->Scene->MinPosition->Y,
+                $this->Scene->MaxPosition->X, $this->Scene->MinPosition->Y,
+                $this->Scene->MaxPosition->X, $this->Scene->MaxPosition->Y,
+                $this->Scene->MinPosition->X, $this->Scene->MaxPosition->Y,
+                $this->Scene->MinPosition->X, $this->Scene->MinPosition->Y))))
+        {
+            if ($sth->rowCount() > 0)
+            {
+                header("Content-Type: application/json", true);
+                echo '{ "Success": true }';
+                exit();
             }
             else
             {
-                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                
+                log_message('error', "Failed updating the database");
+                    
                 header("Content-Type: application/json", true);
-                echo '{ "Message": "Database query error" }';
+                echo '{ "Message": "Database update failed" }';
                 exit();
             }
         }
         else
         {
-            // Scene enabling
-            if (!isset($params["SceneID"], $params["Name"], $params["MinPosition"], $params["MaxPosition"], $params["Address"], $params["Enabled"]) ||
-                !UUID::TryParse($params["SceneID"], $this->Scene->ID) ||
-                !Vector3::TryParse($params["MinPosition"], $this->Scene->MinPosition) ||
-                !Vector3::TryParse($params["MaxPosition"], $this->Scene->MaxPosition))
-            {
-                log_message('error', sprintf("AddScene: Unable to parse passed parameters or parameter missing: '%s'", print_r($params, true)));
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
                 
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Invalid parameters" }';
-                exit();
-            }
-            
-            $this->Scene->Address = trim($params["Address"]);
-            $this->Scene->Name = trim($params["Name"]);
-            $this->Scene->Enabled = $params["Enabled"];
-            
-            if (isset($params["ExtraData"]))
-            {
-                $this->Scene->ExtraData = $params["ExtraData"];
-            }
-            else
-            {
-                $this->Scene->ExtraData = NULL;
-            }
-            
-            $sql = "REPLACE INTO Scenes (ID, Name, MinX, MinY, MinZ, MaxX, MaxY, MaxZ, Address, Enabled, ExtraData, XYPlane) 
-                    VALUES (:ID, :Name, :MinX, :MinY,  :MinZ, :MaxX, :MaxY, :MaxZ, :Address, :Enabled, :ExtraData, GeomFromText(:XY))";
-            
-            $sth = $db->prepare($sql);
-            if ($sth->execute(array(
-                ':ID' => $this->Scene->ID,
-                ':Name' => $this->Scene->Name,
-                ':MinX' => $this->Scene->MinPosition->X,
-                ':MinY' => $this->Scene->MinPosition->Y,
-                ':MinZ' => $this->Scene->MinPosition->Z,
-                ':MaxX' => $this->Scene->MaxPosition->X,
-                ':MaxY' => $this->Scene->MaxPosition->Y,
-                ':MaxZ' => $this->Scene->MaxPosition->Z,
-                ':Address' => $this->Scene->Address,
-                ':Enabled' => $this->Scene->Enabled,
-                ':ExtraData' => $this->Scene->ExtraData,
-                ':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))",
-                    $this->Scene->MinPosition->X, $this->Scene->MinPosition->Y,
-                    $this->Scene->MaxPosition->X, $this->Scene->MinPosition->Y,
-                    $this->Scene->MaxPosition->X, $this->Scene->MaxPosition->Y,
-                    $this->Scene->MinPosition->X, $this->Scene->MaxPosition->Y,
-                    $this->Scene->MinPosition->X, $this->Scene->MinPosition->Y))))
-            {
-                if ($sth->rowCount() > 0)
-                {
-                    header("Content-Type: application/json", true);
-                    echo '{ "Success": true }';
-                    exit();
-                }
-                else
-                {
-                    log_message('error', "Failed updating the database");
-                    
-                    header("Content-Type: application/json", true);
-                    echo '{ "Message": "Database update failed" }';
-                    exit();
-                }
-            }
-            else
-            {
-                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Database query error" }';
-                exit();
-            }
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Database query error" }';
+            exit();
         }
     }
 }

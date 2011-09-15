@@ -51,6 +51,13 @@
                     $content = "image/gif";
                 }
             }
+        } elseif ( $type == "css" ) {
+            $file_bits = preg_split('/\./', $file);
+            if ( count($file_bits) == 2 ) {
+                if ( $file_bits[1] == "css" ) {
+                   $content = "test/css";
+                }
+            }
         }
         if ( !isset($content) ) {
             errorOut("Invalid Static Content", 404, array("Type specified - $type", "File specified - $file"));

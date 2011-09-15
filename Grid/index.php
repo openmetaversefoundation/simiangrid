@@ -48,6 +48,7 @@ require_once(BASEPATH . 'common/Factory.php');
 require_once(BASEPATH . 'common/UUID.php');
 require_once(BASEPATH . 'common/Vector3.php');
 require_once(BASEPATH . 'common/Curl.php');
+require_once(BASEPATH . 'common/Capability.php');
 
 // Performance profiling/logging
 function shutdown()
@@ -89,72 +90,19 @@ catch (Exception $ex)
     exit();
 }
 
-// Determine the request type
+// Extract the capability from the request
+$capability = null;
 if (isset($_GET['cap']))
 {
-    // Capability routing
-    $resource = '';
-    
-    $sql = "SELECT OwnerID,Resource FROM Capabilities WHERE ID=:ID AND ExpirationDate > NOW() LIMIT 1";
-    
-    $sth = $db->prepare($sql);
-    
-    if ($sth->execute(array(':ID' => $_GET['cap'])))
-    {
-        if ($sth->rowCount() > 0)
-        {
-            $obj = $sth->fetchObject();
-            $resource = $obj->Resource;
-            
-            switch ($resource)
-            {
-                case 'admin':
-                    // TODO: Allow access to all API methods
-                    log_message('error', "Admin capability routing not implemented");
-                    header("HTTP/1.1 400 Bad Request");
-                    echo 'Request method not understood';
-                    exit();
-                    break;
-                case 'simulator':
-                    // TODO: Allow access to API methods that are safe for simulators
-                    log_message('error', "Simulator capability routing not implemented");
-                    header("HTTP/1.1 400 Bad Request");
-                    echo 'Request method not understood';
-                    exit();
-                    break;
-                case 'login':
-                    // Authenticated login
-                    log_message('warn', "Attempted direct access to login capability for owner " . $obj->OwnerID);
-                    header("HTTP/1.1 400 Bad Request");
-                    echo 'Login capabilities can only be accessed through the login server';
-                    exit();
-                default:
-                    log_message('warn', "Unrecognized capability resource " . $resource);
-                    header("HTTP/1.1 500 Internal Server Error");
-                    echo 'Invalid capability';
-                    exit();
-            }
-        }
-        else
-        {
-            log_message('warn', "Capability " . $_GET['cap'] . " not found");
-            
-            header("HTTP/1.1 404 Not Found");
-            echo 'Capability not found';
-            exit();
-        }
-    }
-    else
-    {
-        log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-        log_message('debug', sprintf("Query: %s", $sql));
-        
-        header('HTTP/1.1 500 Internal Server Error');
-        echo 'Internal server error';
-        exit();
-    }
+    $capability = new Capability($db,$_GET['cap']);
 }
-else if ((stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE || (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE)))
+else if (isset($_POST['cap']))
+{
+    $capability = new Capability($db,$_POST['cap']);
+}
+
+// Determine the request type
+if ((stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE || (stripos($_SERVER['REQUEST_METHOD'], 'HEAD') !== FALSE)))
 {
     $uuid = null;
     
@@ -164,7 +112,7 @@ else if ((stripos($_SERVER['REQUEST_METHOD'], 'GET') !== FALSE || (stripos($_SER
         $gMethodName = 'GetAsset';
         $asset = new Asset();
         $asset->ID = $uuid;
-        execute_command('GetAsset', $db, $asset);
+        execute_command('GetAsset', $capability, $db, $asset);
         exit();
     }
     else
@@ -205,7 +153,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
                 $asset->Public = TRUE;
             
             $gMethodName = 'AddAsset';
-            execute_command('AddAsset', $db, $asset);
+            execute_command('AddAsset', $capability, $db, $asset);
             exit();
         }
         else
@@ -235,7 +183,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
             fclose($fp);
             
             $gMethodName = 'AddMapTile';
-            execute_command('AddMapTile', null, $tile);
+            execute_command('AddMapTile', $capability, null, $tile);
             exit();
         }
         else
@@ -266,7 +214,7 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'DELETE') !== FALSE)
         $asset = new Asset();
         $asset->ID = $uuid;
         $gMethodName = 'RemoveAsset';
-        execute_command('RemoveAsset', $db, $asset);
+        execute_command('RemoveAsset', $capability, $db, $asset);
         exit();
     }
     else
@@ -321,7 +269,8 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
         $gMethodName = $command;
         if ($gMethodName == 'GetGenerics')
             $gMethodName .= ' (' . $request['Type'] . ')';
-        execute_command($command, $db, $request);
+        log_message('error',"checking");
+        execute_command($command, $capability, $db, $request);
     }
     else
     {

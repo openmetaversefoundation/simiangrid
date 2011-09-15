@@ -1,20 +1,24 @@
 #TextMate state files or something
 ._*
+#
 #Map Tiles we don't care about
 Grid/map/map-*.jpg
 Grid/map/map-*.png
+#
 #LogFiles
 Grid/logs/log-*.php
 GridFrontend/system/logs/log-*.php
+#
 #Config Files
 Grid/config/config.php
 GridFrontend/application/config/config.php
 GridFrontend/application/config/database.php
 GridWebDAV/config/config.php
+#
 #Installer Lock Files
-Grid/InstallLock_Simian_Grid
-GridFrontend/InstallLock_Simian_Grid_Frontend
-GridWebDAV/InstallLock_Simian_Grid_WebDAV
+Grid/config/InstallerFinished_Simian_Grid
+GridFrontend/application/config/InstallerFinished_Simian_Grid_Frontend
+GridWebDAV/config/InstallerFinished_Simian_Grid_WebDAV
 #
 # stupid Macs
 .DS_Store

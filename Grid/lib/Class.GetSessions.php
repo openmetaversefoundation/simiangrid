@@ -32,28 +32,55 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
-require_once(BASEPATH . 'common/SQLAssets.php');
-//require_once(BASEPATH . 'common/MongoAssets.php');
-//require_once(BASEPATH . 'common/FSAssets.php');
+require_once(BASEPATH . 'common/Session.php');
 
-class RemoveAsset implements IGridService
+class GetSessions implements IGridService
 {
-    public function Execute($db, $asset)
+    private $ID;
+
+    public function Execute($db, $params)
     {
-        $assets = new SQLAssets($db);
-        //$assets = new MongoAssets($db);
-        //$assets = new FSAssets($db);
+        $sql = "SELECT * FROM Sessions";
         
-        if ($assets->RemoveAsset($asset->ID))
+        $sth = $db->prepare($sql);
+        if ($sth->execute())
         {
-            header("HTTP/1.1 204 No Content");
-            exit();
+            $this->HandleQueryResponse($sth);
         }
         else
         {
-            header("HTTP/1.1 404 Not Found");
-            echo 'Asset not found';
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
+            
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Database query error" }';
             exit();
         }
+    }
+
+    private function HandleQueryResponse($sth)
+    {
+        $found = array();
+        
+        while ($obj = $sth->fetchObject())
+        {
+            $session = new Session();
+            $session->UserID = $obj->UserID;
+            $session->SessionID = $obj->SessionID;
+            $session->SecureSessionID = $obj->SecureSessionID;
+            $session->SceneID = $obj->SceneID;
+            $session->ScenePosition = Vector3::Parse($obj->ScenePosition);
+            $session->SceneLookAt = Vector3::Parse($obj->SceneLookAt);
+            $session->LastUpdate = $obj->LastUpdate;
+            $session->ExtraData = $obj->ExtraData;
+            if (empty($session->ExtraData))
+                $session->ExtraData = "{}";
+
+            $found[] = $session->toOSD();
+        }
+        
+        header("Content-Type: application/json", true);
+        echo '{ "Success": true, "Sessions": [' . implode(',', $found) . '] }';
+        exit();
     }
 }
