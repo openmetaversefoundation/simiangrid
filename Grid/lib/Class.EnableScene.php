@@ -32,62 +32,57 @@
  * @license    http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
  * @link       http://openmetaverse.googlecode.com/
  */
+require_once(BASEPATH . 'common/Scene.php');
 
-class GetUsers implements IGridService
+class EnableScene implements IGridService
 {
-    private $MinPosition;
-    private $MaxPosition;
+    private $SceneID;
 
     public function Execute($db, $params)
     {
-        if (isset($params["NameQuery"]))
+        if (isset($params["SceneID"], $params["Enabled"]) && UUID::TryParse($params["SceneID"], $this->SceneID))
         {
-            $sql = "SELECT * FROM Users WHERE Name LIKE :NameQuery";
-            $nameQuery = '%' . $params["NameQuery"] . '%';
-            
-            if (isset($params["MaxNumber"]))
-                $sql .= " LIMIT " . intval($params["MaxNumber"]);
-            
-            $sth = $db->prepare($sql);
-            
-            if ($sth->execute(array(':NameQuery' => $nameQuery)))
+            $sql = "UPDATE Scenes SET Enabled=:Enabled WHERE ID='" . $this->SceneID . "'";
+        }
+        else if (isset($params["Name"], $params["Enabled"]))
+        {
+            $sql = "UPDATE Scenes SET Enabled=:Enabled WHERE Name='" . $params["Name"] . "'";
+        }
+        else
+        {
+            log_message('error', sprintf("AddScene: Unable to parse passed parameters or parameter missing: '%s'", print_r($params, true)));
+                
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Invalid parameters" }';
+            exit();
+        }
+
+        $sth = $db->prepare($sql);
+        if ($sth->execute(array(':Enabled' => $params["Enabled"])))
+        {
+            if ($sth->rowCount() > 0)
             {
-                if ($sth->rowCount() > 0)
-                {
-                    $found = array();
-                    
-                    while ($obj = $sth->fetchObject())
-                    {
-                        $userJson = sprintf('{"UserID":"%s","Name":"%s","Email":"%s","AccessLevel":%s}',
-                            $obj->ID, $obj->Name, $obj->Email, $obj->AccessLevel);
-                        $found[] = $userJson;
-                    }
-                    
-                    header("Content-Type: application/json", true);
-                    echo '{"Success":true,"Users":[' . implode(',', $found) . ']}';
-                    exit();
-                }
-                else
-                {
-                    header("Content-Type: application/json", true);
-                    echo '{"Success":true,"Users":[]}';
-                    exit();
-                }
+                header("Content-Type: application/json", true);
+                echo '{ "Success": true }';
+                exit();
             }
             else
             {
-                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                log_message('debug', sprintf("Query: %s", $sql));
-                
+                log_message('error', "Failed updating the database");
+                    
                 header("Content-Type: application/json", true);
-                echo '{ "Message": "Database query error" }';
+                echo '{ "Message": "Database update failed" }';
                 exit();
             }
         }
         else
         {
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
+                
             header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
+            echo '{ "Message": "Database query error" }';
+            exit();
         }
     }
 }

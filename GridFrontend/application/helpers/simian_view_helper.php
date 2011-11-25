@@ -63,15 +63,6 @@
         
         $render = "$render</ul>";
         echo $render;
-        echo <<< END
-<script type="text/javascript">
-    $().ready(function() {
-        setTimeout(function() {
-            $(".flash_message").hide('puff', {}, 5000);
-        }, 25000);
-    });
-</script>
-END;
     }
 
     function set_message($msg, $val = '', $sub = '%s')

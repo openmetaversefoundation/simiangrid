@@ -43,8 +43,7 @@ class GetScenes implements IGridService
     {
         if (isset($params["NameQuery"]))
         {
-            log_message('debug', 'Searching by name - "' . $params["NameQuery"] . '"');
-            $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
+            $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                     CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                     CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
                     FROM Scenes WHERE Name LIKE :NameQuery";
@@ -59,9 +58,7 @@ class GetScenes implements IGridService
                 $sql .= " LIMIT " . intval($params["MaxNumber"]);
             }
             
-            log_message('debug', "SQL $sql");
             $sth = $db->prepare($sql);
-            
             if ($sth->execute(array(':NameQuery' => $nameQuery)))
             {
                 $this->HandleQueryResponse($sth);
@@ -80,13 +77,11 @@ class GetScenes implements IGridService
             Vector3::TryParse($params["MinPosition"], $this->MinPosition) &&
             Vector3::TryParse($params["MaxPosition"], $this->MaxPosition))
         {
-            $sql = "SELECT ID, Name, Address, Enabled, ExtraData,
+            $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                     CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,
                     CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
                     FROM Scenes WHERE MBRIntersects(GeomFromText(:XY), XYPlane)";
             
-            log_message("debug", "Searching by position - " . $this->MinPosition . "-" . $this->MaxPosition);
-
             if (isset($params["Enabled"]) && $params["Enabled"]) {
                 log_message('debug', "Restricting to Enabled scenes");
                 $sql .= " AND Enabled=1";
@@ -97,7 +92,6 @@ class GetScenes implements IGridService
             }
 
             $sth = $db->prepare($sql);
-            
             if ($sth->execute(array(':XY' => sprintf("POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))",
                 $this->MinPosition->X, $this->MinPosition->Y,
                 $this->MaxPosition->X, $this->MinPosition->Y,
@@ -173,6 +167,8 @@ class GetScenes implements IGridService
             $scene->MinPosition = Vector3::Parse($obj->MinPosition);
             $scene->MaxPosition = Vector3::Parse($obj->MaxPosition);
             $scene->Address = $obj->Address;
+            $scene->LastUpdate = $obj->LastUpdate;
+
             if (!is_null($obj->ExtraData))
                 $scene->ExtraData = $obj->ExtraData;
             else

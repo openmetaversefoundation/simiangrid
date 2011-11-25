@@ -48,11 +48,18 @@ $config['map_service'] = "@@MAP_SERVICE@@";
 */
 $config['asset_driver'] = "SQLAssets";
 //$config['asset_driver'] = "MongoAssets";
+//$config['asset_driver'] = "FSAssets";
 
 /* MongoDB server hostname and port number for the MongoAssets driver */
 $config['mongo_server'] = "localhost:27017";
 /* MongoDB database name */
 $config['mongo_database'] = "SimianGrid";
+
+/*
+| FSAssets stores the asset data on the local filesystem.
+| fsassets_path == where to store the asset data
+*/
+//$config['fsassets_path'] = "/srv/simiangrid/assets";
 
 /*
 |--------------------------------------------------------------------------
@@ -211,3 +218,14 @@ $config['access_level_minimum'] = 200;
 // send_packedapp should be false to support older opensim versions
 $config['send_packedapp'] = true;
 $config['send_wearables'] = false;
+
+/*
+|--------------------------------------------------------------------------
+| Authorize Commands
+|--------------------------------------------------------------------------
+|
+| Use capabilities to authorize commands, default is to authorize
+| all operations regardless of the capability provided
+|
+*/
+$config['authorize_commands'] = false;

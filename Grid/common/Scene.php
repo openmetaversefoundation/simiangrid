@@ -43,6 +43,7 @@ class Scene implements IOSD
     public $Address;
     public $Enabled;
     public $ExtraData;
+    public $LastUpdate;
 
     public function toOSD()
     {

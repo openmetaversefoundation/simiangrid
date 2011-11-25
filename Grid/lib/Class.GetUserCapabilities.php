@@ -33,61 +33,46 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
-class GetUsers implements IGridService
+class GetUserCapabilities implements IGridService
 {
-    private $MinPosition;
-    private $MaxPosition;
+    private $OwnerID;
 
     public function Execute($db, $params)
     {
-        if (isset($params["NameQuery"]))
-        {
-            $sql = "SELECT * FROM Users WHERE Name LIKE :NameQuery";
-            $nameQuery = '%' . $params["NameQuery"] . '%';
-            
-            if (isset($params["MaxNumber"]))
-                $sql .= " LIMIT " . intval($params["MaxNumber"]);
-            
-            $sth = $db->prepare($sql);
-            
-            if ($sth->execute(array(':NameQuery' => $nameQuery)))
-            {
-                if ($sth->rowCount() > 0)
-                {
-                    $found = array();
-                    
-                    while ($obj = $sth->fetchObject())
-                    {
-                        $userJson = sprintf('{"UserID":"%s","Name":"%s","Email":"%s","AccessLevel":%s}',
-                            $obj->ID, $obj->Name, $obj->Email, $obj->AccessLevel);
-                        $found[] = $userJson;
-                    }
-                    
-                    header("Content-Type: application/json", true);
-                    echo '{"Success":true,"Users":[' . implode(',', $found) . ']}';
-                    exit();
-                }
-                else
-                {
-                    header("Content-Type: application/json", true);
-                    echo '{"Success":true,"Users":[]}';
-                    exit();
-                }
-            }
-            else
-            {
-                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
-                log_message('debug', sprintf("Query: %s", $sql));
-                
-                header("Content-Type: application/json", true);
-                echo '{ "Message": "Database query error" }';
-                exit();
-            }
-        }
-        else
+        if (! isset($params["OwnerID"]) || !UUID::TryParse($params["OwnerID"], $this->OwnerID))
         {
             header("Content-Type: application/json", true);
             echo '{ "Message": "Invalid parameters" }';
+            exit();
+        }
+        
+        $sql = "SELECT ID,Resource,UNIX_TIMESTAMP(ExpirationDate) AS ExpirationDate FROM Capabilities WHERE OwnerID=:OwnerID AND UNIX_TIMESTAMP(ExpirationDate) > UNIX_TIMESTAMP()";
+            
+        $sth = $db->prepare($sql);
+            
+        if ($sth->execute(array(':OwnerID' => $this->OwnerID)))
+        {
+            $caplist = array();
+            while ($obj = $sth->fetchObject())
+            {
+                $cap = sprintf('{"CapabilityID":"%s","Resource":"%s","Expiration":"%s"}',
+                               $obj->ID, $obj->Resource, $obj->ExpirationDate);
+                $caplist[] = $cap;
+            }
+
+            header("Content-Type: application/json", true);
+            echo '{ "Success":true,"Capabilities":[' . implode(',',$caplist) . ']}';
+            exit();
+
+        }
+        else
+        {
+            log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+            log_message('debug', sprintf("Query: %s", $sql));
+                
+            header("Content-Type: application/json", true);
+            echo '{ "Message": "Database query error" }';
+            exit();
         }
     }
 }

@@ -1,7 +1,8 @@
 SimianGrid -- http://code.google.com/p/openmetaverse/
 
-Confirmed installers working on Windows 2008 WE with Apache2.2/PHP5.3/MYSQL5.1 by James Stallings aka Hiro Protagonist 2010 09 27
-
+Confirmed installers working on Windows 2008 WE with
+Apache2.2/PHP5.3/MYSQL5.1 by James Stallings aka Hiro Protagonist
+2010-09-27
 
 Bug reports, feature requests, and suggestions should go to the issue
-tracker [ http://code.google.com/p/openmetaverse/issues/list ]
+tracker [ http://jira.openmv.org/browse/SIM ]
