@@ -8,6 +8,7 @@ class Region extends Controller {
         $this->load->library('table');
         $this->load->library('SimianGrid');
         $this->load->library('table');
+        $this->load->library('Form_validation');
 
         $this->load->helper('form');
         $this->load->helper('simian_view_helper');
@@ -115,11 +116,12 @@ class Region extends Controller {
 		}
 	}
 	
-	function change_region_owner()
+	function change_region_owner($uuid)
 	{
         $val = $this->form_validation;
         $val->set_rules('user_id', '', 'trim|required|xss_clean');
         
+        $success = false;
         if ( $val->run() ) {
             $user_id = $val->set_value('user_id');
 			$user = $this->simiangrid->get_user($user_id);
@@ -127,8 +129,12 @@ class Region extends Controller {
 				push_message("Invalid user specified", 'warning');
 				return redirect('region/admin_actions');
 			}
-			$scene = $this->
+			$scene = $this->simiangrid->get_scene($uuid);
+			$scene['ExtraData']['EstateOwner'] = $user_id;
+			$success =$this->simiangrid->set_scene_data($uuid, 'EstateOwner', $user_id);
         }
+        echo json_encode(array('success'=> $success));
+        return;
 	}
 
     function details($uuid, $extra=null)

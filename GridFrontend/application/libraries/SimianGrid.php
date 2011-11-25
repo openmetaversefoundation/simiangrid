@@ -294,14 +294,15 @@ class SimianGrid
         return null;
     }
     
-    function set_scene_extra_data($user_id, $key, $value)
+    function set_scene_data($scene_id, $key, $value)
     {
         $query = array(
-            'RequestMethod' => 'AddUserData',
-            'UserID' => $user_id,
-             $key => $value
+            'RequestMethod' => 'AddSceneData',
+            'SceneID' => $scene_id,
+            'Key' => $key,
+            'Value' => $value
         );
-        $response = $this->_rest_post($this->user_service, $query);
+        $response = $this->_rest_post($this->grid_service, $query);
         if ( element('Success', $response, false) ) {
             return true;
         } else {
@@ -328,6 +329,11 @@ class SimianGrid
     {
         return $this->_get_scene_info('pos', "<$x, $y, 0>");
     }
+    
+    function get_scene_by_owner($owner)
+    {
+        return $this->_get_scene_info('owner', $owner);
+    }
 
     function _get_scene_info($request, $thing)
     {
@@ -345,6 +351,11 @@ class SimianGrid
             $query = array(
                 'RequestMethod' => 'GetScene',
                 'Name' => $thing
+            );
+        } else if ( $request == "owner" ) {
+            $query = array(
+                'RequestMethod' => 'GetScene',
+                'EstateOwner' => $thing
             );
         } else {
             return null;
