@@ -244,15 +244,15 @@ function add_hyperlink($sceneID, $region_name, $external_name, $x, $y, $regionIm
     $gridService = $config['grid_service'];
 
     $minpos = '<' . $x * 256 . "," . $y * 256 . ",0>";
-    $maxpos = '<' . ($x + 256) * 256 . "," . ($y + 256) * 256 . ",0>";
+    $maxpos = '<' . (($x * 256) + 256) . "," . (($y * 256) + 256) . ",0>";
 
     $xd = json_encode(array(
         'HyperGrid' => true,
         'RegionImage' => $regionImage,
         'ExternalName' => $external_name
     ));
-
-    $response = webservice_post($gridService, array(
+    
+    $data = array(
         'RequestMethod' => 'AddScene',
         'SceneID' => $sceneID,
         'Name' => $region_name,
@@ -261,7 +261,10 @@ function add_hyperlink($sceneID, $region_name, $external_name, $x, $y, $regionIm
         'ExtraData' => $xd,
         'Address' => $hgurl,
         'Enabled' => true
-    ));
+    );
+    log_message('debug', "asdadsa " . print_r($data, TRUE));
+
+    $response = webservice_post($gridService, $data);
     
     if ( $response['Success'] ) {
         $curl = new Curl();

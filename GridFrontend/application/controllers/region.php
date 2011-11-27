@@ -111,7 +111,12 @@ class Region extends Controller {
 			return redirect('region/');
 		} else {
 			$data['scene_id'] = $sim['SceneID'];
-			$data['owner_id'] = $sim['ExtraData']['EstateOwner'];
+			if ( ! isset($sim['ExtraData']['HyperGrid'] ) ) {
+			    $data['hg'] = false;
+			    $data['owner_id'] = $sim['ExtraData']['EstateOwner'];
+			} else {
+			    $data['hg'] = true;
+			}
 			return parse_template('region/admin_actions', $data, true);
 		}
 	}

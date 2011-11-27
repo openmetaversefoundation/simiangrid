@@ -70,6 +70,7 @@ class GetScene implements IGridService
         {
             if (isset($params["FindClosest"]) && $params["FindClosest"])
             {
+                log_message('debug', "GetScene (closest) by position " . $this->Position);
                 $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                         CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                         CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition,
@@ -83,6 +84,7 @@ class GetScene implements IGridService
             }
             else
             {
+                log_message('debug', "GetScene by position " . $this->Position);
                 $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                         CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                         CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
@@ -126,6 +128,7 @@ class GetScene implements IGridService
                 $out = substr($out, 0, -1);
                 $out .= ',"Success":true}';
                 
+                log_message('debug', "Found scene " . $scene->Name);
                 header("Content-Type: application/json", true);
                 echo $out;
                 exit();

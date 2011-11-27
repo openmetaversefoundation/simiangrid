@@ -10,14 +10,21 @@
     </table>
 </div>
 <table>
+<?php if ( ! $hg ): ?>
     <tr>
         <th><?php echo lang('sg_region_owner'); ?></th>
         <td><?php echo render_user_link($owner_id); ?> <a href="#" id="search_button"><?php echo lang('sg_region_new_owner'); ?></a></td>
     </tr>
+<?php else: ?>
+    <tr>
+        <th>Unlink Region</th>
+        <td><a href="#" id="unlink_button">Go</a></td>
+    </tr>
+<?php endif; ?>
 </table>
-
 <script>
 
+<?php if ( ! $hg ): ?>
 $("#search_popup").dialog({
     autoOpen: false, 
     position: ['left', 'top']
@@ -46,5 +53,6 @@ function change_region_owner(uuid) {
 function change_region_success(data) {
 	window.location = "{site_url}/region/view/{scene_id}/admin_actions";
 }
+<?php endif; ?>
 
 </script>
