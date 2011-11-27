@@ -122,7 +122,7 @@ class Admin extends Controller {
 
     function hypergrid($extra=null)
     {
-        if ( ! $this->sg_auth->is_admin() ) {
+        if ( ! $this->sg_auth->is_admin() || ! $this->config->item('hypergrid') ) {
             return redirect('about');
         }
         if ( $extra === null ) {

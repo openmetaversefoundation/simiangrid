@@ -2,7 +2,9 @@
      <ul>   
          <li><?php echo anchor("$site_url/admin/maintenance/tab", lang('sg_admin_maintenance') ); ?></li>
          <li><?php echo anchor("$site_url/admin/add_user/tab", lang('sg_admin_add_user') ); ?></li>
+         <?php if ( $this->config->item('hypergrid') ): ?>
          <li><?php echo anchor("$site_url/admin/hypergrid/tab", lang('sg_hypergrid') ); ?></li>
+         <?php endif; ?>
      </ul>
 </div>
 
