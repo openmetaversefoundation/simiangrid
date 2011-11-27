@@ -166,7 +166,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
         }
     }
     else if (isset($_FILES['Tile']) && count($_FILES) == 1 &&
-        $_FILES['Tile']['type'] == "image/png" &&
+        ( $_FILES['Tile']['type'] == "image/png" || $_FILES['Tile']['type'] == "image/jpeg" ) &&
         isset($_POST['X']) && isset($_POST['Y']))
     {
         // Map tile upload
@@ -174,6 +174,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
         
         $tile->X = (int)$_POST['X'];
         $tile->Y = (int)$_POST['Y'];
+        $tile->type = $_FILES['Tile']['type'];
         
         if (!empty($_FILES['Tile']['tmp_name']))
         {
@@ -197,7 +198,7 @@ else if (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'm
     }
     else
     {
-        log_message('error', 'Upload Failed, POST requested but no file or filedata included in request: ' . print_r($_POST, TRUE));
+        log_message('error', 'Upload Failed, POST requested but no file or filedata included in request: ' . print_r($_POST, TRUE) . ' - ' . print_r($_FILES, TRUE));
         
         header("Content-Type: application/json", true);
         echo '{ "Message": "Invalid parameters for upload" }';

@@ -146,6 +146,41 @@ class GetScenes implements IGridService
                 exit();
             }
         }
+        else if ( isset($params["HyperGrid"]) ) {
+            $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
+                    CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,
+                    CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
+                    FROM Scenes WHERE ExtraData REGEXP :RegExp";
+
+            log_message("debug", "Searching for HG regions");
+
+            if (isset($params["Enabled"]) && $params["Enabled"]) {
+                log_message('debug', "Restricting to Enabled scenes");
+                $sql .= " AND Enabled=1";
+            }
+            if (isset($params["MaxNumber"])) {
+                log_message('debug', "Limiting to " . $params["MaxNumber"] . " scenes");
+                $sql .= " LIMIT " . intval($params["MaxNumber"]);
+            }
+
+            $sth = $db->prepare($sql);
+            
+            $sth->bindValue(':RegExp', '.+\"HyperGrid\":true.+');
+            
+            if ($sth->execute() )
+            {
+                $this->HandleQueryResponse($sth);
+            }
+            else
+            {
+                log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
+                log_message('debug', sprintf("Query: %s", $sql));
+                
+                header("Content-Type: application/json", true);
+                echo '{ "Message": "Database query error" }';
+                exit();
+            }
+        }
         else
         {
             header("Content-Type: application/json", true);

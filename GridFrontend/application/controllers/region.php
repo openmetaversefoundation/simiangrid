@@ -189,9 +189,11 @@ class Region extends Controller {
     
     function _scene_extra_info($uuid, &$data)
     {    
-        $grid_user = $this->simiangrid->get_user($data['scene_data']['ExtraData']['EstateOwner']);
-        $data['owner_name'] = $grid_user['Name'];
-        $data['owner_id'] = $grid_user['UserID'];
+        if ( !isset($data['scene_data']['ExtraData']['HyperGrid']) ) {
+            $grid_user = $this->simiangrid->get_user($data['scene_data']['ExtraData']['EstateOwner']);
+            $data['owner_name'] = $grid_user['Name'];
+            $data['owner_id'] = $grid_user['UserID'];
+        }
     }
 
     function _render_region_popup($scene)

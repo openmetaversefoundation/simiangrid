@@ -2,6 +2,7 @@
      <ul>   
          <li><?php echo anchor("$site_url/admin/maintenance/tab", lang('sg_admin_maintenance') ); ?></li>
          <li><?php echo anchor("$site_url/admin/add_user/tab", lang('sg_admin_add_user') ); ?></li>
+         <li><?php echo anchor("$site_url/admin/hypergrid/tab", lang('sg_hypergrid') ); ?></li>
      </ul>
 </div>
 
@@ -21,5 +22,7 @@
         menu.tabs('select', 0);
     } else if ( tab == 'add_user' ) {
         menu.tabs('select', 1);
+    } else if ( tab == 'hypergrid' ) {
+        menu.tabs('select', 2);
     }
 </script>

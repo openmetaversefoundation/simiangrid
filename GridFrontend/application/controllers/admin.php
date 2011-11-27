@@ -6,7 +6,7 @@ class Admin extends Controller {
     var $max_username = 20;
     var $min_password = 6;
     var $max_password = 20;
-    
+
     function Admin()
     {
         parent::Controller();
@@ -120,4 +120,64 @@ class Admin extends Controller {
         return parse_template('admin/maintenance', $data, true);
     }
 
+    function hypergrid($extra=null)
+    {
+        if ( ! $this->sg_auth->is_admin() ) {
+            return redirect('about');
+        }
+        if ( $extra === null ) {
+            return $this->_admin_home('hypergrid');
+        } else if ( $extra === 'tab' ) {
+            $data = array();
+            $data['page'] = 'hypergrid';
+            return parse_template('admin/hypergrid', $data, true);
+        } else if ( $extra === 'list' ) {
+            parse_str($_SERVER['QUERY_STRING'],$_GET);
+            $raw_results = $this->simiangrid->get_hyperlinks();
+            $search_results = array();
+            foreach ( $raw_results as $raw_result ) {
+                array_push($search_results, array(anchor('#', $raw_result['name'], array('class'=>'search_result','onclick' => 'hypergrid_popup(\'' . $raw_result['id'] . '\'); return false;'))));
+            }
+            $search_count = count($search_results);
+            $result = array(
+                "sEcho" => $_GET['sEcho'],
+                "iTotalRecords" => $search_count,
+                "iTotalDisplayRecords" => $search_count,
+                "aaData" => $search_results
+            );
+            echo json_encode($result);
+            return;
+        } elseif ( $extra === 'form' ) {
+            $data = array();
+            $data['success'] = false;
+            $val = $this->form_validation;
+            // Set form validation rules    
+            $val->set_rules('hg_uri', 'HyperGrid URI', 'trim|required|xss_clean');
+            $val->set_rules('region_name', 'Region Name', 'trim|required|xss_clean');
+            $val->set_rules('x', 'X', 'trim|required|xss_clean');
+            $val->set_rules('y', 'Y', 'trim|required|xss_clean');
+
+            // Run form validation and register user if validation succeeds
+            if ($val->run() ) {
+                $data['hg_uri'] = $val->set_value('hg_uri');
+                $data['region_name'] = $val->set_value('region_name');
+                $data['x'] = $val->set_value('x');
+                $data['y'] = $val->set_value('y');
+                
+                if ( $this->simiangrid->link_region($data['hg_uri'], $data['region_name'], $data['x'], $data['y']) ) {
+                    log_message('debug', 'Succesfully linked region ' . $data['region_name'] . '@' . $data['hg_uri']);
+                    $data['success'] = true;
+                } else {
+                    log_message('warn', "Unable to link region " . $data['region_name'] . '@' . $data['hg_uri']);
+                }
+            } else {
+                log_message('debug', "link_region form validation failed");
+                $data['hg_uri_error'] = form_error('hg_uri');
+                $data['link_region_error'] = form_error('link_region');
+                $data['x_error'] = form_error('x_type');
+                $data['y_error'] = form_error('y');
+            }
+            echo json_encode($data, TRUE);  
+        }
+    }
 }

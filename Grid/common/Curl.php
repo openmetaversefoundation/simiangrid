@@ -116,11 +116,43 @@ class Curl
         
         return $this->execute();
     }
-    
+
     /* =================================================================================
      * ADVANCED METHODS 
      * Use these methods to build up more complex queries
      * ================================================================================= */
+
+    public function multipart($filename, $type, $filedata, $params) {
+        // form field separator
+        $delimiter = '-------------' . uniqid();
+
+        $data = '';
+
+        // populate normal fields first (simpler)
+        foreach ($params as $name => $value) {
+            $data .= "--" . $delimiter . "\r\n";
+            $data .= 'Content-Disposition: form-data; name="' . $name . "\"\r\n";
+            // note: double endline
+            $data .= "\r\n";
+            $data .= $value . "\r\n";
+        }
+        $data .= "--" . $delimiter . "\r\n";
+        $data .= 'Content-Disposition: file; name="' . $filename . '";' . ' filename="' . $filename . '"' . "\r\n";
+        $data .= 'Content-Type: ' . $type . "\r\n";
+        $data .= "Content-Transfer-Encoding: binary\r\n";
+        $data .= "\r\n";
+        $data .= $filedata . "\r\n";
+        
+        $data .= "--" . $delimiter . "--\r\n";
+        
+        $this->http_method('post');
+        $this->option(CURLOPT_POST, true);
+        $this->option(CURLOPT_POSTFIELDS, $data);
+        $this->option(CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data; boundary=' . $delimiter, 'Content-Length: ' . strlen($data)));
+        $this->option(CURLOPT_VERBOSE, TRUE);
+        $result = $this->execute();
+        return $result;
+    }
 
     public function post($params = array(), $options = array()) { 
         
@@ -272,7 +304,6 @@ class Curl
 
         // Execute the request & and hide all output
         $this->response = curl_exec($this->session);
-
         // Request failed
         if($this->response === FALSE)
         {

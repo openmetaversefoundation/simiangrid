@@ -53,7 +53,7 @@ class AddMapTile implements IGridService
         
         // Get the file path of the full resolution tile
         $this->dirpath = (!empty($config['map_path'])) ? $config['map_path'] : BASEPATH . 'map/';
-        $filepath = $this->GetFilename(1, $x, $y);
+        $filepath = $this->GetFilename(1, $x, $y, $tile->type);
         
         // Acquire a lock on the lock file
         $lockfile = $this->dirpath . LOCK_FILE;
@@ -80,7 +80,11 @@ class AddMapTile implements IGridService
         fclose($fp);
         
         // Also save in JPG format
-        $this->Png2Jpg($filepath, $this->GetFilename(1, $x, $y, 'jpg'), JPEG_QUALITY);
+        if ( $tile->type == 'image/jpeg' ) {
+            $this->Jpg2Png($filepath, $this->GetFilename(1, $x, $y, 'png'), JPEG_QUALITY);
+        } else {
+            $this->Png2Jpg($filepath, $this->GetFilename(1, $x, $y, 'jpg'), JPEG_QUALITY);
+        }
         
         // Stitch seven more aggregate tiles together
         for ($zoomLevel = 2; $zoomLevel <= ZOOM_LEVELS; $zoomLevel++)
@@ -91,7 +95,7 @@ class AddMapTile implements IGridService
             $x1 = $x - ($x % $width);
             $y1 = $y - ($y % $width);
             
-            if (!$this->CreateTile($zoomLevel, $x1, $y1))
+            if (!$this->CreateTile($zoomLevel, $x1, $y1, $tile->type))
             {
                 header("Content-Type: application/json", true);
                 echo '{ "Message": "Unable to store zoom level ' . $zoomLevel . '" }';
@@ -108,21 +112,28 @@ class AddMapTile implements IGridService
         exit();
     }
     
-    private function OpenInputTile($filename)
+    private function OpenInputTile($filename, $type)
     {
         if (file_exists($filename))
-            return @imagecreatefrompng($filename);
+            if ( $type == 'image/png' ) {
+                return @imagecreatefrompng($filename);
+            } else {
+                return @imagecreatefromjpeg($filename);
+            }
         else
             return FALSE;
     }
     
-    private function OpenOutputTile($filename)
+    private function OpenOutputTile($filename, $type)
     {
         $output = NULL;
         
         if (file_exists($filename))
-            $output = @imagecreatefrompng($filename);
-        
+            if ( $type == 'image/png' ) {
+                $output = @imagecreatefrompng($filename);
+            } else {
+                $output = @imagecreatefromjpeg($filename);
+            }
         if ($output)
         {
             // Return the existing output tile
@@ -138,12 +149,17 @@ class AddMapTile implements IGridService
         }
     }
     
-    private function GetFilename($zoom, $x, $y, $extension='png')
+    private function GetFilename($zoom, $x, $y, $extension)
     {
+        if ( $extension == 'image/jpeg' ) {
+            $extension = 'jpg';
+        } else if ( $extension == 'image/png' ) {
+            $extension = 'png';
+        }
         return $this->dirpath . "map-$zoom-$x-$y-objects.$extension";
     }
     
-    private function CreateTile($zoomLevel, $x, $y)
+    private function CreateTile($zoomLevel, $x, $y, $type)
     {
         $prevWidth = pow(2, $zoomLevel - 2);
         $thisWidth = pow(2, $zoomLevel - 1);
@@ -157,14 +173,14 @@ class AddMapTile implements IGridService
         $yOut = $y - ($y % $thisWidth);
         
         // Try to open the four input tiles from the previous zoom level
-        $inputBL = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn             , $yIn             ));
-        $inputBR = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn + $prevWidth, $yIn             ));
-        $inputTL = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn             , $yIn + $prevWidth));
-        $inputTR = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn + $prevWidth, $yIn + $prevWidth));
+        $inputBL = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn             , $yIn             , $type), $type);
+        $inputBR = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn + $prevWidth, $yIn             , $type), $type);
+        $inputTL = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn             , $yIn + $prevWidth, $type), $type);
+        $inputTR = $this->OpenInputTile($this->GetFilename($zoomLevel - 1, $xIn + $prevWidth, $yIn + $prevWidth, $type), $type);
         
         // Open the output tile (current zoom level)
-        $outputFile = $this->GetFilename($zoomLevel, $xOut, $yOut);
-        $output = $this->OpenOutputTile($outputFile);
+        $outputFile = $this->GetFilename($zoomLevel, $xOut, $yOut, $type);
+        $output = $this->OpenOutputTile($outputFile, $type);
         
         if (!$output)
             return FALSE;
@@ -192,12 +208,16 @@ class AddMapTile implements IGridService
             imagedestroy($inputTR);
         }
         
-        // Write the modified output
-        imagepng($output, $outputFile);
-        imagedestroy($output);
-        
         // Also save in JPG format
-        $this->Png2Jpg($outputFile, $this->GetFilename($zoomLevel, $xOut, $yOut, 'jpg'), JPEG_QUALITY);
+        if ( $type == 'image/jpeg' ) {
+            imagejpeg($output, $outputFile);
+            $this->Jpg2Png($outputFile, $this->GetFilename($zoomLevel, $xOut, $yOut, 'png'), JPEG_QUALITY);
+        } else {
+            imagepng($output, $outputFile);
+            $this->Png2Jpg($outputfile, $this->GetFilename($zoomLevel, $xOut, $yOut, 'jpg'), JPEG_QUALITY);
+        }
+        
+        imagedestroy($output);
         
         return TRUE;
     }
@@ -206,6 +226,13 @@ class AddMapTile implements IGridService
     {
         $image = imagecreatefrompng($originalFile);
         imagejpeg($image, $outputFile, $quality);
+        imagedestroy($image);
+    }
+    
+    private function Jpg2Png($originalFile, $outputFile, $quality)
+    {
+        $image = imagecreatefromjpeg($originalFile);
+        imagepng($image, $outputFile, $quality);
         imagedestroy($image);
     }
 }

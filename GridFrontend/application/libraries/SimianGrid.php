@@ -22,6 +22,7 @@ class SimianGrid
         $this->grid_service = $this->ci->config->item('grid_service');
         $this->user_service = $this->ci->config->item('user_service');
         $this->asset_service = $this->ci->config->item('asset_service');
+        $this->hypergrid_service = $this->ci->config->item('hypergrid_service');
     }
 
     function _rest_post($url, $params)
@@ -266,6 +267,11 @@ class SimianGrid
     function search_scene($name) {
         return $this->_search_scene('name', $name);
     }
+    
+    function get_hyperlinks($enabled = true)
+    {
+        return $this->_search_scene('hypergrid', $enabled);
+    }
 
     function _search_scene($request, $thing)
     {
@@ -273,6 +279,12 @@ class SimianGrid
             $query = array(
                 'RequestMethod' => 'GetScenes',
                 'NameQuery' => $thing
+            );
+        } else if ( $request === 'hypergrid' ) {
+            $query = array(
+                'RequestMethod' => 'GetScenes',
+                'HyperGrid' => 'true',
+                'Enabled' => $thing
             );
         } else {
             return null;
@@ -335,7 +347,7 @@ class SimianGrid
         return $this->_get_scene_info('owner', $owner);
     }
 
-    function _get_scene_info($request, $thing)
+    function _get_scene_info($request, $thing = null)
     {
         if ( $request == "id" ) {
             $query = array(
@@ -482,22 +494,34 @@ class SimianGrid
         if ( $scene == null ) {
             return null;
         }
-        $url = $scene['Address'] . 'jsonSimStats/';
+        $url = $scene['Address'] . "monitorstats/$scene_id";
+        $url2 = $scene['Address'] . "jsonSimStats";
         $result = $this->ci->curl->simple_get($url);
         if ( $result == null ) {
             log_message('debug', "Unable to retrieve simulator stats from $url");
             return null;
         }
-        $details = decode_recursive_json($result);
+        $result2 = $this->ci->curl->simple_get($url2);
+        $json_result = array();
+        if ( $result2 == null ) {
+            log_message('debug', "Unable to retrieve instance information from $result2");
+            $json_result['Version'] = "??";
+            $json_result['Uptime'] = "??";
+        } else {
+            $json_result = decode_recursive_json($result2);
+        }
+        
+        $xml = new SimpleXMLElement($result);
+        
         $result = array(
-            'simulation_fps' => $details['SimFPS'],
-            'physics_fps' => $details['PhyFPS'],
-            'version' => $details['Version'],
-            'uptime' => $details['Uptime'],
-            'dilation' => $details['Dilatn'],
-            'prim_count' => $details['Prims'],
-            'agents' => $details['RootAg'],
-            'child_agents' => $details['ChldAg']
+            'simulation_fps' => $xml->SimFPSMonitor,
+            'physics_fps' => $xml->PhysicsFPSMonitor,
+            'version' => $json_result['Version'],
+            'uptime' => $json_result['Uptime'],
+            'dilation' => $xml->TimeDilationMonitor,
+            'prim_count' => $xml->ObjectCountMonitor,
+            'agents' => $xml->AgentCountMonitor,
+            'child_agents' => $xml->ChildAgentCountMonitor
         );
         return $result;
     }
@@ -529,5 +553,18 @@ class SimianGrid
             return 0;
         }
     }
+    
+    function link_region($hg_uri, $region_name, $x, $y)
+    {
+        $data = array(
+            'x' => $x,
+            'y' => $y,
+            'hg_uri' => $hg_uri,
+            'region_name' => $region_name
+        );
+        $result = $this->_rest_post($this->hypergrid_service . '/sg_api/link_remote', $data);
+        return $result['Success'];
+    }
 }
+
 ?>

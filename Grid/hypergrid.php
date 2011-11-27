@@ -61,6 +61,12 @@ if ( isset($_SERVER['PATH_INFO'] ) ) {
             foreignagent_handler(array_slice($path_bits, 2), $data);
         } else if ( $path_bits[1] == "homeagent" ) {
             homeagent_handler(array_slice($path_bits, 2), $data);
+        } else if ( $path_bits[1] == "sg_api" ) {
+            if ( $path_bits[2] == "link_remote" ) {
+                link_remote_handler($data);
+            } else if ( $path_bits[2] == "info_remote" ) {
+                info_remote_handler($data);
+            }
         }
     }
 }
@@ -219,6 +225,60 @@ function remove_session($sessionID)
         return true;
     
     return false;
+}
+
+function add_map_tile($x, $y, $maptile)
+{    
+    $params = array(
+        'X' => $x,
+        'Y' => $y
+    );
+    $config =& get_config();
+    $gridService = $config['grid_service'];
+    $curl = new Curl($gridService);
+    $result = $curl->multipart('Tile', 'image/jpeg', $maptile, $params);
+    var_dump($result);
+    return $result['Success'];
+}
+
+function add_hyperlink($sceneID, $region_name, $external_name, $x, $y, $regionImage, $hgurl)
+{
+    $config =& get_config();
+    $gridService = $config['grid_service'];
+
+    $minpos = '<' . $x * 256 . "," . $y * 256 . ",0>";
+    $maxpos = '<' . ($x + 256) * 256 . "," . ($y + 256) * 256 . ",0>";
+
+    $xd = json_encode(array(
+        'HyperGrid' => true,
+        'RegionImage' => $regionImage,
+        'ExternalName' => $external_name
+    ));
+
+    $response = webservice_post($gridService, array(
+        'RequestMethod' => 'AddScene',
+        'SceneID' => $sceneID,
+        'Name' => $region_name,
+        'MinPosition' => $minpos,
+        'MaxPosition' => $maxpos,
+        'ExtraData' => $xd,
+        'Address' => $hgurl,
+        'Enabled' => true
+    ));
+    
+    if ( $response['Success'] ) {
+        $curl = new Curl();
+        $maptile = $curl->simple_get($regionImage);
+        if ( $maptile ) {
+            if ( ! add_map_tile($x, $y, $maptile) ) {
+                log_message('warn', "Unable to upload map image for $region_name");
+            }
+        } else {
+            log_message('warn', "unable to fetch map image from $regionImage");
+        }
+    }
+
+    return $response['Success'];
 }
 
 function lookup_scene_by_id($sceneID)
@@ -458,7 +518,7 @@ function link_region($method_name, $params, $user_data)
         $handle = bitOr($handle, (string)$y, 0);
         $response['handle'] = (string)$handle;
         
-	$response['region_image'] = $config['map_service'] . 'map-1-' . ($x / 256) . '-' . ($y / 256) . '-objects.jpg';
+        $response['region_image'] = $config['map_service'] . 'map-1-' . ($x / 256) . '-' . ($y / 256) . '-objects.jpg';
         $response['server_uri'] = $scene->Address;
         $response['external_name'] = $scene->Name;
         log_message('debug', "Succesfully linked to $region_name@" . $scene->Address);
@@ -739,4 +799,68 @@ function homeagent_handler($path_tail, $data)
     echo "{'success': $result, 'reason': 'no reason set lol'}";
     exit();
 
+}
+
+function link_remote_handler($data)
+{
+    $x = $_POST['x'];
+    $y = $_POST['y'];
+    $hguri = $_POST['hg_uri'];
+    $region_name = $_POST['region_name'];
+    
+    $link_request = xmlrpc_encode_request('link_region', array('region_name' => $region_name));
+    $curl = new Curl();
+    $response_raw = $curl->simple_post($hguri, $link_request);
+    
+    $response = xmlrpc_decode($response_raw);
+    
+    $success = $response['result'];
+    if ( $success ) {
+        $uuid = $response['uuid'];
+        $external_name = $response['external_name'];
+        $region_image = $response['region_image'];
+        if ( add_hyperlink($uuid, $region_name, $external_name, $x, $y, $region_image, $hguri) ) {
+            $success = true;
+        }
+    } else {
+        log_message('debug', "result was false didn't link!");
+    }
+    echo "{'success': $success}";
+    exit();
+}
+
+function info_remote_handler($data)
+{
+    $sceneid = $_POST['sceneid'];
+    $hguri = $_POST['hguri'];
+    
+    $info_request = xmlrpc_encode_request('get_region', array('region_uuid' => $sceneid));
+    $curl = new Curl();
+    $response_raw = $curl->simple_post($hguri, $info_request);
+
+    $response = xmlrpc_decode($response_raw);
+
+    $success = $response['result'];
+    
+    if ( $success ) {
+        if ( isset($response['server_uri']) ) {
+            $serveruri = $response['server_uri'];
+        } else {
+            $serveruri = "http://" . $response['hostname'] . ':' . $response['http_port'] . '/';
+        }
+        $result = array(
+            'success' => true,
+            'uuid' => $response['uuid'],
+            'x' => $response['x'],
+            'y' => $response['y'],
+            'region_name' => $response['region_name'],
+            'hostname' => $response['hostname'],
+            'internal_port' => $response['internal_port'],
+            'server_uri' => $serveruri
+        );
+        echo json_encode($result);
+    } else {
+        echo "{'success':false}";
+    }
+    exit();
 }
