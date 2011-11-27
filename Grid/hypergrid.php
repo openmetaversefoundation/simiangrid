@@ -53,7 +53,6 @@ if ( $_SERVER['REQUEST_METHOD'] != 'POST' ) {
 }
 
 if ( isset($_SERVER['PATH_INFO'] ) ) {
-    log_message('debug', "PARSING PATH INFO " . $_SERVER['PATH_INFO']);
     $path_bits = explode('/', $_SERVER['PATH_INFO']);
     if ( count($path_bits) > 0 ) {
         $data = file_get_contents("php://input");
@@ -141,8 +140,6 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
     
     if ($jsonRequest)
         $params = json_encode($params);
-    
-    log_message('error', "posting\n$params\n");
 
     // POST our query and fetch the response
     $curl = new Curl();

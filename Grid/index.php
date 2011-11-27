@@ -270,7 +270,6 @@ else if (stripos($_SERVER['REQUEST_METHOD'], 'POST') !== FALSE)
         $gMethodName = $command;
         if ($gMethodName == 'GetGenerics')
             $gMethodName .= ' (' . $request['Type'] . ')';
-        log_message('error',"checking");
         execute_command($command, $capability, $db, $request);
     }
     else

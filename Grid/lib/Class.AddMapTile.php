@@ -214,7 +214,7 @@ class AddMapTile implements IGridService
             $this->Jpg2Png($outputFile, $this->GetFilename($zoomLevel, $xOut, $yOut, 'png'), JPEG_QUALITY);
         } else {
             imagepng($output, $outputFile);
-            $this->Png2Jpg($outputfile, $this->GetFilename($zoomLevel, $xOut, $yOut, 'jpg'), JPEG_QUALITY);
+            $this->Png2Jpg($outputFile, $this->GetFilename($zoomLevel, $xOut, $yOut, 'jpg'), JPEG_QUALITY);
         }
         
         imagedestroy($output);
@@ -232,7 +232,7 @@ class AddMapTile implements IGridService
     private function Jpg2Png($originalFile, $outputFile, $quality)
     {
         $image = imagecreatefromjpeg($originalFile);
-        imagepng($image, $outputFile, $quality);
+        imagepng($image, $outputFile);
         imagedestroy($image);
     }
 }
