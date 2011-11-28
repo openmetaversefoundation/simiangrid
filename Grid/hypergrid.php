@@ -65,6 +65,8 @@ if ( isset($_SERVER['PATH_INFO'] ) ) {
                 link_remote_handler($data);
             } else if ( $path_bits[2] == "info_remote" ) {
                 info_remote_handler($data);
+            } else if ( $path_bits[2] == "refresh_map" ) {
+                refresh_map_handler($data);
             }
         }
     }
@@ -238,7 +240,57 @@ function add_map_tile($x, $y, $maptile)
     return $result['Success'];
 }
 
-function add_hyperlink($sceneID, $region_name, $external_name, $x, $y, $regionImage, $hgurl)
+function hg_get_region($hguri, $id)
+{
+    $info_request = xmlrpc_encode_request('get_region', array('region_uuid' => $id));
+    $curl = new Curl();
+    $response_raw = $curl->simple_post($hguri, $info_request);
+
+    $response = xmlrpc_decode($response_raw);
+
+    $success = $response['result'];
+    
+    if ( $success ) {
+        if ( isset($response['server_uri']) ) {
+            $serveruri = $response['server_uri'];
+        } else {
+            $serveruri = "http://" . $response['hostname'] . ':' . $response['http_port'] . '/';
+        }
+        return array(
+            'uuid' => $response['uuid'],
+            'x' => $response['x'],
+            'y' => $response['y'],
+            'region_name' => $response['region_name'],
+            'hostname' => $response['hostname'],
+            'internal_port' => $response['internal_port'],
+            'server_uri' => $serveruri
+        );
+    } else {
+        return null;
+    }
+}
+
+function hg_refresh_map($sceneID)
+{
+    $config =& get_config();
+    
+    $scene = lookup_scene_by_id($sceneID);
+    
+    if ( $scene != null ) {
+        $x = $scene->MinPosition->X / 256;
+        $y = $scene->MinPosition->Y / 256;
+        if ( isset($scene->ExtraData['HyperGrid']) ) {
+            if ( refresh_map_tile($x, $y, $scene->ExtraData['RegionImage']) ) {
+                echo("updated map");
+            } else  {
+                echo("unable to update map");
+            }
+        }
+    }
+    exit();
+}
+
+function hg_link_region($sceneID, $region_name, $external_name, $x, $y, $regionImage, $hgurl)
 {
     $config =& get_config();
     $gridService = $config['grid_service'];
@@ -262,23 +314,31 @@ function add_hyperlink($sceneID, $region_name, $external_name, $x, $y, $regionIm
         'Address' => $hgurl,
         'Enabled' => true
     );
-    log_message('debug', "asdadsa " . print_r($data, TRUE));
 
     $response = webservice_post($gridService, $data);
     
     if ( $response['Success'] ) {
-        $curl = new Curl();
-        $maptile = $curl->simple_get($regionImage);
-        if ( $maptile ) {
-            if ( ! add_map_tile($x, $y, $maptile) ) {
-                log_message('warn', "Unable to upload map image for $region_name");
-            }
-        } else {
-            log_message('warn', "unable to fetch map image from $regionImage");
-        }
+        refresh_map_tile($x, $y, $regionImage);
     }
 
     return $response['Success'];
+}
+
+function refresh_map_tile($x, $y, $regionImage)
+{
+    $success = false;
+    $curl = new Curl();
+    $maptile = $curl->simple_get($regionImage);
+    if ( $maptile ) {
+        if ( ! add_map_tile($x, $y, $maptile) ) {
+            log_message('warn', "Unable to upload map image from $regionImage");
+        } else {
+            $success = true;
+        }
+    } else {
+        log_message('warn', "unable to fetch map image from $regionImage");
+    }
+    return $success;
 }
 
 function lookup_scene_by_id($sceneID)
@@ -371,7 +431,7 @@ function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $sc
         $request['client_ip'] = $client_ip;
     }
     if ( $service_urls != null ) {
-        $request['service_urls'] = $service_urls;
+        $request['serviceurls'] = $service_urls;
     }
     if ( $service_session_id != null ) {
         $request['service_session_id'] = $service_session_id;
@@ -581,16 +641,6 @@ function foreignagent_handler($path_tail, $data)
     $start_pos = $osd['start_pos'];
     $appearance = $osd['packed_appearance'];
 
-    
-    $service_urls[0] = 'HomeURI';
-    $service_urls[1] = $osd['service_urls'][1];
-    $service_urls[2] = 'GatekeeperURI';
-    $service_urls[3] = $osd['service_urls'][3];
-    $service_urls[4] = 'InventoryServerURI';
-    $service_urls[5] = $osd['service_urls'][5];
-    $service_urls[6] = 'AssetServerURI';
-    $service_urls[7] = $osd['service_urls'][7];
-
     //$service_urls['HomeURI'] = $osd['service_urls'][1];
     //$service_urls['GatekeeperURI'] = $osd['service_urls'][3];
     //$service_urls['InventoryServerURI'] = $osd['service_urls'][5];
@@ -614,7 +664,7 @@ function foreignagent_handler($path_tail, $data)
     bump_user($userid, $username, "$username@HG LOLOL");
     create_session($userid, $session_id, $secure_session_id);
     
-    $result = create_opensim_presence_full($scene->Address, $dest_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $service_urls, 1073741824, $service_session_id);
+    $result = create_opensim_presence_full($scene->Address, $dest_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $osd['serviceurls'], 1073741824, $service_session_id);
     
     echo "{'success': $result, 'reason': 'no reason set lol', 'your_ip': '" . $_SERVER['REMOTE_ADDR'] . "'}";
     exit();
@@ -760,31 +810,22 @@ function homeagent_handler($path_tail, $data)
     $userid = $path_tail[0];
     $osd = decode_recursive_json($data);
     
-    $gatekeeper_host = $osd['gatekeeper_host'];
-    $gatekeeper_port = $osd['gatekeeper_port'];
+    $gatekeeper_uri = $osd['serviceurls']['GatekeeperURI'];
     
     $dest_x = $osd['destination_x'];
     $dest_y = $osd['destination_y'];
     
     if ( $dest_x == null ) {
-        $dest_x = 0;
+        $dest_x = 128;
     }
     if ( $dest_y == null ) {
-        $dest_y = 0;
+        $dest_y = 128;
     }
-    
+
     $dest_uuid = $osd['destination_uuid'];
-    #$dest_name = $osd['destination_name'];
-    
-    $scene = get_scene($dest_uuid);
-    
-    
-    if ( $dest_uuid == null || $dest_name == null ) {
-        header("HTTP/1.1 400 Bad Request");
-        echo "missing destination_name and/or destination_uuid";
-        exit();
-    }
-    
+    $server_uri = $osd['destination_serveruri'];
+    $scene_name = $osd['destination_name'];
+
     $caps_path = $osd['caps_path'];
     $username = $osd['first_name'] . ' ' . $osd['last_name'];
     $circuit_code = $osd['circuit_code'];
@@ -792,9 +833,20 @@ function homeagent_handler($path_tail, $data)
     $secure_session_id = $osd['secure_session_id'];
     $start_pos = $osd['start_pos'];
     $appearance = $osd['packed_appearance'];
+    if ( isset($osd['client_ip']) ) {
+        $client_ip = $osd['client_ip'];
+    } else {
+        $client_ip = null;
+    }
+    if ( isset($osd['service_session_id'] ) ) {
+        $service_session_id = $osd['service_session_id'];
+    } else {
+        $service_session_id = null;
+    }
     
-    $result = create_opensim_presence($scene, $userid, $circuit_code, $username, $appearance,
-				      $session_id, $secure_session_id, $start_pos, $caps_path);
+    //function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $scene_x, $scene_y, $userID, $circuitCode, $fullName, $appearance, $sessionID, $secureSessionID, $startPosition, $capsPath, $client_ip, $service_urls, $tp_flags, $service_session_id)
+    //$result = create_opensim_presence($scene, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path);
+    $result = create_opensim_presence_full($server_uri, $scene_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $osd['serviceurls'], null, $service_session_id);
     
     echo "{'success': $result, 'reason': 'no reason set lol'}";
     exit();
@@ -819,7 +871,7 @@ function link_remote_handler($data)
         $uuid = $response['uuid'];
         $external_name = $response['external_name'];
         $region_image = $response['region_image'];
-        if ( add_hyperlink($uuid, $region_name, $external_name, $x, $y, $region_image, $hguri) ) {
+        if ( hg_link_region($uuid, $region_name, $external_name, $x, $y, $region_image, $hguri) ) {
             $success = true;
         }
     } else {
@@ -834,33 +886,19 @@ function info_remote_handler($data)
     $sceneid = $_POST['sceneid'];
     $hguri = $_POST['hguri'];
     
-    $info_request = xmlrpc_encode_request('get_region', array('region_uuid' => $sceneid));
-    $curl = new Curl();
-    $response_raw = $curl->simple_post($hguri, $info_request);
-
-    $response = xmlrpc_decode($response_raw);
-
-    $success = $response['result'];
-    
-    if ( $success ) {
-        if ( isset($response['server_uri']) ) {
-            $serveruri = $response['server_uri'];
-        } else {
-            $serveruri = "http://" . $response['hostname'] . ':' . $response['http_port'] . '/';
-        }
-        $result = array(
-            'success' => true,
-            'uuid' => $response['uuid'],
-            'x' => $response['x'],
-            'y' => $response['y'],
-            'region_name' => $response['region_name'],
-            'hostname' => $response['hostname'],
-            'internal_port' => $response['internal_port'],
-            'server_uri' => $serveruri
-        );
-        echo json_encode($result);
-    } else {
+    $result = hg_get_region($hguri, $sceneid);
+    if ( $result == null ) {
         echo "{'success':false}";
+    } else {
+        $result['Success'] = true;
+        echo json_encode($result);
     }
+    exit();
+}
+
+function refresh_map_handler($data)
+{
+    $scene_id = $_POST['sceneid'];
+    hg_refresh_map($scene_id);
     exit();
 }
