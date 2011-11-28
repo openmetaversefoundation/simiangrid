@@ -324,6 +324,19 @@ function hg_link_region($sceneID, $region_name, $external_name, $x, $y, $regionI
     return $response['Success'];
 }
 
+//taking easy way out... we get the osdmap more or less intact.....
+function hg_login($gatekeeper_uri, $userid, $raw_osd)
+{
+    $success = false;
+    $curl = new Curl();
+    $response_raw = $curl->simple_post($gatekeeper_uri . "/homeagent/" . $userid . "/", $raw_osd);
+    $response = json_decode($response_raw, TRUE);
+    if ( $response['Success'] ) {
+        $success = true;
+    }
+    return false;
+}
+
 function refresh_map_tile($x, $y, $regionImage)
 {
     $success = false;
@@ -810,7 +823,7 @@ function homeagent_handler($path_tail, $data)
     $userid = $path_tail[0];
     $osd = decode_recursive_json($data);
     
-    $gatekeeper_uri = $osd['serviceurls']['GatekeeperURI'];
+    $gatekeeper_uri = $osd['gatekeeper_serveruri'];
     
     $dest_x = $osd['destination_x'];
     $dest_y = $osd['destination_y'];
@@ -844,11 +857,15 @@ function homeagent_handler($path_tail, $data)
         $service_session_id = null;
     }
     
-    //function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $scene_x, $scene_y, $userID, $circuitCode, $fullName, $appearance, $sessionID, $secureSessionID, $startPosition, $capsPath, $client_ip, $service_urls, $tp_flags, $service_session_id)
-    //$result = create_opensim_presence($scene, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path);
-    $result = create_opensim_presence_full($server_uri, $scene_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $osd['serviceurls'], null, $service_session_id);
+    if ( hg_login($gatekeeper_uri, $userid, $data) ) {
+        //function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $scene_x, $scene_y, $userID, $circuitCode, $fullName, $appearance, $sessionID, $secureSessionID, $startPosition, $capsPath, $client_ip, $service_urls, $tp_flags, $service_session_id)
+        //$result = create_opensim_presence($scene, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path);
+        $result = create_opensim_presence_full($server_uri, $scene_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $osd['serviceurls'], null, $service_session_id);
     
-    echo "{'success': $result, 'reason': 'no reason set lol'}";
+        echo "{'success': $result, 'reason': 'no reason set lol'}";
+    } else {
+        echo "{'success': false, 'reason': 'unable to remote login sorry boss'}";
+    }
     exit();
 
 }
