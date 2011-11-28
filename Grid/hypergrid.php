@@ -712,7 +712,7 @@ function get_home_region($method_name, $params, $user_data)
     if (isset($user['HomeLocation']))
         $homeLocation = SceneLocation::fromOSD($user['HomeLocation']);
     
-    log_message('debug', "User retrieval success for $userID, HomeLocation is $homeLocation");
+    log_message('debug', "User retrieval success for $userID...");
     
     $scene = null;
     $position = null;
@@ -752,10 +752,10 @@ function get_home_region($method_name, $params, $user_data)
     {
         $response['result'] = 'true';
         $response['uuid'] = $scene->SceneID;
-        $response['x'] = $scene->MinPosition->X;
-        $response['y'] = $scene->MinPosition->Y;
+        $response['x'] = $scene->MinPosition->X / 256;
+        $response['y'] = $scene->MinPosition->Y / 256;
         $response['region_name'] = $scene->Name;
-        $response['hostname'] = $scene->Address;
+        $response['hostname'] = $scene->ExtraData['ExternalAddress'];
         $response['http_port'] = $scene->ExtraData['ExternalPort'];
         $response['internal_port'] = $scene->ExtraData['InternalPort'];
         $response['position'] = (string)$position;
