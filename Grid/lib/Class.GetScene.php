@@ -77,8 +77,10 @@ class GetScene implements IGridService
                         GLength(LineString(GeomFromText('POINT(" . $this->Position->X . " " . $this->Position->Y . ")'), Centroid(XYPlane)))
                         AS dist FROM Scenes";
                 
+                $sql .= " WHERE ExtraData NOT REGEXP :RegExp";
+                
                 if (isset($params["Enabled"]) && $params["Enabled"])
-                    $sql .= " WHERE Enabled=1";
+                    $sql .= " AND Enabled=1";
                 
                 $sql .= " ORDER BY dist LIMIT 1";
             }
@@ -102,8 +104,12 @@ class GetScene implements IGridService
             echo '{ "Message": "Invalid parameters" }';
             exit();
         }
+        log_message('debug', "what $sql");
         
         $sth = $db->prepare($sql);
+        if (isset($params["FindClosest"]) && $params["FindClosest"]) {
+            $sth->bindValue(':RegExp', '.+\"HyperGrid\":true.+');
+        }
         
         if ($sth->execute())
         {

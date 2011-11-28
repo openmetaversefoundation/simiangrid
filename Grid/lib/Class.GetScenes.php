@@ -80,7 +80,7 @@ class GetScenes implements IGridService
             $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                     CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,
                     CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
-                    FROM Scenes WHERE MBRIntersects(GeomFromText(:XY), XYPlane) AND ExtraData REGEXP ! :RegExp";
+                    FROM Scenes WHERE MBRIntersects(GeomFromText(:XY), XYPlane) AND ExtraData NOT REGEXP :RegExp";
             
             if (isset($params["Enabled"]) && $params["Enabled"]) {
                 log_message('debug', "Restricting to Enabled scenes");
