@@ -158,7 +158,8 @@ class SQLAssets
         
         if ($sth->execute(array(
             ':ID' => $asset->ID,
-            ':Data' => trim($asset->Data),
+            //':Data' => trim($asset->Data),
+            ':Data' => $asset->Data,
             ':ContentType' => $asset->ContentType,
             ':CreatorID' => $asset->CreatorID,
             ':SHA256' => $asset->SHA256)))
