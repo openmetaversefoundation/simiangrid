@@ -608,6 +608,16 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
     
     log_message('warn','[LOGIN] create opensim session');
 
+    $serviceurls = array(
+        'GatekeeperURI' => $config['hypergrid_uri'],
+        'HomeURI' => $config['hypergrid_uri'],
+        'InventoryServerURI' => $config['inventory_service'],
+        'AssetServerURI' => $config['asset_service'],
+        'ProfileServerURI' => $config['user_service'],
+        'FriendsServerURI' => $config['hypergrid_uri'],
+        'IMServerURI' => $config['hypergrid_uri']
+    );
+    
     $params = array(
                     'agent_id' => $userID,
                     'caps_path' => $capsPath,
@@ -623,7 +633,9 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
                     'destination_name' => $scene->Name,
                     'destination_uuid' => $scene->SceneID,
                     'appearance_serial' => 1,
-                    'teleport_flags' => 128);
+                    'teleport_flags' => 128,
+                    'serviceurls' => $serviceurls
+    );
 
     if ($sendPackedAppearance)
     {

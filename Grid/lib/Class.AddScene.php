@@ -66,10 +66,10 @@ class AddScene implements IGridService
                     }
                     else
                     {
-                        log_message('error', "Failed updating the database");
+                        log_message('error', "Failed updating the database (enabling)");
                     
                         header("Content-Type: application/json", true);
-                        echo '{ "Message": "Database update failed" }';
+                        echo '{ "Message": "Database update failed", "Success":false }';
                         exit();
                     }
                 }
@@ -78,7 +78,7 @@ class AddScene implements IGridService
                     log_message('error', sprintf("Error occurred during query: %d %s", $sth->errorCode(), print_r($sth->errorInfo(), true)));
                 
                     header("Content-Type: application/json", true);
-                    echo '{ "Message": "Database query error" }';
+                    echo '{ "Message": "Database query error", "Success":false }';
                     exit();
                 }
             } // End of what needs to be removed
@@ -86,7 +86,7 @@ class AddScene implements IGridService
             log_message('error', sprintf("AddScene: Unable to parse passed parameters or parameter missing: '%s'", print_r($params, true)));
                 
             header("Content-Type: application/json", true);
-            echo '{ "Message": "Invalid parameters" }';
+            echo '{ "Message": "Invalid parameters", "Success":false }';
             exit();
         }
 
@@ -134,10 +134,10 @@ class AddScene implements IGridService
             }
             else
             {
-                log_message('error', "Failed updating the database");
+                log_message('error', "Failed updating the database (replace)");
                     
                 header("Content-Type: application/json", true);
-                echo '{ "Message": "Database update failed" }';
+                echo '{ "Message": "Database update failed", "Success":false }';
                 exit();
             }
         }
@@ -147,7 +147,7 @@ class AddScene implements IGridService
             log_message('debug', sprintf("Query: %s", $sql));
                 
             header("Content-Type: application/json", true);
-            echo '{ "Message": "Database query error" }';
+            echo '{ "Message": "Database query error", "Success":false }';
             exit();
         }
     }

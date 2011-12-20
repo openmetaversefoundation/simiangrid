@@ -11,7 +11,11 @@ Unknown
 <br/>
 <?php echo lang('sg_region_name') . " : " . $scene_data['Name']; ?> <br/>
 <?php echo lang('sg_region_position') . " : " .  $x . "," . $y; ?> <br/>
+<?php if ( ! isset($scene_data['ExtraData']['HyperGrid']) ): ?>
 <?php echo lang('sg_region_owner') . " : " ; echo render_user_link($owner_id); ?><br/>
+<?php else: ?>
+Hypergrid Region
+<?php endif; ?>
 
 <?php if ( isset($center_map) && $center_map ): ?>
 <script type="text/javascript">

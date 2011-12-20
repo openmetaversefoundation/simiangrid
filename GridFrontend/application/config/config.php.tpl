@@ -447,5 +447,8 @@ $config['enable_tooltips'] = false;
 
 $config['languages'] = array('english','french');
 
+//if true then gooey bits for hg show up (WIP)
+$config['hypergrid'] = false;
+
 /* End of file config.php */
 /* Location: ./system/application/config/config.php */

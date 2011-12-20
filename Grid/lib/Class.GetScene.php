@@ -70,19 +70,23 @@ class GetScene implements IGridService
         {
             if (isset($params["FindClosest"]) && $params["FindClosest"])
             {
+                log_message('debug', "GetScene (closest) by position " . $this->Position);
                 $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                         CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                         CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition,
                         GLength(LineString(GeomFromText('POINT(" . $this->Position->X . " " . $this->Position->Y . ")'), Centroid(XYPlane)))
                         AS dist FROM Scenes";
                 
+                $sql .= " WHERE ExtraData NOT REGEXP :RegExp";
+                
                 if (isset($params["Enabled"]) && $params["Enabled"])
-                    $sql .= " WHERE Enabled=1";
+                    $sql .= " AND Enabled=1";
                 
                 $sql .= " ORDER BY dist LIMIT 1";
             }
             else
             {
+                log_message('debug', "GetScene by position " . $this->Position);
                 $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                         CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                         CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
@@ -100,8 +104,12 @@ class GetScene implements IGridService
             echo '{ "Message": "Invalid parameters" }';
             exit();
         }
+        log_message('debug', "what $sql");
         
         $sth = $db->prepare($sql);
+        if (isset($params["FindClosest"]) && $params["FindClosest"]) {
+            $sth->bindValue(':RegExp', '.+\"HyperGrid\":true.+');
+        }
         
         if ($sth->execute())
         {
@@ -126,6 +134,7 @@ class GetScene implements IGridService
                 $out = substr($out, 0, -1);
                 $out .= ',"Success":true}';
                 
+                log_message('debug', "Found scene " . $scene->Name);
                 header("Content-Type: application/json", true);
                 echo $out;
                 exit();

@@ -27,6 +27,7 @@ $lang['sg_admin'] = 'Admin';
 $lang['sg_email_fail'] = 'Problem sending email to %s';
 $lang['sg_reset'] = 'Reset';
 $lang['sg_style_selector'] = 'Style Selector';
+$lang['sg_hypergrid'] = 'HyperGrid';
 //region
 $lang['sg_region_name'] = 'Region Name';
 $lang['sg_region_owner'] = 'Owner';
@@ -136,5 +137,8 @@ $lang['sg_stat_name'] = 'Stat Name';
 $lang['sg_stat_value'] = 'Value';
 $lang['sg_stat_total_users'] = 'Total Users';
 $lang['sg_stat_total_scenes'] = 'Total Scenes';
+
+$lang['sg_hg_uri'] = 'HyperGrid URI';
+$lang['sg_hg_link_region'] = 'Link HyperGrid Region';
 
 ?>

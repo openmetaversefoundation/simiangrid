@@ -8,6 +8,7 @@ class Region extends Controller {
         $this->load->library('table');
         $this->load->library('SimianGrid');
         $this->load->library('table');
+        $this->load->library('Form_validation');
 
         $this->load->helper('form');
         $this->load->helper('simian_view_helper');
@@ -110,17 +111,22 @@ class Region extends Controller {
 			return redirect('region/');
 		} else {
 			$data['scene_id'] = $sim['SceneID'];
-			$data['owner_id'] = $sim['ExtraData']['EstateOwner'];
+			if ( ! isset($sim['ExtraData']['HyperGrid'] ) ) {
+			    $data['hg'] = false;
+			    $data['owner_id'] = $sim['ExtraData']['EstateOwner'];
+			} else {
+			    $data['hg'] = true;
+			}
 			return parse_template('region/admin_actions', $data, true);
 		}
 	}
 	
-	function change_region_owner()
-    ## TODO: finish this function
+	function change_region_owner($uuid)
 	{
         $val = $this->form_validation;
         $val->set_rules('user_id', '', 'trim|required|xss_clean');
         
+        $success = false;
         if ( $val->run() ) {
             $user_id = $val->set_value('user_id');
 			$user = $this->simiangrid->get_user($user_id);
@@ -128,8 +134,12 @@ class Region extends Controller {
 				push_message("Invalid user specified", 'warning');
 				return redirect('region/admin_actions');
 			}
-            $scene = $this->get_scene($scene_id);
+			$scene = $this->simiangrid->get_scene($uuid);
+			$scene['ExtraData']['EstateOwner'] = $user_id;
+			$success =$this->simiangrid->set_scene_data($uuid, 'EstateOwner', $user_id);
         }
+        echo json_encode(array('success'=> $success));
+        return;
 	}
 
     function details($uuid, $extra=null)
@@ -184,9 +194,11 @@ class Region extends Controller {
     
     function _scene_extra_info($uuid, &$data)
     {    
-        $grid_user = $this->simiangrid->get_user($data['scene_data']['ExtraData']['EstateOwner']);
-        $data['owner_name'] = $grid_user['Name'];
-        $data['owner_id'] = $grid_user['UserID'];
+        if ( !isset($data['scene_data']['ExtraData']['HyperGrid']) ) {
+            $grid_user = $this->simiangrid->get_user($data['scene_data']['ExtraData']['EstateOwner']);
+            $data['owner_name'] = $grid_user['Name'];
+            $data['owner_id'] = $grid_user['UserID'];
+        }
     }
 
     function _render_region_popup($scene)
