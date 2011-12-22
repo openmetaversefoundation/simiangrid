@@ -229,3 +229,8 @@ $config['send_wearables'] = false;
 |
 */
 $config['authorize_commands'] = false;
+
+//Full URL that points at hypergrid.php
+$config['hypergrid_uri'] = "http://localhost/Grid/hypergrid.php";
+//Default Region for HG
+$config['hypergrid_default_region'] = "OpenSim Test";
