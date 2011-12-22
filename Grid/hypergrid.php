@@ -47,7 +47,7 @@ require_once(BASEPATH . 'common/Scene.php');
 require_once(BASEPATH . 'common/SceneLocation.php');
 require_once(BASEPATH . 'common/Session.php');
 
-if ( $_SERVER['REQUEST_METHOD'] != 'POST' ) {
+if ( !isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] != 'POST' ) {
     header("HTTP/1.1 400 Bad Request");
     exit();
 }
@@ -327,14 +327,20 @@ function hg_link_region($sceneID, $region_name, $external_name, $x, $y, $regionI
 //taking easy way out... we get the osdmap more or less intact.....
 function hg_login($gatekeeper_uri, $userid, $raw_osd)
 {
+    log_message('debug',"hg login to " . $gatekeeper_uri . "/foreignagent/" . $userid . "/");
+
     $success = false;
     $curl = new Curl();
-    $response_raw = $curl->simple_post($gatekeeper_uri . "/homeagent/" . $userid . "/", $raw_osd);
+    $response_raw = $curl->simple_post($gatekeeper_uri . "/foreignagent/" . $userid . "/", $raw_osd);
+
     $response = json_decode($response_raw, TRUE);
-    if ( $response['Success'] ) {
-        $success = true;
+
+    if ( isset($response['success']) && $response['success'] ) {
+	log_message('debug','hg_login succeeded');
+	$success = true;
     }
-    return false;
+    
+    return $success;
 }
 
 function refresh_map_tile($x, $y, $regionImage)
@@ -854,17 +860,21 @@ function homeagent_handler($path_tail, $data)
     if ( isset($osd['service_session_id'] ) ) {
         $service_session_id = $osd['service_session_id'];
     } else {
-        $service_session_id = null;
+	log_message('debug','missing service_session_id, generating a new one');
+	$osd['service_session_id'] = $gatekeeper_uri . ';' . UUID::Random();
+        $service_session_id = $osd['service_session_id'];
     }
     
+    $data = json_encode($osd);
+
     if ( hg_login($gatekeeper_uri, $userid, $data) ) {
         //function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $scene_x, $scene_y, $userID, $circuitCode, $fullName, $appearance, $sessionID, $secureSessionID, $startPosition, $capsPath, $client_ip, $service_urls, $tp_flags, $service_session_id)
         //$result = create_opensim_presence($scene, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path);
         $result = create_opensim_presence_full($server_uri, $scene_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $osd['serviceurls'], null, $service_session_id);
     
-        echo "{'success': $result, 'reason': 'no reason set lol'}";
+        echo "{'success': $result, 'reason': 'failed to create presence in hypergrid region'}";
     } else {
-        echo "{'success': false, 'reason': 'unable to remote login sorry boss'}";
+        echo "{'success': false, 'reason': 'hypergrid login failed'}";
     }
     exit();
 
