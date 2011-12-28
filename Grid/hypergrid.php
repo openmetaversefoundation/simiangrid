@@ -758,12 +758,14 @@ function get_home_region($method_name, $params, $user_data)
     {
         $response['result'] = 'true';
         $response['uuid'] = $scene->SceneID;
-        $response['x'] = $scene->MinPosition->X / 256;
-        $response['y'] = $scene->MinPosition->Y / 256;
+        //$response['x'] = (string)($scene->MinPosition->X / 256);
+        //$response['y'] = (string)($scene->MinPosition->Y / 256);
+        $response['x'] = (string)$scene->MinPosition->X;
+        $response['y'] = (string)$scene->MinPosition->Y;
         $response['region_name'] = $scene->Name;
         $response['hostname'] = $scene->ExtraData['ExternalAddress'];
-        $response['http_port'] = $scene->ExtraData['ExternalPort'];
-        $response['internal_port'] = $scene->ExtraData['InternalPort'];
+        $response['http_port'] = (string)$scene->ExtraData['ExternalPort'];
+        $response['internal_port'] = (string)$scene->ExtraData['InternalPort'];
         $response['position'] = (string)$position;
         $response['lookAt'] = (string)$lookat;
         
