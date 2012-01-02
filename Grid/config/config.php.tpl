@@ -38,6 +38,24 @@ $config['map_service'] = "@@MAP_SERVICE@@";
 
 /*
 |--------------------------------------------------------------------------
+| Hypergrid Service URLs
+|--------------------------------------------------------------------------
+|
+| By default these are equivalent to the service URLs. However, the host name
+| must be an external hostname. Override if you use "localhost" for your 
+| service URLs
+|
+*/
+$config['hg_user_service'] = $config['user_service'];
+$config['hg_asset_service'] = $config['asset_service'];
+$config['hg_inventory_service'] = $config['inventory_service'];
+$config['hypergrid_uri'] = $config['grid_service'] . 'hypergrid.php';
+
+//Default Region for HG
+$config['hypergrid_default_region'] = "OpenSim Test";
+
+/*
+|--------------------------------------------------------------------------
 | Asset Driver
 |--------------------------------------------------------------------------
 |
@@ -230,7 +248,3 @@ $config['send_wearables'] = false;
 */
 $config['authorize_commands'] = false;
 
-//Full URL that points at hypergrid.php
-$config['hypergrid_uri'] = "http://localhost/Grid/hypergrid.php";
-//Default Region for HG
-$config['hypergrid_default_region'] = "OpenSim Test";

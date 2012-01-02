@@ -46,7 +46,7 @@ require_once(BASEPATH . 'common/Scene.php');
 require_once(BASEPATH . 'common/SceneLocation.php');
 require_once(BASEPATH . 'common/Session.php');
 
-define('LOGINPATH', str_replace("\\", "/", realpath(dirname(__FILE__)) . '/'));
+define('LOGINPATH', BASEPATH . 'login/');
 require_once(LOGINPATH . 'lib/Class.Appearance.php');
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -611,9 +611,9 @@ function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appe
     $serviceurls = array(
         'GatekeeperURI' => $config['hypergrid_uri'],
         'HomeURI' => $config['hypergrid_uri'],
-        'InventoryServerURI' => $config['inventory_service'],
-        'AssetServerURI' => $config['asset_service'],
-        'ProfileServerURI' => $config['user_service'],
+        'InventoryServerURI' => $config['hg_inventory_service'],
+        'AssetServerURI' => $config['hg_asset_service'],
+        'ProfileServerURI' => $config['hg_user_service'],
         'FriendsServerURI' => $config['hypergrid_uri'],
         'IMServerURI' => $config['hypergrid_uri']
     );
