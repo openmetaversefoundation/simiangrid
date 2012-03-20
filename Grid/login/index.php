@@ -98,12 +98,16 @@ function webservice_post($url, $params, $jsonRequest = FALSE)
         return array('Message' => 'Web service URL is not configured');
     }
     
+    $options = array();
     if ($jsonRequest)
+    {
         $params = json_encode($params);
-    
+	$options[CURLOPT_HTTPHEADER] = array('Content-Type: application/json');
+    }
+
     // POST our query and fetch the response
     $curl = new Curl();
-    $response = $curl->simple_post($url, $params);
+    $response = $curl->simple_post($url, $params, $options);
     
     // log_message('debug', sprintf('Response received from %s POST to %s: %s', $requestMethod, $url, $response));
     
