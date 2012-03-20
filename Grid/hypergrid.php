@@ -43,6 +43,7 @@ require_once(BASEPATH . 'common/Interfaces.php');
 require_once(BASEPATH . 'common/UUID.php');
 require_once(BASEPATH . 'common/Vector3.php');
 require_once(BASEPATH . 'common/Curl.php');
+require_once(BASEPATH . 'common/SimianGrid.php');
 require_once(BASEPATH . 'common/Scene.php');
 require_once(BASEPATH . 'common/SceneLocation.php');
 require_once(BASEPATH . 'common/Session.php');
@@ -54,6 +55,10 @@ if ( !isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] != 'POST' 
     header("HTTP/1.1 400 Bad Request");
     exit();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Path Functions
+///////////////////////////////////////////////////////////////////////////////
 
 if ( isset($_SERVER['PATH_INFO'] ) ) {
     $path_bits = explode('/', $_SERVER['PATH_INFO']);
@@ -77,6 +82,7 @@ if ( isset($_SERVER['PATH_INFO'] ) ) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // XML-RPC Server
+///////////////////////////////////////////////////////////////////////////////
 
 $xmlrpc_server = xmlrpc_server_create();
 xmlrpc_server_register_method($xmlrpc_server, "link_region", "link_region");
@@ -102,145 +108,84 @@ xmlrpc_server_destroy($xmlrpc_server);
 exit();
 
 ///////////////////////////////////////////////////////////////////////////////
+/// Utilities
+///////////////////////////////////////////////////////////////////////////////
+
+function bin2int($str)
+{
+    $result = '0';
+
+    $n = strlen($str);
+    do
+    {
+        $result = bcadd(bcmul($result, '256'), ord($str{--$n}));
+    } while ($n > 0);
+
+    return $result;
+}
+
+function int2bin($num)
+{
+    $result = '';
+
+    do
+    {
+        $result .= chr(bcmod($num, '256'));
+        $num = bcdiv($num, '256');
+    } while (bccomp($num, '0'));
+
+    return $result;
+}
+
+function bitOr($num1, $num2, $start_pos)
+{
+    $start_byte = intval($start_pos / 8);
+    $start_bit = $start_pos % 8;
+    $tmp1 = int2bin($num1);
+
+    $num2 = bcmul($num2, 1 << $start_bit);
+    $tmp2 = int2bin($num2);
+
+    if ($start_byte < strlen($tmp1))
+    {
+        $tmp2 |= substr($tmp1, $start_byte);
+        $tmp1 = substr($tmp1, 0, $start_byte) . $tmp2;
+    }
+    else
+    {
+        $tmp1 = str_pad($tmp1, $start_byte, "\0") . $tmp2;
+    }
+
+    return bin2int($tmp1);
+}
+
+function bitShift($num1, $bits)
+{
+    return bcmul($num1, bcpow(2, $bits));
+}
 
 function ends_with($str, $sub)
 {
    return (substr($str, strlen($str) - strlen($sub)) == $sub);
 }
 
-function decode_recursive_json($json)
-{   
-    if ( is_string($json) ) {
-        $response = json_decode($json, TRUE);
-        if ( $response === null || ! is_array($response) ) {
-            return $json;
-        }
-    } else if ( is_array($json) ) {
-        $response = $json;
-    } else {
-        return $json;
-    }
-    if ( $response == null ) {
-        return $json;
-    }
-    foreach ( $response as $key => $value ) {
-        $response[$key] = decode_recursive_json($value);
-    }
-    return $response;
-}
-
-function webservice_post($url, $params, $jsonRequest = FALSE)
+function hg_register_user($user_id, $username, $homeuri)
 {
-    // Parse the RequestMethod out of the request for debugging purposes
-    if (isset($params['RequestMethod']))
-        $requestMethod = $params['RequestMethod'];
-    else
-        $requestMethod = '';
-    
-    if (empty($url))
+    $config =& get_config();
+
+    // only create the user if it doesn't already exist
+    if (get_user($user_id) != null)
+        return true;
+
+    log_message('info',"[hypergrid] creating new hypergrid user: $username");
+    if (create_user($user_id, $username, '__' . $username))
     {
-        log_message('error', "Canceling $requestMethod POST to an empty URL");
-        return array('Message' => 'Web service URL is not configured');
-    }
-    
-    if ($jsonRequest)
-        $params = json_encode($params);
-
-    // POST our query and fetch the response
-    $curl = new Curl();
-    $response = $curl->simple_post($url, $params);
-    
-    //log_message('debug', sprintf('Response received from %s POST to %s: %s', $requestMethod, $url, $response));
-    
-    // JSON decode the response
-    $response = decode_recursive_json($response);
-    
-    if (!isset($response))
-        $response = array('Message' => 'Invalid or missing response');
-    
-    return $response;
-}
-
-function get_user($userID)
-{
-    $config =& get_config();
-    $userService = $config['user_service'];
-    
-    $response = webservice_post($userService, array(
-        'RequestMethod' => 'GetUser',
-        'UserID' => $userID)
-    );
-    
-    if (!empty($response['Success']) && !empty($response['User']))
-        return $response['User'];
-    
-    return null;
-}
-
-function get_session($userID)
-{
-    $config =& get_config();
-    $userService = $config['user_service'];
-        
-    $response = webservice_post($userService, array(
-        'RequestMethod' => 'GetSession',
-        'UserID' => $userID)
-    );
-    
-    if (!empty($response['Success']))
-        return $response;
-    
-    return null;
-}
-
-function add_session($userID, &$sessionID, &$secureSessionID)
-{
-    $config =& get_config();
-    $userService = $config['user_service'];
-    
-    $response = webservice_post($userService, array(
-        'RequestMethod' => 'AddSession',
-        'UserID' => $userID)
-    );
-    
-    if (!empty($response['Success']) &&
-        UUID::TryParse($response['SessionID'], $sessionID) &&
-        UUID::TryParse($response['SecureSessionID'], $secureSessionID))
-    {
+        set_user_data($user_id,'LocalToGrid','false');
+        set_user_data($user_id,'HomeURI',$homeuri);
         return true;
     }
-    
-    return false;
-}
 
-function remove_session($sessionID)
-{
-    $config =& get_config();
-    $userService = $config['user_service'];
-    
-    $response = webservice_post($userService, array(
-        'RequestMethod' => 'RemoveSession',
-        'SessionID' => $sessionID)
-    );
-    
-    if (!empty($response['Success']))
-        return true;
-    
     return false;
-}
-
-function add_map_tile($x, $y, $maptile)
-{    
-    $params = array(
-        'X' => $x,
-        'Y' => $y
-    );
-    $config =& get_config();
-    $gridService = $config['grid_service'];
-    $curl = new Curl($gridService);
-    $result = $curl->multipart('Tile', 'image/jpeg', $maptile, $params);
-    var_dump($result);
-    return $result['Success'];
 }
 
 function hg_get_region($hguri, $id)
@@ -330,281 +275,37 @@ function hg_link_region($sceneID, $region_name, $external_name, $x, $y, $regionI
 //taking easy way out... we get the osdmap more or less intact.....
 function hg_login($gatekeeper_uri, $userid, $raw_osd)
 {
-    log_message('debug',"hg login to " . $gatekeeper_uri . "/foreignagent/" . $userid . "/");
+    if (!ends_with($gatekeeper_uri, '/'))
+        $gatekeeper_uri .= '/';
+
+    $uri = $gatekeeper_uri . "foreignagent/" . $userid . "/";
+    log_message('debug',"[hypergrid] login $userid to $uri with parameters: " . $raw_osd);
 
     $success = false;
     $curl = new Curl();
-    $response_raw = $curl->simple_post($gatekeeper_uri . "/foreignagent/" . $userid . "/", $raw_osd);
-    log_message('warn', 'foreignagent returned ' . $response_raw);
+    $response_raw = $curl->simple_post($uri, $raw_osd);
+    log_message('debug', 'foreignagent returned ' . $response_raw);
 
     $response = json_decode($response_raw, TRUE);
     if ( isset($response['success']) && $response['success'] ) {
-	log_message('debug','hg_login succeeded');
+	log_message('debug','[hypergrid] hg_login succeeded');
 	$success = true;
     }
     else
     {
-        log_message('warn', 'hg_login failed with reason ' . (isset($response['reason']) ? $response['reason'] : 'no reason given'));
+        log_message('warn', '[hypergrid] hg_login failed with reason ' . (isset($response['reason']) ? $response['reason'] : 'no reason given'));
     }
+
     return $success;
-}
-
-function refresh_map_tile($x, $y, $regionImage)
-{
-    $success = false;
-    $curl = new Curl();
-    $maptile = $curl->simple_get($regionImage);
-    if ( $maptile ) {
-        if ( ! add_map_tile($x, $y, $maptile) ) {
-            log_message('warn', "Unable to upload map image from $regionImage");
-        } else {
-            $success = true;
-        }
-    } else {
-        log_message('warn', "unable to fetch map image from $regionImage");
-    }
-    return $success;
-}
-
-function lookup_scene_by_id($sceneID)
-{
-    $config =& get_config();
-    $gridService = $config['grid_service'];
-    
-    $response = webservice_post($gridService, array(
-        'RequestMethod' => 'GetScene',
-        'SceneID' => $sceneID,
-        'Enabled' => '1')
-    );
-    
-    if (!empty($response['Success']))
-        return Scene::fromOSD($response);
-    
-    return null;
-}
-
-function lookup_scene_by_name($name)
-{
-    $config =& get_config();
-    $gridService = $config['grid_service'];
-    
-    $response = webservice_post($gridService, array(
-        'RequestMethod' => 'GetScenes',
-        'NameQuery' => $name,
-        'Enabled' => '1',
-        'MaxNumber' => '1')
-    );
-    
-    if (!empty($response['Success']) && is_array($response['Scenes']) && count($response['Scenes']) > 0)
-        return Scene::fromOSD($response['Scenes'][0]);
-    
-    return null;
-}
-
-function lookup_scene_by_position($position, $findClosest = false)
-{
-    $config =& get_config();
-    $gridService = $config['grid_service'];
-    
-    $response = webservice_post($gridService, array(
-        'RequestMethod' => 'GetScene',
-        'Position' => $position,
-        'FindClosest' => ($findClosest ? '1' : '0'),
-        'Enabled' => '1')
-    );
-    
-    if (!empty($response['Success']))
-        return Scene::fromOSD($response);
-    
-    return null;
-}
-
-function create_opensim_presence($scene, $userID, $circuitCode, $fullName, $appearance,
-    $sessionID, $secureSessionID, $startPosition, $capsPath)
-{
-    return create_opensim_presence_full($scene->Address, $scene->Name, $scene->ID, $scene->MinPosition->X, $scene->MinPosition->Y, $userID, $circuitCode, $fullName, $appearance, $sessionID, $secureSessionID, $startPosition, $capsPath, null, null, null);
-}
-
-function create_opensim_presence_full($server_uri, $scene_name, $scene_uuid, $scene_x, $scene_y, $userID, $circuitCode, $fullName, $appearance, $sessionID, $secureSessionID, $startPosition, $capsPath, $client_ip, $service_urls, $tp_flags, $service_session_id)
-{
-    if (!ends_with($server_uri, '/'))
-        $server_uri .= '/';
-    $regionUrl = $server_uri . 'agent/' . $userID . '/';
-    
-    list($firstName, $lastName) = explode(' ', $fullName);
-
-    $request = array(
-        'agent_id' => $userID,
-        'caps_path' => $capsPath,
-        'child' => false,
-        'circuit_code' => $circuitCode,
-        'first_name' => $firstName,
-        'last_name' => $lastName,
-        'session_id' => $sessionID,
-        'secure_session_id' => $secureSessionID,
-        'start_pos' => (string)$startPosition,
-        'destination_x' => $scene_x,
-        'destination_y' => $scene_y,
-        'destination_name' => $scene_name,
-        'destination_uuid' => $scene_uuid,
-	'packed_appearance' => $appearance,
-        'appearance_serial' => 1,
-	'teleport_flags' => (1 << 30), // marks this as via HG
-        'child' => true
-    );
-    if ( $client_ip != null ) {
-        $request['client_ip'] = $client_ip;
-    }
-    if ( $service_urls != null ) {
-        $request['serviceurls'] = $service_urls;
-    }
-    if ( $service_session_id != null ) {
-        $request['service_session_id'] = $service_session_id;
-    }
-    //    if ( $tp_flags != null ) {
-    //        $request['teleport_flags'] = $tp_flags;
-    //    }
-    $response = webservice_post($regionUrl, $request, true);
-    
-    log_dump("webservice post response", $response);
-    
-    if (!empty($response['success']))
-    {
-        return true;
-    }
-    
-    $seedCapability = null;
-    return false;
-}
-
-function create_session($user_id, $session_id, $secure_session_id)
-{
-    $config =& get_config();
-    $gridService = $config['grid_service'];
-    $response = webservice_post($gridService, array(
-        'RequestMethod' => 'AddSession',
-        'UserID' => $user_id,
-        'SessionID' => $session_id,
-        'SecureSessionID' => $secure_session_id
-    ));
-    if (!empty($response['success'])) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-function register_hg_user($user_id, $username, $homeuri)
-{
-    // only create the user if it doesn't already exist
-    if (get_user($user_id) != null)
-        return true;
-
-    log_message('warn','creating new hypergrid user: ' + $username);
-    if (create_user($user_id, $username, '__' . $username))
-    {
-        set_user_data($user_id,'LocalToGrid','false');
-        set_user_data($user_id,'HomeURI',$homeuri);
-        return true;
-    }
-
-    return false;
-}
-
-function create_user($user_id, $username, $email)
-{
-    $config =& get_config();
-    $userService = $config['user_service'];
-
-    $query = array(
-        'RequestMethod' => 'AddUser',
-        'UserID' => $user_id,
-        'Name' => $username,
-        'Email' => $email,
-        'AccessLevel' => 0);
-
-    $response = webservice_post($userService, $query);
-    if (isset($response['success']))
-        return $response['success'];
-
-    return false;
-}
-
-function set_user_data($user_id, $key, $value)
-{
-    $config =& get_config();
-    $userService = $config['user_service'];
-
-    $query = array('RequestMethod' => 'AddUserData',
-                   'UserID' => $user_id,
-                   $key => $value);
-
-    $response = webservice_post($userservice, $query);
-    if (isset($response['success']))
-        return $response['success'];
-
-    return false;
-}
-
-function bin2int($str)
-{
-    $result = '0';
-
-    $n = strlen($str);
-    do
-    {
-        $result = bcadd(bcmul($result, '256'), ord($str{--$n}));
-    } while ($n > 0);
-
-    return $result;
-}
-
-function int2bin($num)
-{
-    $result = '';
-
-    do
-    {
-        $result .= chr(bcmod($num, '256'));
-        $num = bcdiv($num, '256');
-    } while (bccomp($num, '0'));
-
-    return $result;
-}
-
-function bitOr($num1, $num2, $start_pos)
-{
-    $start_byte = intval($start_pos / 8);
-    $start_bit = $start_pos % 8;
-    $tmp1 = int2bin($num1);
-
-    $num2 = bcmul($num2, 1 << $start_bit);
-    $tmp2 = int2bin($num2);
-
-    if ($start_byte < strlen($tmp1))
-    {
-        $tmp2 |= substr($tmp1, $start_byte);
-        $tmp1 = substr($tmp1, 0, $start_byte) . $tmp2;
-    }
-    else
-    {
-        $tmp1 = str_pad($tmp1, $start_byte, "\0") . $tmp2;
-    }
-
-    return bin2int($tmp1);
-}
-
-function bitShift($num1, $bits)
-{
-    return bcmul($num1, bcpow(2, $bits));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // GateKeeper Service
+///////////////////////////////////////////////////////////////////////////////
 
 function link_region($method_name, $params, $user_data)
 {
-    log_message('info', "link_region called");
+    log_message('info', "[hypergrid] $method_name called");
 
     $config =& get_config();
 
@@ -647,7 +348,7 @@ function link_region($method_name, $params, $user_data)
 
 function get_region($method_name, $params, $user_data)
 {
-    log_message('info', "$method_name called");
+    log_message('info', "[hypergrid] $method_name called");
     
     $req = $params[0];
     $regionid = $req['region_uuid'];
@@ -672,79 +373,14 @@ function get_region($method_name, $params, $user_data)
     return $response;
 }
 
-function foreignagent_handler($path_tail, $data)
-{
-    $config =& get_config();
-
-    log_message('debug', "server method is " . $_SERVER['REQUEST_METHOD']);
-    $userid = $path_tail[0];
-    log_message('info', "foreign_agent called for $userid with $data");
-    
-    $osd = decode_recursive_json($data);
-    
-    $dest_x = $osd['destination_x'];
-    $dest_y = $osd['destination_y'];
-    
-    if ( $dest_x == null ) {
-        $dest_x = 0;
-    }
-    if ( $dest_y == null ) {
-        $dest_y = 0;
-    }
-    
-    $caps_path = $osd['caps_path'];
-    $username = $osd['first_name'] . ' ' . $osd['last_name'];
-    $circuit_code = $osd['circuit_code'];
-    $session_id = $osd['session_id'];
-    $secure_session_id = $osd['secure_session_id'];
-    $service_session_id = $osd['service_session_id'];
-    $start_pos = $osd['start_pos'];
-    $appearance = $osd['packed_appearance'];
-
-    //$service_urls['HomeURI'] = $osd['service_urls'][1];
-    //$service_urls['GatekeeperURI'] = $osd['service_urls'][3];
-    //$service_urls['InventoryServerURI'] = $osd['service_urls'][5];
-    //$service_urls['AssetServerURI'] = $osd['service_urls'][7];
-    if ( isset($osd['client_ip']) ) {
-        $client_ip = $osd['client_ip'];
-    } else {
-        $client_ip = null;
-    }
-    
-    $dest_uuid = $osd['destination_uuid'];
-    $dest_name = $osd['destination_name'];
-    
-    if ( $dest_uuid == null || $dest_name == null ) {
-        header("HTTP/1.1 400 Bad Request");
-        echo "missing destination_name and/or destination_uuid";
-        exit();
-    }
-    
-    $homeuri = $osd['serviceurls']['HomeURI'];
-    $scene = lookup_scene_by_id($dest_uuid);
-    
-    // $username = $osd['first_name'] . ' ' . $osd['last_name'] . '@' . $service_urls['HomeURI'];
-    $username = $osd['first_name'] . ' ' . $osd['last_name'];
-    if ($homeuri != $config['hypergrid_uri'])
-    {
-        $username =  $username . '@' . $homeuri;
-        register_hg_user($userid, $username, $homeuri);
-    }
-
-    create_session($userid, $session_id, $secure_session_id);
-    
-    $result = create_opensim_presence_full($scene->Address, $dest_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $osd['serviceurls'], 1073741824, $service_session_id);
-    
-    echo '{"success": ' . $result . ', "reason": "no reason set lol", "your_ip": "' . $_SERVER['REMOTE_ADDR'] . '"}';
-    exit();
-    
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // UserAgent Service
+///////////////////////////////////////////////////////////////////////////////
 
 function get_home_region($method_name, $params, $user_data)
 {
+    log_message('info', "[hypergrid] $method_name called");
+
     $response = array();
     
     $req = $params[0];
@@ -838,13 +474,15 @@ function get_home_region($method_name, $params, $user_data)
 
 function verify_client($method_name, $params, $user_data)
 {
+    log_message('info', "[hypergrid] $method_name called");
+
     $response = array();
     
     $req = $params[0];
     $sessionID = $req['sessionID'];
     $token = $req['token'];
     
-    log_message('info', "verify_client called with SessionID $sessionID and Token $token");
+    log_message('info', "[hypergrid] verify_client called with SessionID $sessionID and Token $token");
     
     $response['result'] = 'true';
     return $response;
@@ -852,13 +490,15 @@ function verify_client($method_name, $params, $user_data)
 
 function verify_agent($method_name, $params, $user_data)
 {
+    log_message('info', "[hypergrid] $method_name called");
+
     $response = array();
     
     $req = $params[0];
     $sessionID = $req['sessionID'];
     $token = $req['token'];
     
-    log_message('info', "verify_agent called with SessionID $sessionID and Token $token");
+    log_message('info', "[hypergrid] verify_agent called with SessionID $sessionID and Token $token");
     
     $response['result'] = 'true';
     return $response;
@@ -866,20 +506,93 @@ function verify_agent($method_name, $params, $user_data)
 
 function logout_agent($method_name, $params, $user_data)
 {
+    log_message('info', "[hypergrid] $method_name called");
+
     $response = array();
-    log_message('info', "$method_name called");
-    
     $response["blah"] = 'blah';
     return $response;
 }
 
 function agent_is_coming_home($method_name, $params, $user_data)
 {
+    log_message('info', "[hypergrid] $method_name called");
+
     $response = array();
-    log_message('info', "$method_name called");
-    
     $response["blah"] = 'blah';
     return $response;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Home and ForeignAgent Handlers
+///////////////////////////////////////////////////////////////////////////////
+
+function foreignagent_handler($path_tail, $data)
+{
+    $config =& get_config();
+
+    $userid = $path_tail[0];
+    log_message('info', "foreign_agent called for $userid with $data");
+    
+    $osd = decode_recursive_json($data);
+    
+    $dest_x = $osd['destination_x'];
+    $dest_y = $osd['destination_y'];
+    
+    if ( $dest_x == null ) {
+        $dest_x = 0;
+    }
+    if ( $dest_y == null ) {
+        $dest_y = 0;
+    }
+    
+    $caps_path = $osd['caps_path'];
+    $username = $osd['first_name'] . ' ' . $osd['last_name'];
+    $circuit_code = $osd['circuit_code'];
+    $session_id = $osd['session_id'];
+    $secure_session_id = $osd['secure_session_id'];
+    $service_session_id = $osd['service_session_id'];
+    $start_pos = $osd['start_pos'];
+    $appearance = $osd['packed_appearance'];
+
+    //$service_urls['HomeURI'] = $osd['service_urls'][1];
+    //$service_urls['GatekeeperURI'] = $osd['service_urls'][3];
+    //$service_urls['InventoryServerURI'] = $osd['service_urls'][5];
+    //$service_urls['AssetServerURI'] = $osd['service_urls'][7];
+    if ( isset($osd['client_ip']) ) {
+        $client_ip = $osd['client_ip'];
+    } else {
+        $client_ip = null;
+    }
+    
+    $dest_uuid = $osd['destination_uuid'];
+    $dest_name = $osd['destination_name'];
+    
+    if ( $dest_uuid == null || $dest_name == null ) {
+        header("HTTP/1.1 400 Bad Request");
+        echo "missing destination_name and/or destination_uuid";
+        exit();
+    }
+    
+    $homeuri = $osd['serviceurls']['HomeURI'];
+    $scene = lookup_scene_by_id($dest_uuid);
+    
+    // $username = $osd['first_name'] . ' ' . $osd['last_name'] . '@' . $service_urls['HomeURI'];
+    $username = $osd['first_name'] . ' ' . $osd['last_name'];
+    log_message('info',"[hypergrid] check user name $username with homeuri $homeuri");
+    if ($homeuri != $config['hypergrid_uri'])
+    {
+        $username =  $username . '@' . $homeuri;
+        hg_register_user($userid, $username, $homeuri);
+    }
+
+    log_message('info',"[hypergrid] create session for $username");
+    create_session($userid, $session_id, $secure_session_id);
+    
+    $result = create_opensim_presence_full($scene->Address, $dest_name, $dest_uuid, $dest_x, $dest_y, $userid, $circuit_code, $username, $appearance, $session_id, $secure_session_id, $start_pos, $caps_path, $client_ip, $osd['serviceurls'], 1073741824, $service_session_id);
+    
+    echo '{"success": ' . $result . ', "reason": "no reason set lol", "your_ip": "' . $_SERVER['REMOTE_ADDR'] . '"}';
+    exit();
+    
 }
 
 function homeagent_handler($path_tail, $data)
@@ -938,6 +651,10 @@ function homeagent_handler($path_tail, $data)
     exit();
 
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/// Handlers
+///////////////////////////////////////////////////////////////////////////////
 
 function link_remote_handler($data)
 {
