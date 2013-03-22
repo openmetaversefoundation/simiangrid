@@ -121,7 +121,7 @@ class Log
                 return FALSE;
             }
     
-            $message .= $level.' '.(($level == 'INFO') ? ' -' : '-').' '.date($this->_date_fmt). ' --> '.$msg."\n";
+            $message .= $level.' '.(($level == 'INFO') ? ' -' : '-').' '.date($this->_date_fmt).' ['.$_SERVER['REMOTE_ADDR'].'] --> '.$msg."\n";
             
             flock($fp, LOCK_EX);    
             fwrite($fp, $message);

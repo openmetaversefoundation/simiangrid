@@ -33,6 +33,8 @@
  * @link       http://openmetaverse.googlecode.com/
  */
 
+$gStartTime = microtime(true);
+
 define('BASEPATH', str_replace("\\", "/", realpath(dirname(__FILE__) . '/..') . '/'));
 
 require_once(BASEPATH . 'common/Config.php');
@@ -48,6 +50,15 @@ require_once(BASEPATH . 'common/Session.php');
 
 define('LOGINPATH', BASEPATH . 'login/');
 require_once(LOGINPATH . 'lib/Class.Appearance.php');
+
+// Performance profiling/logging                                                                                                       
+function shutdown()
+{
+    global $gStartTime;
+    $elapsed = microtime(true) - $gStartTime;
+    log_message('debug', "Executed login in $elapsed seconds");
+}
+register_shutdown_function('shutdown');
 
 ///////////////////////////////////////////////////////////////////////////////
 // XML-RPC Server
