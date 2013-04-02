@@ -293,7 +293,7 @@ function lookup_scene_by_name($name)
     
     $response = webservice_post($gridService, array(
         'RequestMethod' => 'GetScene',
-        'NameQuery' => $name,
+        'Name' => $name,
         'Enabled' => '1')
     );
     
