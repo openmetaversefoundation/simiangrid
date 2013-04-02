@@ -45,6 +45,7 @@ class GetScene implements IGridService
         
         if (isset($params["SceneID"]) && UUID::TryParse($params["SceneID"], $this->SceneID))
         {
+            log_message('debug',"GetScene by SceneID " . $params["SceneID"]);
             $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                     CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                     CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
@@ -55,6 +56,7 @@ class GetScene implements IGridService
         }
         else if (isset($params["Name"]))
         {
+            log_message('debug',"GetScene by Name " . $params["Name"]);
             $sql = "SELECT ID, Name, Address, Enabled, ExtraData, LastUpdate,
                     CONCAT('<', MinX, ',', MinY, ',', MinZ, '>') AS MinPosition,  
                     CONCAT('<', MaxX, ',', MaxY, ',', MaxZ, '>') AS MaxPosition
@@ -62,8 +64,6 @@ class GetScene implements IGridService
 
             if (isset($params["Enabled"]) && $params["Enabled"])
                 $sql .= " AND Enabled=1";
-
-            log_message('error',"Get Name SQL: " . $sql);
 
         }
         else if (isset($params["Position"]) && Vector3::TryParse($params["Position"], $this->Position))
