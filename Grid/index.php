@@ -53,14 +53,32 @@ require_once(BASEPATH . 'common/Capability.php');
 // Performance profiling/logging
 function shutdown()
 {
-    global $gStartTime, $gMethodName;
+    global $gStartTime, $gMethodName, $gDetailedLogging;
     $elapsed = microtime(true) - $gStartTime;
-    log_message('debug', "Executed $gMethodName in $elapsed seconds");
+
+    if ($gDetailedLogging >= 4)
+    {
+        $obsize = ob_get_length();
+        ob_end_flush();
+        log_message('debug', "Executed $gMethodName in $elapsed seconds, $obsize bytes");
+    }
+    else
+    {
+        log_message('debug', "Executed $gMethodName in $elapsed seconds");
+    }
 }
 register_shutdown_function('shutdown');
 
 // Configuration loading
 $config =& get_config();
+
+$gDetailedLogging = $config['log_threshold'];
+if ($gDetailedLogging >= 4)
+{
+    if ($gDetailedLogging >= 5)
+        log_message('debug', "Request: " . print_r($_POST, true));
+    ob_start();
+}
 
 // Disable magic quotes
 if (get_magic_quotes_gpc())

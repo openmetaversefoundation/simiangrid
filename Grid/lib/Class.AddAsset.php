@@ -48,11 +48,11 @@ class AddAsset implements IGridService
         if ($assets->AddAsset($asset, $created))
         {
             if ($created)
-                $status = "Created";
+                $status = "created";
             else
-                $status = "Updated";
+                $status = "updated";
             
-            log_message('debug', "AddClass Succesfully $status " . $asset->ID);
+            log_message('debug', "Asset succesfully $status " . $asset->ID);
             
             header("Content-Type: application/json", true);
             echo '{ "Success": true, "AssetID": "' . $asset->ID . '", "Status": "' . $status . '" }';
