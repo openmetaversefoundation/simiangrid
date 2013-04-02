@@ -292,14 +292,13 @@ function lookup_scene_by_name($name)
     $gridService = $config['grid_service'];
     
     $response = webservice_post($gridService, array(
-        'RequestMethod' => 'GetScenes',
+        'RequestMethod' => 'GetScene',
         'NameQuery' => $name,
-        'Enabled' => '1',
-        'MaxNumber' => '1')
+        'Enabled' => '1')
     );
     
-    if (!empty($response['Success']) && is_array($response['Scenes']) && count($response['Scenes']) > 0)
-        return Scene::fromOSD($response['Scenes'][0]);
+    if (!empty($response['Success']))
+        return Scene::fromOSD($response);
     
     return null;
 }
