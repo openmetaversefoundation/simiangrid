@@ -12,6 +12,7 @@
     define("INSTALL_LOCK_FILE", $lockfile_base_dir . "/InstallerFinished_" . str_replace(' ', '_', INSTALLER_PROJECT) );
 
     require 'lib/common.php';
+    require_once 'lib/config.php';
 
     $result = installerInit();
 
